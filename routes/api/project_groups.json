@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "avatar": "https://fakeimg.pl/150x150/",
+    "title": "Национальные проекты",
+    "isOpen": true,
+    "count": "2125"
+  },
+  {
+    "id": "2",
+    "avatar": "https://fakeimg.pl/150x150/",
+    "title": "Федеральные проекты",
+    "isOpen": true,
+    "count": "2405"
+  },
+  {
+    "id": "3",
+    "avatar": "https://fakeimg.pl/150x150/",
+    "title": "Региональные проекты",
+    "isOpen": true,
+    "count": "1925"
+  }
+]

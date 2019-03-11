@@ -1,0 +1,27 @@
+{
+  "name": "unp.portal",
+  "version": "1.0.0",
+  "description": "Portal",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://v.nesterenko@stash.bars-open.ru/scm/unp/unp.portal.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "JSONStream": "^1.3.5",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "express-fileupload": "^1.1.2-alpha.1",
+    "multer": "^1.4.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1"
+  }
+}
