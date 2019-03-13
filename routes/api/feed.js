@@ -28,7 +28,7 @@ router.post("/comment", (req, res) => {
 
       item.comments.push({
         id: last ? last.id + 1 : 0,
-        author: "Петров Петр",
+        author: "Соколова Виктория",
         avatar: "https://fakeimg.pl/40x40/",
         text
       });

@@ -3,10 +3,14 @@ import projectGroups from "./components/ProjectGroups/reducer";
 import News from "./components/News/reducer";
 import Feed from "./components/Feed/reducer";
 import Laws from "./components/Laws/reducer";
+import UserProfilePreferences from "./components/UserProfile/reducer";
+import Chat from "./components/Chat/reducer";
 
 export default combineReducers({
   projectGroups,
   News,
   Feed,
-  Laws
+  Laws,
+  UserProfilePreferences,
+  Chat
 });

@@ -19,7 +19,7 @@ class ProjectGroups extends Component {
   };
 
   componentDidMount = () => {
-    Actions.getProjectGroups();
+    Actions.getProjectGroups(this.props.type);
   };
 
   renderGroups() {

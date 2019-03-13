@@ -8,8 +8,14 @@ const projectGroups = State({
   }
 });
 
-Effect("getProjectGroups", payload => {
-  api.get("api/projectGroups/list").then(response => {
+Effect("getProjectGroups", type => {
+  const urls = {
+    my: "api/projectGroups/list/my",
+    created: "api/projectGroups/list/created",
+    all: "api/projectGroups/list"
+  };
+
+  api.get(urls[type]).then(response => {
     Actions.setProjectGroups(response.data);
   });
 });

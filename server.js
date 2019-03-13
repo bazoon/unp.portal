@@ -24,6 +24,8 @@ const projectGroups = require("./routes/api/projectGroups");
 const news = require("./routes/api/news");
 const feed = require("./routes/api/feed");
 const laws = require("./routes/api/laws");
+const profilePreferences = require("./routes/api/profile_preferences");
+const chat = require("./routes/api/chat");
 
 // Api routes
 app.use("/api/users", users);
@@ -31,13 +33,21 @@ app.use("/api/projectGroups", projectGroups);
 app.use("/api/news", news);
 app.use("/api/feed", feed);
 app.use("/api/laws", laws);
+app.use("/api/profile_preferences", profilePreferences);
+app.use("/api/chat", chat);
 
 app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
 
 // Uploads
 app.post("/upload", upload.array("file", 12), function(req, res, next) {
-  res.send(req.files);
+  console.log(111, req.body);
+  const { channelId } = req.body;
+  res.send({
+    channelId,
+    files: req.files
+  });
 });
 
 app.listen(port, () => console.log(`Server is running on ${port}`));

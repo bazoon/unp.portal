@@ -13,6 +13,36 @@ router.get("/list", (req, res) => {
     .pipe(res);
 });
 
+router.get("/list/my", (req, res) => {
+  const readable = fs.createReadStream(fileName, "utf8");
+  res.set({ "content-type": "application/json; charset=utf-8" });
+  readable
+    .pipe(
+      jsonStream.parse("*", function(g) {
+        if (g.id < 2) {
+          return g;
+        }
+      })
+    )
+    .pipe(jsonStream.stringify())
+    .pipe(res);
+});
+
+router.get("/list/created", (req, res) => {
+  const readable = fs.createReadStream(fileName, "utf8");
+  res.set({ "content-type": "application/json; charset=utf-8" });
+  readable
+    .pipe(
+      jsonStream.parse("*", function(g) {
+        if (g.id >= 2) {
+          return g;
+        }
+      })
+    )
+    .pipe(jsonStream.stringify())
+    .pipe(res);
+});
+
 router.get("/get/:id", (req, res) => {
   const readable = fs.createReadStream(fileName, "utf8");
 

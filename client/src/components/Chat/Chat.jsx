@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import { Actions } from "jumpstate";
+import cn from "classnames";
 import moment from "moment";
 import { Drawer, Input, Button, Icon } from "antd";
 import PropTypes from "prop-types";
@@ -7,42 +10,103 @@ import api from "../../api/api";
 class Chat extends Component {
   static propTypes = {
     visible: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired
+    onClose: PropTypes.func.isRequired,
+    chat: PropTypes.arrayOf(PropTypes.object)
+  };
+
+  static defaultProps = {
+    chat: []
   };
 
   constructor(props) {
     super(props);
     this.state = {
       messages: [],
-      currentMessage: ""
+      currentMessage: "",
+      activeChannelId: 1
     };
     this.formRef = React.createRef();
+    this.chatTalkRef = React.createRef();
   }
 
+  componentDidMount = () => {
+    Actions.getChat();
+  };
+
+  componentDidUpdate = (prevProps, prevState) => {
+    this.scrollChatTalk();
+  };
+
   handleSend = () => {
-    const messages = [...this.state.messages, this.state.currentMessage];
-    this.setState({
-      messages,
-      currentMessage: ""
+    Actions.sendChatMessage({
+      channelId: this.state.activeChannelId,
+      message: this.state.currentMessage,
+      type: "text"
+    }).then(() => {
+      this.setState({
+        currentMessage: ""
+      });
     });
   };
 
-  handleFileSend = fileMessage => {
-    const messages = [...this.state.messages, fileMessage];
-    this.setState({
-      messages
-    });
+  scrollChatTalk = () => {
+    const chatTalk = this.chatTalkRef.current;
+    if (!chatTalk) return;
+    chatTalk.scrollBy(0, chatTalk.scrollHeight);
   };
 
   renderMessage = m => {
-    const d = new Date();
+    switch (m.type) {
+      case "text": {
+        return this.renderTextMessage(m);
+        break;
+      }
+      case "file": {
+        return this.renderFileMessage(m);
+        break;
+      }
+      default: {
+        return this.renderTextMessage(m);
+      }
+    }
+  };
+
+  renderTextMessage = m => {
     return (
-      <div className="chat__message" key={m}>
-        <div className="chat__message-date">{moment(d).format("HH:mm")}</div>
-        {typeof m === "object" ? this.rendComplexObject(m) : m}
+      <div className="chat__message" key={m.id}>
+        <div className="chat__message-date">
+          {moment(m.date).format("HH:mm")}
+        </div>
+        {m.content}
       </div>
     );
   };
+
+  renderFileMessage = m => {
+    return (
+      <div className="chat__message" key={m.id}>
+        <div className="chat__message-date">
+          {moment(m.date).format("HH:mm")}
+        </div>
+        {m.content.map(f => (
+          <div key={f}>
+            <a download href={`/uploads/${f}`} style={{ display: "block" }}>
+              {f}
+            </a>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  renderMessages() {
+    const { chat } = this.props;
+    const { activeChannelId } = this.state;
+    const activeChannel = chat.find(channel => channel.id === activeChannelId);
+    return (
+      activeChannel && activeChannel.messages.map(m => this.renderMessage(m))
+    );
+  }
 
   rendComplexObject = m => {
     return m.map(f => (
@@ -95,16 +159,45 @@ class Chat extends Component {
   };
 
   handleFileChange = e => {
-    const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
+    const { activeChannelId } = this.state;
     const files = Array.prototype.map.call(e.target.files, f => f);
+    formData.append("channelId", activeChannelId);
     files.forEach(f => {
       formData.append("file", f);
     });
-    api.post("upload", formData, config).then(response => {
-      this.handleFileSend(response.data);
+
+    Actions.sendChatFile(formData);
+  };
+
+  handleChangeChanel = channelId => {
+    this.setState({
+      activeChannelId: channelId
     });
   };
+
+  renderChatChanels() {
+    const { activeChannelId } = this.state;
+    const { chat } = this.props;
+
+    return chat.map(channel => {
+      const className = cn("chat__chanels-item", {
+        "chat__chanels-item_active": activeChannelId === channel.id
+      });
+      return (
+        <div
+          key={channel.id}
+          className={className}
+          onClick={() => this.handleChangeChanel(channel.id)}
+        >
+          <div className="chat__chanels-avatar">
+            <img src={channel.avatar} alt="logo" />
+          </div>
+          <div className="chat__chanels-title">{channel.title}</div>
+        </div>
+      );
+    });
+  }
 
   render() {
     const { visible } = this.props;
@@ -124,32 +217,12 @@ class Chat extends Component {
               <Input placeholder="Поиск" style={{ width: "50%" }} />
               <Button icon="more" />
             </div>
-            <div className="chat__talks">
-              <div className="chat__chanels">
-                <div className="chat__chanels-item chat__chanels-item_active">
-                  <div className="chat__chanels-avatar">
-                    <img src="https://fakeimg.pl/50x50" alt="logo" />
-                  </div>
-                  <div className="chat__chanels-title">
-                    Региональные проекты
-                  </div>
-                </div>
-                <div className="chat__chanels-item">
-                  <div className="chat__chanels-avatar">
-                    <img src="https://fakeimg.pl/50x50" alt="logo" />
-                  </div>
-                  <div className="chat__chanels-title">Петр Петров</div>
-                </div>
-                <div className="chat__chanels-item">
-                  <div className="chat__chanels-avatar">
-                    <img src="https://fakeimg.pl/50x50" alt="logo" />
-                  </div>
-                  <div className="chat__chanels-title">Иванов И.В.</div>
-                </div>
-              </div>
 
-              <div className="chat__talk">
-                {this.state.messages.map(m => this.renderMessage(m))}
+            <div className="chat__talks">
+              <div className="chat__chanels">{this.renderChatChanels()}</div>
+
+              <div className="chat__talk" ref={this.chatTalkRef}>
+                {this.renderMessages()}
               </div>
             </div>
             <div className="chat__controls">
@@ -174,4 +247,8 @@ class Chat extends Component {
   }
 }
 
-export default Chat;
+const mapStateToProps = state => {
+  return { chat: state.Chat.chat };
+};
+
+export default connect(mapStateToProps)(Chat);

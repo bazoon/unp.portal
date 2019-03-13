@@ -36,6 +36,11 @@ export class GroupSidebar extends Component {
             </div>
             <Icon type="edit" />
           </div>
+          <video
+            controls
+            className="group-sidebar__video"
+            src="/downloads/video.mp4"
+          />
         </div>
         <hr />
         <div className="group-sidebar__item-container">

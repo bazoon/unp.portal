@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { HashRouter, Route, Link, Switch } from "react-router-dom";
+import { Route, Link, Switch } from "react-router-dom";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
 import { MainMenu } from "./MainMenu/MainMenu";
 import { RightMenu } from "./RightMenu/RightMenu";
@@ -44,78 +44,87 @@ class L extends Component {
   render() {
     const { isChatOpen } = this.state;
     return (
-      <HashRouter>
-        <Layout>
-          <ChatIcon onClick={this.handleChatClick} />
-          <Chat visible={isChatOpen} onClose={this.handleChatClose} />
-          <Header className="header">
-            <Link to="/">
-              <img src={logo} alt="Logo" />
+      <Layout>
+        <ChatIcon onClick={this.handleChatClick} />
+        <Chat visible={isChatOpen} onClose={this.handleChatClose} />
+        <Header className="header">
+          <Link to="/">
+            <img src={logo} alt="Logo" />
+          </Link>
+          <div className="header__search-container">
+            <Search className="header__search-input" />
+          </div>
+          <div className="header__support">
+            <Icon type="phone" className="icon__medium" />
+            <div>
+              Техническая поддержка
+              <br />
+              0000-000-000-000
+            </div>
+          </div>
+          <Popover
+            title="Уведомления"
+            className="notifications__popover"
+            content={<Notifications />}
+            trigger="click"
+          >
+            <div className="header__notification">
+              <Badge count={5}>
+                <Icon type="bell" className="icon__medium" />
+              </Badge>
+            </div>
+          </Popover>
+          <div className="header__user">
+            <div>
+              Соколова Виктория
+              <br />
+              СНИЛС 000-0000-000
+            </div>
+            <Link to="/profile">
+              <Icon type="user" className="icon__medium" />
             </Link>
-            <div className="header__search-container">
-              <Search className="header__search-input" />
-            </div>
-            <div className="header__support">
-              <Icon type="phone" className="icon__medium" />
-              <div>
-                Техническая поддержка
-                <br />
-                0000-000-000-000
-              </div>
-            </div>
-            <Popover
-              title="Уведомления"
-              className="notifications__popover"
-              content={<Notifications />}
-              trigger="click"
-            >
-              <div className="header__notification">
-                <Badge count={5}>
-                  <Icon type="bell" className="icon__medium" />
-                </Badge>
-              </div>
-            </Popover>
-            <div className="header__user">
-              <div>
-                Соколова Виктория
-                <br />
-                СНИЛС 000-0000-000
-              </div>
-              <Link to="/profile">
-                <Icon type="user" className="icon__medium" />
-              </Link>
-            </div>
-          </Header>
-          <Layout>
-            <Sider>
-              <MainMenu />
-            </Sider>
-            <Content>
-              <Switch>
-                <Route path="/mygroups" component={() => <ProjectGroups />} />
-                <Route path="/profile" component={() => <UserProfile />} />
-                <Route
-                  path="/group"
-                  component={() => (
-                    <>
-                      <Group />
-                      <Feed />
-                    </>
-                  )}
-                />
-                <Route path="/laws" component={() => <Laws />} />
-                <Route path="/" component={Feed} />
-              </Switch>
-            </Content>
-            <Sider width="300" style={{ padding: "10px" }}>
-              <Switch>
-                <Route path="/group/:id" component={GroupSidebar} />
-                <Route path="/" component={RightMenu} />
-              </Switch>
-            </Sider>
-          </Layout>
+          </div>
+        </Header>
+        <Layout>
+          <Sider>
+            <Route path="/" component={MainMenu} />
+          </Sider>
+          <Content>
+            <Switch>
+              <Route
+                path="/mygroups"
+                component={() => <ProjectGroups type="my" />}
+              />
+              <Route
+                path="/createdgroups"
+                component={() => <ProjectGroups type="created" />}
+              />
+              <Route
+                path="/allgroups"
+                component={() => <ProjectGroups type="all" />}
+              />
+              <Route path="/profile" component={() => <UserProfile />} />
+              <Route
+                path="/group"
+                component={() => (
+                  <>
+                    <Group />
+                    <Feed />
+                  </>
+                )}
+              />
+              <Route path="/laws" component={() => <Laws />} />
+              <Route path="/" component={Feed} />
+            </Switch>
+          </Content>
+          <Sider width="300" style={{ padding: "10px" }}>
+            <Switch>
+              <Route path="/group/:id" component={GroupSidebar} />
+              <Route path="/" component={RightMenu} />
+            </Switch>
+          </Sider>
         </Layout>
-      </HashRouter>
+      </Layout>
     );
   }
 }

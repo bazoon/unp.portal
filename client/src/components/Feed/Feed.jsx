@@ -79,7 +79,7 @@ class Feed extends Component {
     });
     return (
       <React.Fragment>
-        {renderedComments},
+        {renderedComments}
         <Input
           value={currentComment[id]}
           onChange={e => this.handleChangeComment(e, id)}

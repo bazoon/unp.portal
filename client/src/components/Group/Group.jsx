@@ -9,7 +9,10 @@ export class Group extends Component {
       <div className="group">
         <div className="group__info-container">
           <div className="group__avatar">
-            <img src="https://fakeimg.pl/200x200" alt="Лого проекта" />
+            <img
+              src="https://kazved.ru/uploadimg/105264_185148_forum_2017_1_1391.jpg"
+              alt="Лого проекта"
+            />
           </div>
           <div className="group__info">
             <div className="group__text">Открытая группа</div>

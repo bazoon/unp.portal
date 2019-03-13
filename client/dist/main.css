@@ -80,6 +80,9 @@
 .user-profile {
   display: flex;
 }
+.user-profile__container {
+  padding: 10px;
+}
 .user-profile__title {
   font-size: 16px;
   font-weight: 900;
@@ -139,6 +142,9 @@
 .group__avatar img {
   border-radius: 50%;
   margin-right: 10px;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
 }
 .group .group__discussions {
   margin-left: 10px;
@@ -176,6 +182,10 @@
   height: 30px;
   border-radius: 50%;
   background: cadetblue;
+}
+.group-sidebar__video {
+  width: 100%;
+  margin-top: 10px;
 }
 
 .feed {
@@ -284,6 +294,7 @@
 .chat__chanels-item {
   padding: 10px;
   display: flex;
+  cursor: pointer;
   align-items: center;
   margin-bottom: 10px;
 }
@@ -293,6 +304,9 @@
 .chat__chanels-avatar img {
   border-radius: 50%;
   margin-right: 5px;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }
 .chat__talk {
   flex: 3;
