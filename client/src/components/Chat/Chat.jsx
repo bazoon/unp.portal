@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import cn from "classnames";
 import moment from "moment";
-import { Drawer, Input, Button, Icon } from "antd";
+import { Drawer, Input, Button, Icon, Spin } from "antd";
 import PropTypes from "prop-types";
 import api from "../../api/api";
 
@@ -200,7 +200,7 @@ class Chat extends Component {
   }
 
   render() {
-    const { visible } = this.props;
+    const { visible, isLoading } = this.props;
     return (
       <div>
         {this.renderFileForm()}
@@ -222,6 +222,7 @@ class Chat extends Component {
               <div className="chat__chanels">{this.renderChatChanels()}</div>
 
               <div className="chat__talk" ref={this.chatTalkRef}>
+                <div className="chat__talk-spin">{isLoading && <Spin />}</div>
                 {this.renderMessages()}
               </div>
             </div>
@@ -234,6 +235,7 @@ class Chat extends Component {
                 />
               </div>
               <Input
+                disabled={isLoading}
                 autoFocus
                 value={this.state.currentMessage}
                 onChange={this.handleMessageChange}
@@ -248,7 +250,7 @@ class Chat extends Component {
 }
 
 const mapStateToProps = state => {
-  return { chat: state.Chat.chat };
+  return { chat: state.Chat.chat, isLoading: state.Chat.isLoading };
 };
 
 export default connect(mapStateToProps)(Chat);

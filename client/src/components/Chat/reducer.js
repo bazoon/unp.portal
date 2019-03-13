@@ -2,9 +2,12 @@ import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
 const Chat = State({
-  initial: { Chat: [] },
+  initial: { chat: [], isLoading: false },
   setChat(state, payload) {
-    return { chat: payload };
+    return { ...state, chat: payload, isLoading: false };
+  },
+  setIsLoading(state, payload) {
+    return { ...state, isLoading: payload };
   }
 });
 
@@ -15,12 +18,14 @@ Effect("getChat", payload => {
 });
 
 Effect("sendChatMessage", payload => {
+  Actions.setIsLoading(true);
   api.post("api/chat/send", payload).then(response => {
     Actions.getChat();
   });
 });
 
 Effect("sendChatFile", payload => {
+  Actions.setIsLoading(true);
   const config = { headers: { "Content-Type": "multipart/form-data" } };
   api.post("upload", payload, config).then(response => {
     const { data } = response;
