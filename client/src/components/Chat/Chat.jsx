@@ -83,18 +83,35 @@ class Chat extends Component {
   };
 
   renderFileMessage = m => {
+    const isImage = fileName => {
+      const extensions = ["jpg", "jpeg", "svg", "JPG"];
+      return extensions.reduce(
+        (acc, e) => acc || fileName.indexOf(e) > 0,
+        false
+      );
+    };
     return (
       <div className="chat__message" key={m.id}>
         <div className="chat__message-date">
           {moment(m.date).format("HH:mm")}
         </div>
-        {m.content.map(f => (
-          <div key={f}>
-            <a download href={`/uploads/${f}`} style={{ display: "block" }}>
-              {f}
-            </a>
-          </div>
-        ))}
+        {m.content.map(f => {
+          const downloadUrl = `/uploads/${f}`;
+          return (
+            <div key={f}>
+              <a download href={downloadUrl} style={{ display: "block" }}>
+                {f}
+              </a>
+              {isImage(f) && (
+                <img
+                  className="chat__message-image"
+                  src={downloadUrl}
+                  alt="some"
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
