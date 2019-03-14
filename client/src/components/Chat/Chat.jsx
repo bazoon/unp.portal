@@ -36,6 +36,11 @@ class Chat extends Component {
     socket.on("channel-message", () => {
       Actions.getChat();
     });
+
+    socket.on("channel-reload", () => {
+      console.log("Reload");
+      Actions.getChat();
+    });
   };
 
   componentDidUpdate = (prevProps, prevState) => {

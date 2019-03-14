@@ -22,8 +22,6 @@ router.post("/send", (req, res) => {
       const type = req.body.type;
       const item = chat.find(i => i.id == id);
 
-      console.log("ITEM", item, id);
-
       const last =
         item.messages.length > 0
           ? item.messages[item.messages.length - 1]

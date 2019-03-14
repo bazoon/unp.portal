@@ -43,18 +43,6 @@ app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
 
-// Uploads
-app.post("/upload", upload.array("file", 12), function(req, res, next) {
-  console.log(111, req.body);
-  const { channelId } = req.body;
-  res.send({
-    channelId,
-    files: req.files
-  });
-});
-
-let sock;
-
 // io.on("connection", function(socket) {
 //   sock = socket;
 //   console.log("connected");
@@ -71,5 +59,17 @@ let sock;
 // });
 
 const chat = new chatFactory(io);
+
+// Uploads
+app.post("/upload", upload.array("file", 12), function(req, res, next) {
+  // console.log(111, req.body);
+  const { channelId } = req.body;
+  res.send({
+    channelId,
+    files: req.files
+  });
+  console.log("channel-reload");
+  chat.io.emit("channel-reload", {});
+});
 
 http.listen(port, () => console.log(`Server is running on ${port}`));

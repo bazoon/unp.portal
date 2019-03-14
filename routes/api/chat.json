@@ -1,1 +1,58 @@
-[{"id":1,"title":"Региональные проекты","avatar":"https://kazved.ru/uploadimg/105264_185148_forum_2017_1_1391.jpg","messages":[{"id":1,"type":"text","date":"2019-03-13T04:10:37.984Z","author":"Иванов Петр","content":"Всем привет)"},{"id":2,"type":"file","date":"2019-03-13T08:50:04.446Z","author":"Соколова Виктория","content":["Image0001.JPG"]},{"id":3,"type":"text","date":"2019-03-14T07:46:06.030Z","author":"Соколова Виктория","content":"korekara"},{"id":4,"type":"text","date":"2019-03-14T07:49:57.044Z","author":"Соколова Виктория","content":"look"},{"id":5,"type":"text","date":"2019-03-14T07:55:26.400Z","author":"Соколова Виктория","content":"ee"},{"id":6,"type":"text","date":"2019-03-14T08:37:57.167Z","author":"Соколова Виктория","content":"nono"}]},{"id":2,"title":"Федеральные проекты","avatar":"http://gosnovosti.com/wp-content/uploads/2019/03/0_153d29_6d0c160b_XXL-544x408.jpg","messages":[{"id":1,"type":"text","date":"2019-03-13T04:10:37.984Z","author":"Соколова Виктория","content":"Доброе утро коллеги!"},{"id":2,"type":"text","date":"2019-03-13T05:50:07.111Z","author":"Соколова Виктория","content":"Gogog"}]},{"id":3,"title":"Сергей Морозов","avatar":"http://1ul.ru/upload/file/publication/IMG_5079_1.JPG","messages":[{"id":1,"type":"text","date":"2019-03-13T06:45:18.806Z","author":"Соколова Виктория","content":"hi Petrov"},{"id":2,"type":"text","date":"2019-03-14T06:21:23.742Z","author":"Соколова Виктория","content":"hohoho"},{"id":3,"type":"file","date":"2019-03-14T06:21:33.137Z","author":"Соколова Виктория","content":["1.jpg"]}]}]
+[
+  {
+    "id": 1,
+    "title": "Региональные проекты",
+    "avatar": "https://kazved.ru/uploadimg/105264_185148_forum_2017_1_1391.jpg",
+    "messages": [
+      {
+        "id": 1,
+        "type": "text",
+        "date": "2019-03-13T04:10:37.984Z",
+        "author": "Иванов Петр",
+        "content": "Всем привет)"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Федеральные проекты",
+    "avatar": "http://gosnovosti.com/wp-content/uploads/2019/03/0_153d29_6d0c160b_XXL-544x408.jpg",
+    "messages": [
+      {
+        "id": 1,
+        "type": "text",
+        "date": "2019-03-13T04:10:37.984Z",
+        "author": "Соколова Виктория",
+        "content": "Доброе утро коллеги!"
+      },
+      {
+        "id": 2,
+        "type": "text",
+        "date": "2019-03-13T05:50:07.111Z",
+        "author": "Соколова Виктория",
+        "content": "Gogog"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Сергей Морозов",
+    "avatar": "http://1ul.ru/upload/file/publication/IMG_5079_1.JPG",
+    "messages": [
+      {
+        "id": 1,
+        "type": "text",
+        "date": "2019-03-13T06:45:18.806Z",
+        "author": "Соколова Виктория",
+        "content": "hi Petrov"
+      },
+      {
+        "id": 2,
+        "type": "text",
+        "date": "2019-03-14T06:21:23.742Z",
+        "author": "Соколова Виктория",
+        "content": "hohoho"
+      }
+    ]
+  }
+]
