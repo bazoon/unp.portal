@@ -5,7 +5,8 @@ import cn from "classnames";
 import moment from "moment";
 import { Drawer, Input, Button, Icon, Spin } from "antd";
 import PropTypes from "prop-types";
-import api from "../../api/api";
+import socketIOClient from "socket.io-client";
+const socket = socketIOClient(location.host);
 
 class Chat extends Component {
   static propTypes = {
@@ -31,6 +32,10 @@ class Chat extends Component {
 
   componentDidMount = () => {
     Actions.getChat();
+
+    socket.on("channel-message", () => {
+      Actions.getChat();
+    });
   };
 
   componentDidUpdate = (prevProps, prevState) => {

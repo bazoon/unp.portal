@@ -1,5 +1,6 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
+import socketIOClient from "socket.io-client";
 
 const Chat = State({
   initial: { chat: [], isLoading: false },
@@ -19,9 +20,15 @@ Effect("getChat", payload => {
 
 Effect("sendChatMessage", payload => {
   Actions.setIsLoading(true);
-  api.post("api/chat/send", payload).then(response => {
+  const socket = socketIOClient(location.host);
+  socket.emit("channel-message", payload, () => {
+    Actions.setIsLoading(false);
     Actions.getChat();
   });
+
+  // api.post("api/chat/send", payload).then(response => {
+  //   Actions.getChat();
+  // });
 });
 
 Effect("sendChatFile", payload => {

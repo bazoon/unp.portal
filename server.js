@@ -1,7 +1,10 @@
 const express = require("express");
 const path = require("path");
 const app = express();
+var http = require("http").Server(app);
+var io = require("socket.io")(http);
 const port = process.env.PORT || 5000;
+const chatFactory = require("./chat/index");
 
 const bodyParser = require("body-parser");
 const multer = require("multer");
@@ -25,7 +28,7 @@ const news = require("./routes/api/news");
 const feed = require("./routes/api/feed");
 const laws = require("./routes/api/laws");
 const profilePreferences = require("./routes/api/profile_preferences");
-const chat = require("./routes/api/chat");
+const chatApi = require("./routes/api/chat");
 
 // Api routes
 app.use("/api/users", users);
@@ -34,7 +37,7 @@ app.use("/api/news", news);
 app.use("/api/feed", feed);
 app.use("/api/laws", laws);
 app.use("/api/profile_preferences", profilePreferences);
-app.use("/api/chat", chat);
+app.use("/api/chat", chatApi);
 
 app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
@@ -50,4 +53,23 @@ app.post("/upload", upload.array("file", 12), function(req, res, next) {
   });
 });
 
-app.listen(port, () => console.log(`Server is running on ${port}`));
+let sock;
+
+// io.on("connection", function(socket) {
+//   sock = socket;
+//   console.log("connected");
+//   socket.emit("foo", "look2");
+//   socket.on("foo", function(m, fn) {
+//     console.log("FOO");
+//     socket.broadcast.emit("foo2", "look");
+//   });
+
+//   // setInterval(function() {
+//   //   socket.emit("foo2", "hello");
+//   //   console.log("Emit foo");
+//   // }, 3000);
+// });
+
+const chat = new chatFactory(io);
+
+http.listen(port, () => console.log(`Server is running on ${port}`));
