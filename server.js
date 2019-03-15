@@ -68,8 +68,6 @@ app.post("/upload", upload.array("file", 12), function(req, res, next) {
     channelId,
     files: req.files
   });
-  console.log("channel-reload");
-  chat.io.emit("channel-reload", {});
 });
 
 http.listen(port, () => console.log(`Server is running on ${port}`));

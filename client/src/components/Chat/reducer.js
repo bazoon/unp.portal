@@ -9,12 +9,19 @@ const Chat = State({
   },
   setIsLoading(state, payload) {
     return { ...state, isLoading: payload };
+  },
+  notifyUpload(state) {
+    const socket = socketIOClient(location.host);
+    socket.emit("notify-upload");
+    return state;
   }
 });
 
 Effect("getChat", payload => {
+  console.log("about to get Chat!");
   api.get("api/chat/list").then(response => {
     Actions.setChat(response.data);
+    console.log(response.data);
   });
 });
 
@@ -46,6 +53,7 @@ Effect("sendChatFile", payload => {
       })
       .then(() => {
         Actions.getChat();
+        Actions.notifyUpload();
       });
   });
 });
