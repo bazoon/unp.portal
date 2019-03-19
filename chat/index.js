@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 class Chat {
   constructor(io) {
     this.io = io;
-    this.io.use(this.verifyToken.bind(this));
+    // this.io.use(this.verifyToken.bind(this));
     this.io.on("connection", this.onConnection.bind(this));
   }
 

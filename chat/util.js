@@ -38,7 +38,7 @@ https: module.exports = {
           const item = chat.find(i => i.id == id);
 
           const last =
-            item.messages.length > 0
+            item.messages && item.messages.length > 0
               ? item.messages[item.messages.length - 1]
               : undefined;
 
