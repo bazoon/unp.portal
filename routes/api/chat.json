@@ -1,1 +1,20 @@
-[{"id":1,"title":"Региональные проекты","avatar":"https://kazved.ru/uploadimg/105264_185148_forum_2017_1_1391.jpg","messages":[{"id":1,"type":"text","date":"2019-03-13T04:10:37.984Z","author":"Иванов Петр","content":"Всем привет)"},{"id":2,"type":"file","date":"2019-03-14T09:41:40.207Z","author":"Соколова Виктория","content":["top-logo1.svg"]},{"id":3,"type":"file","date":"2019-03-14T09:50:20.764Z","author":"Соколова Виктория","content":["4.jpg"]},{"id":4,"type":"file","date":"2019-03-14T09:50:52.542Z","author":"Соколова Виктория","content":["2018-07-04 21.03.18.jpg"]},{"id":5,"type":"file","date":"2019-03-14T09:51:52.068Z","author":"Соколова Виктория","content":["Копия Фотография 12.08.14 в 21.57.zip"]},{"id":6,"type":"file","date":"2019-03-14T09:52:02.124Z","author":"Соколова Виктория","content":["Фотография 12.08.14 в 21.46.jpg"]},{"id":7,"type":"file","date":"2019-03-14T09:52:37.533Z","author":"Соколова Виктория","content":["DSC08817.JPG"]},{"id":8,"type":"file","date":"2019-03-14T09:54:48.948Z","author":"Соколова Виктория","content":["2018-07-04 21.03.18.jpg"]},{"id":9,"type":"file","date":"2019-03-14T09:55:00.301Z","author":"Соколова Виктория","content":["top-logo1.svg"]},{"id":10,"type":"text","date":"2019-03-14T09:55:29.366Z","author":"Соколова Виктория","content":"he;lo"},{"id":11,"type":"text","date":"2019-03-14T09:55:41.601Z","author":"Соколова Виктория","content":"good"},{"id":12,"type":"text","date":"2019-03-14T09:55:51.229Z","author":"Соколова Виктория","content":"no"},{"id":13,"type":"text","date":"2019-03-14T09:55:55.381Z","author":"Соколова Виктория","content":"minna"},{"id":14,"type":"text","date":"2019-03-14T09:56:38.824Z","author":"Соколова Виктория","content":"gogo"},{"id":15,"type":"file","date":"2019-03-14T09:56:48.400Z","author":"Соколова Виктория","content":["chertezh-korobochki-iz-bumagi.jpg"]},{"id":16,"type":"file","date":"2019-03-14T09:56:59.055Z","author":"Соколова Виктория","content":["2018-07-04 21.03.18.jpg"]},{"id":17,"type":"text","date":"2019-03-14T09:57:04.665Z","author":"Соколова Виктория","content":"hmmm."},{"id":18,"type":"text","date":"2019-03-14T09:57:11.764Z","author":"Соколова Виктория","content":"lol"},{"id":19,"type":"file","date":"2019-03-14T09:57:21.210Z","author":"Соколова Виктория","content":["DSC08814.JPG"]}]},{"id":2,"title":"Федеральные проекты","avatar":"http://gosnovosti.com/wp-content/uploads/2019/03/0_153d29_6d0c160b_XXL-544x408.jpg","messages":[{"id":1,"type":"text","date":"2019-03-13T04:10:37.984Z","author":"Соколова Виктория","content":"Доброе утро коллеги!"},{"id":2,"type":"text","date":"2019-03-13T05:50:07.111Z","author":"Соколова Виктория","content":"Gogog"}]},{"id":3,"title":"Сергей Морозов","avatar":"http://1ul.ru/upload/file/publication/IMG_5079_1.JPG","messages":[{"id":1,"type":"text","date":"2019-03-13T06:45:18.806Z","author":"Соколова Виктория","content":"hi Petrov"},{"id":2,"type":"text","date":"2019-03-14T06:21:23.742Z","author":"Соколова Виктория","content":"hohoho"}]}]
+[
+  {
+    "id": 1,
+    "title": "Региональные проекты",
+    "avatar": "https://kazved.ru/uploadimg/105264_185148_forum_2017_1_1391.jpg",
+    "messages": []
+  },
+  {
+    "id": 2,
+    "title": "Федеральные проекты",
+    "avatar": "http://gosnovosti.com/wp-content/uploads/2019/03/0_153d29_6d0c160b_XXL-544x408.jpg",
+    "messages": []
+  },
+  {
+    "id": 3,
+    "title": "Сергей Морозов",
+    "avatar": "http://1ul.ru/upload/file/publication/IMG_5079_1.JPG",
+    "messages": []
+  }
+]

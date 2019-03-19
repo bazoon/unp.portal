@@ -5,6 +5,7 @@ import Feed from "./components/Feed/reducer";
 import Laws from "./components/Laws/reducer";
 import UserProfilePreferences from "./components/UserProfile/reducer";
 import Chat from "./components/Chat/reducer";
+import Login from "./components/LoginForm/reducer";
 
 export default combineReducers({
   projectGroups,
@@ -12,5 +13,6 @@ export default combineReducers({
   Feed,
   Laws,
   UserProfilePreferences,
-  Chat
+  Chat,
+  Login
 });

@@ -6,7 +6,39 @@ import moment from "moment";
 import { Drawer, Input, Button, Icon, Spin } from "antd";
 import PropTypes from "prop-types";
 import socketIOClient from "socket.io-client";
-const socket = socketIOClient(location.host);
+import Observer from "@researchgate/react-intersection-observer";
+
+const socket = socketIOClient(location.host, {
+  query: {
+    token: localStorage.getItem("token")
+  }
+});
+
+function hashCode(string) {
+  var hash = 0;
+  if (string.length === 0) {
+    return hash;
+  }
+  for (var i = 0; i < string.length; i++) {
+    var char = string.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
+}
+
+const colors = [
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16),
+  Math.floor(Math.random() * 16777215).toString(16)
+];
 
 class Chat extends Component {
   static propTypes = {
@@ -24,10 +56,11 @@ class Chat extends Component {
     this.state = {
       messages: [],
       currentMessage: "",
-      activeChannelId: 1
+      activeChannelId: undefined
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
+    this.inputRef = React.createRef();
   }
 
   componentDidMount = () => {
@@ -38,13 +71,13 @@ class Chat extends Component {
     });
 
     socket.on("channel-reload", () => {
-      console.log("Reload");
       Actions.getChat();
     });
   };
 
   componentDidUpdate = (prevProps, prevState) => {
     this.scrollChatTalk();
+    this.inputRef.current && this.inputRef.current.focus();
   };
 
   handleSend = () => {
@@ -81,15 +114,31 @@ class Chat extends Component {
     }
   };
 
-  renderTextMessage = m => {
+  renderMessageTemplate = (m, content) => {
+    const hash = Math.abs(hashCode(m.author));
+    const index = hash % 10;
+    const colorStyle = {
+      color: `#${colors[index]}`
+    };
+
     return (
       <div className="chat__message" key={m.id}>
+        <div className="chat__message-avatar">
+          {m.avatar && <img src={m.avatar} alt={m.author} />}
+        </div>
+        <div style={colorStyle} className="chat__message-author">
+          {m.author}
+        </div>
+        {content}
         <div className="chat__message-date">
           {moment(m.date).format("HH:mm")}
         </div>
-        {m.content}
       </div>
     );
+  };
+
+  renderTextMessage = m => {
+    return this.renderMessageTemplate(m, m.content);
   };
 
   renderFileMessage = m => {
@@ -100,38 +149,41 @@ class Chat extends Component {
         false
       );
     };
-    return (
-      <div className="chat__message" key={m.id}>
-        <div className="chat__message-date">
-          {moment(m.date).format("HH:mm")}
+
+    const content = m.content.map(f => {
+      const downloadUrl = `/uploads/${f}`;
+      return (
+        <div key={f}>
+          <a download href={downloadUrl} style={{ display: "block" }}>
+            {f}
+          </a>
+          {isImage(f) && (
+            <img className="chat__message-image" src={downloadUrl} alt="some" />
+          )}
         </div>
-        {m.content.map(f => {
-          const downloadUrl = `/uploads/${f}`;
-          return (
-            <div key={f}>
-              <a download href={downloadUrl} style={{ display: "block" }}>
-                {f}
-              </a>
-              {isImage(f) && (
-                <img
-                  className="chat__message-image"
-                  src={downloadUrl}
-                  alt="some"
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
+      );
+    });
+
+    return this.renderMessageTemplate(m, content);
   };
 
   renderMessages() {
     const { chat } = this.props;
     const { activeChannelId } = this.state;
     const activeChannel = chat.find(channel => channel.id === activeChannelId);
+    const options = {
+      onChange: this.handleMessageIntersection,
+      root: ".chat__talk"
+      // rootMargin: "0% 0% 0%"
+    };
+
     return (
-      activeChannel && activeChannel.messages.map(m => this.renderMessage(m))
+      activeChannel &&
+      activeChannel.messages.map(m => (
+        <React.Fragment key={m.id}>
+          <Observer {...options}>{this.renderMessage(m)}</Observer>
+        </React.Fragment>
+      ))
     );
   }
 
@@ -203,6 +255,21 @@ class Chat extends Component {
     });
   };
 
+  handleMessageIntersection = e => {
+    // debugger;
+    // const { target } = e;
+    // if (e.isIntersecting) {
+    //   setTimeout(() => {
+    //     target.querySelector(".chat__message-author").style.background = "red";
+    //   }, 500);
+    // } else {
+    //   setTimeout(() => {
+    //     target.querySelector(".chat__message-author").style.background =
+    //       "silver";
+    //   }, 500);
+    // }
+  };
+
   renderChatChanels() {
     const { activeChannelId } = this.state;
     const { chat } = this.props;
@@ -227,7 +294,8 @@ class Chat extends Component {
   }
 
   render() {
-    const { visible, isLoading } = this.props;
+    const { visible, isLoading, socketError } = this.props;
+
     return (
       <div>
         {this.renderFileForm()}
@@ -262,6 +330,7 @@ class Chat extends Component {
                 />
               </div>
               <Input
+                ref={this.inputRef}
                 disabled={isLoading}
                 autoFocus
                 value={this.state.currentMessage}
@@ -277,7 +346,11 @@ class Chat extends Component {
 }
 
 const mapStateToProps = state => {
-  return { chat: state.Chat.chat, isLoading: state.Chat.isLoading };
+  return {
+    chat: state.Chat.chat,
+    isLoading: state.Chat.isLoading,
+    socketError: state.Chat.socketError
+  };
 };
 
 export default connect(mapStateToProps)(Chat);

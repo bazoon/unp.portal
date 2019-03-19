@@ -10,12 +10,24 @@
   }
 
   &__message {
+    position: relative;
     width: 70%;
     border-radius: 10px;
     padding: 10px;
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+    padding-left: 40px;
+
+    &-avatar img {
+      position: absolute;
+      left: 4px;
+      max-width: 50px;
+      max-height: 30px;
+      border-radius: 50%;
+    }
+
     &-date {
       font-size: 8px;
+      text-align: right;
     }
 
     &-image {

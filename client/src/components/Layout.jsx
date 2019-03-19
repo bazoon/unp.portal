@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Route, Link, Switch } from "react-router-dom";
+import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
 import { MainMenu } from "./MainMenu/MainMenu";
 import { RightMenu } from "./RightMenu/RightMenu";
@@ -41,8 +42,13 @@ class L extends Component {
     });
   };
 
+  handleLogout = () => {
+    this.props.onLogout();
+  };
+
   render() {
     const { isChatOpen } = this.state;
+    const { userName } = this.props.login;
     return (
       <Layout>
         <ChatIcon onClick={this.handleChatClick} />
@@ -76,7 +82,19 @@ class L extends Component {
           </Popover>
           <div className="header__user">
             <div>
-              Соколова Виктория
+              <Popover
+                content={
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={this.handleLogout}
+                  >
+                    Выйти
+                  </div>
+                }
+                trigger="click"
+              >
+                <span style={{ cursor: "pointer" }}>{userName}</span>
+              </Popover>
               <br />
               СНИЛС 000-0000-000
             </div>
@@ -129,4 +147,8 @@ class L extends Component {
   }
 }
 
-export default L;
+const mapStateToProps = state => {
+  return { login: state.Login };
+};
+
+export default connect(mapStateToProps)(L);

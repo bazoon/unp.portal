@@ -27,6 +27,7 @@ const projectGroups = require("./routes/api/projectGroups");
 const news = require("./routes/api/news");
 const feed = require("./routes/api/feed");
 const laws = require("./routes/api/laws");
+const user = require("./routes/api/user");
 const profilePreferences = require("./routes/api/profile_preferences");
 const chatApi = require("./routes/api/chat");
 
@@ -38,6 +39,7 @@ app.use("/api/feed", feed);
 app.use("/api/laws", laws);
 app.use("/api/profile_preferences", profilePreferences);
 app.use("/api/chat", chatApi);
+app.use("/api/user", user);
 
 app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
