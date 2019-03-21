@@ -7,6 +7,12 @@ import { Drawer, Input, Button, Icon, Spin } from "antd";
 import PropTypes from "prop-types";
 import socketIOClient from "socket.io-client";
 import Observer from "@researchgate/react-intersection-observer";
+import {
+  List,
+  AutoSizer,
+  CellMeasurer,
+  CellMeasurerCache
+} from "react-virtualized";
 
 const socket = socketIOClient(location.host, {
   query: {
@@ -54,13 +60,13 @@ class Chat extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      messages: [],
       currentMessage: "",
       activeChannelId: undefined
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
     this.inputRef = React.createRef();
+    this.listRef = React.createRef();
   }
 
   componentDidMount = () => {
@@ -164,13 +170,10 @@ class Chat extends Component {
   };
 
   renderMessages() {
-    const { chat } = this.props;
-    const { activeChannelId } = this.state;
-    const activeChannel = chat.find(channel => channel.id === activeChannelId);
+    const activeChannel = this.findActiveChannel();
     const options = {
       onChange: this.handleMessageIntersection,
       root: ".chat__talk"
-      // rootMargin: "0% 0% 0%"
     };
 
     return (
@@ -181,6 +184,30 @@ class Chat extends Component {
         </React.Fragment>
       ))
     );
+  }
+
+  renderRow = ({ index, parent, key, style }) => {
+    const activeChannel = this.findActiveChannel();
+    const message = activeChannel.messages[index];
+
+    return (
+      <CellMeasurer
+        key={key}
+        cache={this.cache}
+        parent={parent}
+        columnIndex={0}
+        rowIndex={index}
+      >
+        {<div style={style}>{this.renderMessage(message)}</div>}
+      </CellMeasurer>
+    );
+  };
+
+  findActiveChannel() {
+    const { chat } = this.props;
+    const { activeChannelId } = this.state;
+    const activeChannel = chat.find(channel => channel.id === activeChannelId);
+    return activeChannel;
   }
 
   handleMessageChange = e => {
@@ -254,6 +281,26 @@ class Chat extends Component {
     // }
   };
 
+  handleLoadMore = () => {
+    Actions.getMoreMessages(this.state.activeChannelId);
+  };
+
+  handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
+    if (scrollTop == 0) {
+      Actions.getMoreMessages(this.state.activeChannelId);
+
+      setTimeout(() => {
+        // debugger;
+        const list = this.listRef.current;
+        window.foo = list;
+        // const currentTop = list.Grid.getTotalRowsHeight();
+        // const diff = currentTop - scrollTop;
+        // list.scrollToPosition();
+        list.scrollToRow(2);
+      }, 100);
+    }
+  };
+
   renderChatChanels() {
     const { activeChannelId } = this.state;
     const { chat } = this.props;
@@ -279,6 +326,12 @@ class Chat extends Component {
 
   render() {
     const { visible, isLoading, socketError } = this.props;
+    const activeChannel = this.findActiveChannel();
+    const cache = new CellMeasurerCache({
+      fixedWidth: true,
+      defaultHeight: 50
+    });
+    this.cache = cache;
 
     return (
       <div>
@@ -294,7 +347,7 @@ class Chat extends Component {
           <div className="chat__container">
             <div className="chat__search">
               <Input placeholder="Поиск" style={{ width: "50%" }} />
-              <Button icon="more" />
+              <Button icon="more" onClick={this.handleLoadMore} />
             </div>
 
             <div className="chat__talks">
@@ -302,7 +355,25 @@ class Chat extends Component {
 
               <div className="chat__talk" ref={this.chatTalkRef}>
                 <div className="chat__talk-spin">{isLoading && <Spin />}</div>
-                {this.renderMessages()}
+                {/* {this.renderMessages()} */}
+                <AutoSizer>
+                  {({ width, height }) => {
+                    return (
+                      <List
+                        ref={this.listRef}
+                        onScroll={this.handleListScroll}
+                        rowCount={
+                          (activeChannel && activeChannel.messages.length) || 0
+                        }
+                        width={width}
+                        height={height}
+                        deferredMeasurementCache={this.cache}
+                        rowHeight={this.cache.rowHeight}
+                        rowRenderer={this.renderRow}
+                      />
+                    );
+                  }}
+                </AutoSizer>
               </div>
             </div>
             <div className="chat__controls">

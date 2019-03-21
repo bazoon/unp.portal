@@ -265,7 +265,8 @@
   padding: 10px;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
   padding-left: 40px;
-  margin-bottom: 10px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
 }
 .chat__message-avatar img {
   position: absolute;
@@ -280,6 +281,7 @@
 }
 .chat__message-image {
   width: 200px;
+  height: 200px;
 }
 .chat__search {
   display: flex;

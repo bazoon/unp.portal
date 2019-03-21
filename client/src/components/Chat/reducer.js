@@ -12,12 +12,30 @@ const Chat = State({
   },
   setError(state) {
     return { ...state, socketError: true };
+  },
+  setMoreMessages(state, { activeChannelId, messages }) {
+    const newState = {
+      ...state,
+      chat: [...state.chat]
+    };
+    const channel = newState.chat.find(ch => ch.id == activeChannelId);
+    if (channel) {
+      channel.messages = [...messages, ...channel.messages];
+    }
+
+    return newState;
   }
 });
 
-Effect("getChat", payload => {
+Effect("getChat", () => {
   api.get("api/chat/list").then(response => {
     Actions.setChat(response.data);
+  });
+});
+
+Effect("getMoreMessages", activeChannelId => {
+  api.get("api/chat/more", { activeChannelId }).then(response => {
+    Actions.setMoreMessages(response.data);
   });
 });
 
