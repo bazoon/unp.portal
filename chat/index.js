@@ -42,7 +42,8 @@ class Chat {
   }
 
   onNotifyUpload() {
-    this.io.emit("channel-reload");
+    console.log("UUUUUU");
+    // this.io.emit("channel-reload");
   }
 }
 

@@ -10,11 +10,6 @@ const Chat = State({
   setIsLoading(state, payload) {
     return { ...state, isLoading: payload };
   },
-  notifyUpload(state) {
-    const socket = socketIOClient(location.host);
-    socket.emit("notify-upload");
-    return state;
-  },
   setError(state) {
     return { ...state, socketError: true };
   }

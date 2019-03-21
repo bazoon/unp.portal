@@ -69,10 +69,6 @@ class Chat extends Component {
     socket.on("channel-message", () => {
       Actions.getChat();
     });
-
-    socket.on("channel-reload", () => {
-      Actions.getChat();
-    });
   };
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -187,19 +183,6 @@ class Chat extends Component {
     );
   }
 
-  rendComplexObject = m => {
-    return m.map(f => (
-      <a
-        key={f.filename}
-        download
-        href={`/uploads/${f.filename}`}
-        style={{ display: "block" }}
-      >
-        {f.originalname}
-      </a>
-    ));
-  };
-
   handleMessageChange = e => {
     this.setState({
       currentMessage: e.target.value
@@ -250,6 +233,7 @@ class Chat extends Component {
   };
 
   handleChangeChanel = channelId => {
+    const { activeChannelId } = this.state;
     this.setState({
       activeChannelId: channelId
     });
