@@ -305,6 +305,7 @@
 .chat__chanels {
   background: #ebebeb;
   flex: 1.5;
+  overflow-y: auto;
 }
 .chat__chanels-item {
   padding: 10px;
@@ -334,6 +335,12 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+.chat__talk-down {
+  position: absolute;
+  right: 30px;
+  bottom: 10px;
+  z-index: 100;
 }
 .chat__controls {
   display: flex;

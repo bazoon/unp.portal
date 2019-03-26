@@ -26,11 +26,15 @@ const users = [
   {
     name: "Лукина Мария",
     avatar: "https://randomuser.me/api/portraits/women/72.jpg"
+  },
+  {
+    name: "foo",
+    avatar: "https://randomuser.me/api/portraits/men/12.jpg"
   }
 ];
 
-https: module.exports = {
-  writeMessage(id, message, type) {
+module.exports = {
+  writeMessage(id, message, type, userName) {
     return new Promise((resolve, reject) => {
       fs.readFile(fileName, "utf8", function(err, contents) {
         if (!err) {
@@ -42,7 +46,10 @@ https: module.exports = {
               ? item.messages[item.messages.length - 1]
               : undefined;
 
-          var randomUser = users[Math.floor(Math.random() * users.length)];
+          var randomUser = users.find(u => u.name === userName);
+          if (!randomUser) {
+            randomUser = users[Math.floor(Math.random() * users.length)];
+          }
 
           item.messages.push({
             id: last ? last.id + 1 : 1,

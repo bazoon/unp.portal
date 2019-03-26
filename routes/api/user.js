@@ -5,7 +5,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const jsonStream = require("JSONStream");
 const secret = "Some secret key";
-fileName = __dirname + "/users.json";
+const fileName = __dirname + "/users.json";
+const expiresIn = 60 * 60 * 24;
 
 router.post("/login", (req, res) => {
   const userName = req.body.userName;
@@ -14,7 +15,7 @@ router.post("/login", (req, res) => {
   if (!userName || !password) {
     return res.json("enter password and username!");
   }
-  const token = jwt.sign({ userName }, secret);
+  const token = jwt.sign({ userName }, secret, { expiresIn: expiresIn });
 
   fs.readFile(fileName, "utf8", function(err, content) {
     if (!err) {
@@ -33,7 +34,6 @@ router.post("/login", (req, res) => {
         users.push(newUser);
         fs.writeFile(fileName, JSON.stringify(users), function(err) {
           if (!err) {
-            console.log(token, userName);
             res.json({
               token,
               userName

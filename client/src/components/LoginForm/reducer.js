@@ -24,9 +24,10 @@ Effect("login", ({ userName, password }) => {
       password
     })
     .then(response => {
-      const { token, userName } = response.data;
+      const { token, userName, expiresIn } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
+      localStorage.setItem("expiresIn", expiresIn);
       Actions.setLogin(response.data);
       return true;
     })

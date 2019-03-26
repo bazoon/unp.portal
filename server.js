@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const app = express();
+const apiRouter = require("./routes/router");
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 const port = process.env.PORT || 5000;
@@ -22,24 +23,7 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-const users = require("./routes/api/users");
-const projectGroups = require("./routes/api/projectGroups");
-const news = require("./routes/api/news");
-const feed = require("./routes/api/feed");
-const laws = require("./routes/api/laws");
-const user = require("./routes/api/user");
-const profilePreferences = require("./routes/api/profile_preferences");
-const chatApi = require("./routes/api/chat");
-
-// Api routes
-app.use("/api/users", users);
-app.use("/api/projectGroups", projectGroups);
-app.use("/api/news", news);
-app.use("/api/feed", feed);
-app.use("/api/laws", laws);
-app.use("/api/profile_preferences", profilePreferences);
-app.use("/api/chat", chatApi);
-app.use("/api/user", user);
+app.use("/api", apiRouter);
 
 app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));

@@ -16,7 +16,8 @@ import {
 
 const socket = socketIOClient(location.host, {
   query: {
-    token: localStorage.getItem("token")
+    token: localStorage.getItem("token"),
+    expiresIn: localStorage.getItem("expiresIn")
   }
 });
 
@@ -78,7 +79,7 @@ class Chat extends Component {
   };
 
   componentDidUpdate = (prevProps, prevState) => {
-    this.scrollChatTalk();
+    // this.scrollChatTalk();
     this.inputRef.current && this.inputRef.current.focus();
   };
 
@@ -117,6 +118,9 @@ class Chat extends Component {
   };
 
   renderMessageTemplate = (m, content) => {
+    const { activeChannelId } = this.state;
+
+    const messageId = `${activeChannelId}-${m.id}`;
     const hash = Math.abs(hashCode(m.author));
     const index = hash % 10;
     const colorStyle = {
@@ -124,7 +128,7 @@ class Chat extends Component {
     };
 
     return (
-      <div className="chat__message" key={m.id}>
+      <div className="chat__message" key={m.id} data-id={messageId}>
         <div className="chat__message-avatar">
           {m.avatar && <img src={m.avatar} alt={m.author} />}
         </div>
@@ -187,6 +191,10 @@ class Chat extends Component {
   }
 
   renderRow = ({ index, parent, key, style }) => {
+    const options = {
+      onChange: this.handleMessageIntersection,
+      root: ".chat__talk"
+    };
     const activeChannel = this.findActiveChannel();
     const message = activeChannel.messages[index];
 
@@ -198,7 +206,11 @@ class Chat extends Component {
         columnIndex={0}
         rowIndex={index}
       >
-        {<div style={style}>{this.renderMessage(message)}</div>}
+        {
+          <div style={style}>
+            <Observer {...options}>{this.renderMessage(message)}</Observer>
+          </div>
+        }
       </CellMeasurer>
     );
   };
@@ -267,18 +279,24 @@ class Chat extends Component {
   };
 
   handleMessageIntersection = e => {
-    // debugger;
-    // const { target } = e;
-    // if (e.isIntersecting) {
-    //   setTimeout(() => {
-    //     target.querySelector(".chat__message-author").style.background = "red";
-    //   }, 500);
-    // } else {
-    //   setTimeout(() => {
-    //     target.querySelector(".chat__message-author").style.background =
-    //       "silver";
-    //   }, 500);
-    // }
+    const { target } = e;
+    const { dataset } = target;
+    const [channelId, messageId] = dataset.id.split("-");
+
+    if (e.isIntersecting) {
+      Actions.chatMarkAsRead({
+        channelId,
+        messageId
+      });
+      // setTimeout(() => {
+      //   target.querySelector(".chat__message-author").style.background = "gray";
+      // }, 500);
+    } else {
+      // setTimeout(() => {
+      //   target.querySelector(".chat__message-author").style.background =
+      //     "silver";
+      // }, 500);
+    }
   };
 
   handleLoadMore = () => {
@@ -286,7 +304,7 @@ class Chat extends Component {
   };
 
   handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
-    if (scrollTop == 0) {
+    if (scrollTop === 0) {
       Actions.getMoreMessages(this.state.activeChannelId);
 
       setTimeout(() => {
@@ -299,6 +317,13 @@ class Chat extends Component {
         list.scrollToRow(2);
       }, 100);
     }
+  };
+
+  handleScrollDown = () => {
+    const list = this.listRef.current;
+
+    setTimeout(() => list.scrollToRow(-1), 300);
+    setTimeout(() => list.scrollToRow(-1), 300);
   };
 
   renderChatChanels() {
@@ -352,15 +377,23 @@ class Chat extends Component {
 
             <div className="chat__talks">
               <div className="chat__chanels">{this.renderChatChanels()}</div>
-
               <div className="chat__talk" ref={this.chatTalkRef}>
                 <div className="chat__talk-spin">{isLoading && <Spin />}</div>
+                <div className="chat__talk-down">
+                  <Button
+                    size="large"
+                    icon="down-circle"
+                    onClick={this.handleScrollDown}
+                  />
+                </div>
+
                 {/* {this.renderMessages()} */}
                 <AutoSizer>
                   {({ width, height }) => {
                     return (
                       <List
                         ref={this.listRef}
+                        overscanRowCount={20}
                         onScroll={this.handleListScroll}
                         rowCount={
                           (activeChannel && activeChannel.messages.length) || 0
@@ -386,7 +419,7 @@ class Chat extends Component {
               </div>
               <Input
                 ref={this.inputRef}
-                disabled={isLoading}
+                disabled={isLoading || !activeChannel}
                 autoFocus
                 value={this.state.currentMessage}
                 onChange={this.handleMessageChange}

@@ -39,18 +39,33 @@ Effect("getMoreMessages", activeChannelId => {
   });
 });
 
+Effect("chatMarkAsRead", payload => {
+  const socket = socketIOClient(location.host, {
+    query: {
+      token: localStorage.getItem("token"),
+      expiresIn: localStorage.getItem("expiresIn"),
+      userName: localStorage.getItem("userName")
+    }
+  });
+  socket.emit("channel-message-mark", payload, () => {});
+});
+
 Effect("sendChatMessage", payload => {
   Actions.setIsLoading(true);
   const socket = socketIOClient(location.host, {
     query: {
       token: localStorage.getItem("token"),
+      expiresIn: localStorage.getItem("expiresIn"),
       userName: localStorage.getItem("userName")
     }
   });
 
-  socket.on("error", () => {
+  socket.on("error", error => {
     Actions.setError();
     Actions.setIsLoading(false);
+    if (error === "jwt expired") {
+      Actions.logout();
+    }
   });
 
   socket.emit("channel-message", payload, () => {
