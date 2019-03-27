@@ -3,7 +3,10 @@ const path = require("path");
 const app = express();
 const apiRouter = require("./routes/router");
 var http = require("http").Server(app);
+
 var io = require("socket.io")(http);
+const models = require("./models");
+
 const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
 
@@ -44,6 +47,16 @@ app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
 //   // }, 3000);
 // });
 
+// const Sequelize = require("sequelize");
+
+// // // Option 1: Passing parameters separately
+// const connection = new Sequelize("unp_portal", "vn", "t9788886", {
+//   host: "localhost",
+//   dialect: "postgres"
+// });
+
+// connection.sync();
+
 const chat = new chatFactory(io);
 
 // Uploads
@@ -56,4 +69,20 @@ app.post("/upload", upload.array("file", 12), function(req, res, next) {
   });
 });
 
-http.listen(port, () => console.log(`Server is running on ${port}`));
+models.sequelize.sync().then(function() {
+  models.Channel.findByPk(5, {
+    include: {
+      model: models.Message,
+      as: "Messages",
+      include: { model: models.User }
+    }
+  }).then(channel => {
+    // console.log(channel.Messages[0].User);
+  });
+
+  // models.Message.findByPk(1, { include: { model: models.User } }).then(m => {
+  //   console.log(m.User);
+  // });
+
+  http.listen(port, () => console.log(`Server is running on ${port}`));
+});

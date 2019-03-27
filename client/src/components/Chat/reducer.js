@@ -3,7 +3,18 @@ import api from "../../api/api";
 import socketIOClient from "socket.io-client";
 
 const Chat = State({
-  initial: { chat: [], isLoading: false },
+  initial: { chat: [], isLoading: false, activeChannelId: undefined },
+  setChatChannels(state, payload) {
+    return { ...state, channels: payload };
+  },
+  setChatChannelMessages(state, { activeChannelId, messages }) {
+    // TODO разобраться почему спред оператор не создает новый массив каналов
+    const newState = { ...state, activeChannelId };
+    const channels = state.channels.map(channel => channel);
+    const channel = channels.find(c => c.id === activeChannelId);
+    channel.messages = [...messages];
+    return { ...newState, channels };
+  },
   setChat(state, payload) {
     return { ...state, chat: payload, isLoading: false, socketError: false };
   },
@@ -25,6 +36,21 @@ const Chat = State({
 
     return newState;
   }
+});
+
+Effect("getChannels", () => {
+  api.get("api/chat/channels").then(response => {
+    Actions.setChatChannels(response.data);
+  });
+});
+
+Effect("getChannelMessages", activeChannelId => {
+  api.get("api/chat/messages", { activeChannelId }).then(response => {
+    Actions.setChatChannelMessages({
+      activeChannelId,
+      messages: response.data
+    });
+  });
 });
 
 Effect("getChat", () => {
@@ -54,9 +80,7 @@ Effect("sendChatMessage", payload => {
   Actions.setIsLoading(true);
   const socket = socketIOClient(location.host, {
     query: {
-      token: localStorage.getItem("token"),
-      expiresIn: localStorage.getItem("expiresIn"),
-      userName: localStorage.getItem("userName")
+      token: localStorage.getItem("token")
     }
   });
 

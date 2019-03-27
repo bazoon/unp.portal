@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require("fs");
 const jsonStream = require("JSONStream");
 const faker = require("faker");
+const models = require("../../models");
 const fileName = __dirname + "/chat.json";
 
 const users = [
@@ -36,6 +37,64 @@ function getRandomUser() {
   return users[Math.floor(Math.random() * users.length)];
 }
 
+router.get("/channels", (req, res) => {
+  models.Channel.findAll().then(channels => {
+    res.json(
+      channels.map(channel => {
+        return {
+          id: channel.id,
+          name: channel.name,
+          avatar: channel.avatar
+        };
+      })
+    );
+  });
+});
+
+// id: message.id,
+//           message: message.message,
+//           type: message.type
+
+router.get("/messages", (req, res) => {
+  const { activeChannelId } = req.query;
+
+  models.Channel.findByPk(activeChannelId, {
+    include: {
+      model: models.Message,
+      as: "Messages",
+      include: { model: models.User }
+    }
+  }).then(channel => {
+    res.json(
+      channel.Messages.map(message => {
+        return {
+          id: message.id,
+          message: message.message,
+          type: message.type,
+          userName: message.User && message.User.name,
+          avatar: message.User && message.User.avatar
+        };
+      })
+    );
+  });
+
+  // models.Channel.findByPk(activeChannelId).then(channel => {
+  //   channel.getMessages().then(messages => {
+  //     res.json(
+  //       messages.map(message => {
+  //         message.getUser().then(user => {
+  //           return {
+  //             id: message.id,
+  //             message: message.message,
+  //             type: message.type
+  //           };
+  //         });
+  //       })
+  //     );
+  //   });
+  // });
+});
+
 router.get("/list", (req, res) => {
   const readable = fs.createReadStream(fileName, "utf8");
   res.set({ "content-type": "application/json; charset=utf-8" });
@@ -68,34 +127,39 @@ router.get("/more", (req, res) => {
 });
 
 router.post("/send", (req, res) => {
-  fs.readFile(fileName, "utf8", function(err, contents) {
-    if (!err) {
-      const chat = JSON.parse(contents);
-      const id = req.body.channelId;
-      const text = req.body.message;
-      const type = req.body.type;
-      const item = chat.find(i => i.id == id);
+  const id = req.body.channelId;
+  const text = req.body.message;
+  const type = req.body.type;
+  console.log(models.Message.create);
 
-      const last =
-        item.messages.length > 0
-          ? item.messages[item.messages.length - 1]
-          : undefined;
+  // fs.readFile(fileName, "utf8", function(err, contents) {
+  //   if (!err) {
+  //     const chat = JSON.parse(contents);
+  //     const id = req.body.channelId;
+  //     const text = req.body.message;
+  //     const type = req.body.type;
+  //     const item = chat.find(i => i.id == id);
 
-      item.messages.push({
-        id: last ? last.id + 1 : 1,
-        type,
-        date: new Date(),
-        author: "Соколова Виктория",
-        content: text
-      });
+  //     const last =
+  //       item.messages.length > 0
+  //         ? item.messages[item.messages.length - 1]
+  //         : undefined;
 
-      fs.writeFile(fileName, JSON.stringify(chat), function(err) {
-        if (!err) {
-          res.json("Ok");
-        }
-      });
-    }
-  });
+  //     item.messages.push({
+  //       id: last ? last.id + 1 : 1,
+  //       type,
+  //       date: new Date(),
+  //       author: "Соколова Виктория",
+  //       content: text
+  //     });
+
+  //     fs.writeFile(fileName, JSON.stringify(chat), function(err) {
+  //       if (!err) {
+  //         res.json("Ok");
+  //       }
+  //     });
+  //   }
+  // });
 });
 
 module.exports = router;

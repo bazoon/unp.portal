@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default {
+const api = {
   get: (url, params = {}) => {
     const token = localStorage.getItem("token");
 
@@ -13,3 +13,5 @@ export default {
   },
   post: (url, data) => axios.post(url, data)
 };
+window.api = api;
+export default api;

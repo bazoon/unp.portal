@@ -5,9 +5,14 @@ const userToken = localStorage.getItem("token");
 const userName = localStorage.getItem("userName");
 
 const LoginForm = State({
-  initial: { token: userToken, userName, loginFailed: false },
-  setLogin(state, { userName, token }) {
-    return { userName, token, loginFailed: false };
+  initial: {
+    token: userToken,
+    userName,
+    userId: localStorage.getItem("userId"),
+    loginFailed: false
+  },
+  setLogin(state, { userName, token, userId }) {
+    return { userName, token, loginFailed: false, userId: userId };
   },
   setLoginFailed(state) {
     return { ...state, loginFailed: true };
@@ -24,10 +29,31 @@ Effect("login", ({ userName, password }) => {
       password
     })
     .then(response => {
-      const { token, userName, expiresIn } = response.data;
+      const { token, userName, userId } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
-      localStorage.setItem("expiresIn", expiresIn);
+      localStorage.setItem("userId", userId);
+
+      Actions.setLogin(response.data);
+      return true;
+    })
+    .catch(() => {
+      Actions.setLoginFailed();
+      return false;
+    });
+});
+
+Effect("signup", ({ userName, password }) => {
+  api
+    .post("/api/user/signup", {
+      userName,
+      password
+    })
+    .then(response => {
+      const { token, userName, userId } = response.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userName", userName);
+      localStorage.setItem("userId", userId);
       Actions.setLogin(response.data);
       return true;
     })

@@ -1,6 +1,7 @@
 const util = require("./util");
 const secret = "Some secret key";
 const jwt = require("jsonwebtoken");
+const models = require("../models");
 
 class Chat {
   constructor(io) {
@@ -22,7 +23,7 @@ class Chat {
   }
 
   onConnection(socket) {
-    console.log("Connected", socket.decoded);
+    // console.log("Connected", socket.decoded);
     const { userName } = socket.decoded;
     socket.on("disconnect", this.onDisconnect.bind(this));
     this.socket = socket;
@@ -44,8 +45,9 @@ class Chat {
   }
 
   onChannelMessage(userName, m, fn) {
-    const { channelId, message, type } = m;
-    util.writeMessage(channelId, message, type, userName).then(() => fn());
+    console.log(999, m);
+    const { channelId, message, type, userId } = m;
+    util.writeMessage(channelId, message, type, userId).then(() => fn());
     this.io.emit("channel-message", m);
   }
 

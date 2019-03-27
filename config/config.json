@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "vn",
+    "password": "t9788886",
+    "database": "unp_portal",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "vn",
+    "password": "t9788886",
+    "database": "unp_portal",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "vn",
+    "password": "t9788886",
+    "database": "unp_portal",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}

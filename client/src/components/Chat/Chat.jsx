@@ -6,6 +6,7 @@ import moment from "moment";
 import { Drawer, Input, Button, Icon, Spin } from "antd";
 import PropTypes from "prop-types";
 import socketIOClient from "socket.io-client";
+import "intersection-observer";
 import Observer from "@researchgate/react-intersection-observer";
 import {
   List,
@@ -22,6 +23,7 @@ const socket = socketIOClient(location.host, {
 });
 
 function hashCode(string) {
+  if (!string) return "333";
   var hash = 0;
   if (string.length === 0) {
     return hash;
@@ -51,18 +53,19 @@ class Chat extends Component {
   static propTypes = {
     visible: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    chat: PropTypes.arrayOf(PropTypes.object)
+    chat: PropTypes.arrayOf(PropTypes.object),
+    channels: PropTypes.arrayOf(PropTypes.object)
   };
 
   static defaultProps = {
-    chat: []
+    chat: [],
+    channels: []
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      currentMessage: "",
-      activeChannelId: undefined
+      currentMessage: ""
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -71,10 +74,13 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    Actions.getChat();
+    // Actions.getChat();
+    Actions.getChannels();
 
     socket.on("channel-message", () => {
-      Actions.getChat();
+      // Actions.getChat();
+      console.log("channel-message");
+      Actions.getChannelMessages(this.props.activeChannelId);
     });
   };
 
@@ -85,9 +91,10 @@ class Chat extends Component {
 
   handleSend = () => {
     Actions.sendChatMessage({
-      channelId: this.state.activeChannelId,
+      channelId: this.props.activeChannelId,
       message: this.state.currentMessage,
-      type: "text"
+      type: "text",
+      userId: this.props.userId
     }).then(() => {
       this.setState({
         currentMessage: ""
@@ -118,10 +125,10 @@ class Chat extends Component {
   };
 
   renderMessageTemplate = (m, content) => {
-    const { activeChannelId } = this.state;
+    const { activeChannelId } = this.props;
 
     const messageId = `${activeChannelId}-${m.id}`;
-    const hash = Math.abs(hashCode(m.author));
+    const hash = Math.abs(hashCode(m.userName));
     const index = hash % 10;
     const colorStyle = {
       color: `#${colors[index]}`
@@ -130,10 +137,10 @@ class Chat extends Component {
     return (
       <div className="chat__message" key={m.id} data-id={messageId}>
         <div className="chat__message-avatar">
-          {m.avatar && <img src={m.avatar} alt={m.author} />}
+          {m.avatar && <img src={m.avatar} alt={m.userName} />}
         </div>
         <div style={colorStyle} className="chat__message-author">
-          {m.author}
+          {m.userName}
         </div>
         {content}
         <div className="chat__message-date">
@@ -144,7 +151,7 @@ class Chat extends Component {
   };
 
   renderTextMessage = m => {
-    return this.renderMessageTemplate(m, m.content);
+    return this.renderMessageTemplate(m, m.message);
   };
 
   renderFileMessage = m => {
@@ -196,7 +203,7 @@ class Chat extends Component {
       root: ".chat__talk"
     };
     const activeChannel = this.findActiveChannel();
-    const message = activeChannel.messages[index];
+    const message = activeChannel && activeChannel.messages[index];
 
     return (
       <CellMeasurer
@@ -216,9 +223,11 @@ class Chat extends Component {
   };
 
   findActiveChannel() {
-    const { chat } = this.props;
-    const { activeChannelId } = this.state;
-    const activeChannel = chat.find(channel => channel.id === activeChannelId);
+    const { channels } = this.props;
+    const { activeChannelId } = this.props;
+    const activeChannel = channels.find(
+      channel => channel.id === activeChannelId
+    );
     return activeChannel;
   }
 
@@ -261,7 +270,7 @@ class Chat extends Component {
 
   handleFileChange = e => {
     const formData = new FormData();
-    const { activeChannelId } = this.state;
+    const { activeChannelId } = this.props;
     const files = Array.prototype.map.call(e.target.files, f => f);
     formData.append("channelId", activeChannelId);
     files.forEach(f => {
@@ -272,10 +281,8 @@ class Chat extends Component {
   };
 
   handleChangeChanel = channelId => {
-    const { activeChannelId } = this.state;
-    this.setState({
-      activeChannelId: channelId
-    });
+    const { activeChannelId } = this.props;
+    Actions.getChannelMessages(channelId);
   };
 
   handleMessageIntersection = e => {
@@ -300,12 +307,12 @@ class Chat extends Component {
   };
 
   handleLoadMore = () => {
-    Actions.getMoreMessages(this.state.activeChannelId);
+    Actions.getMoreMessages(this.props.activeChannelId);
   };
 
   handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
     if (scrollTop === 0) {
-      Actions.getMoreMessages(this.state.activeChannelId);
+      Actions.getMoreMessages(this.props.activeChannelId);
 
       setTimeout(() => {
         // debugger;
@@ -327,13 +334,14 @@ class Chat extends Component {
   };
 
   renderChatChanels() {
-    const { activeChannelId } = this.state;
-    const { chat } = this.props;
+    const { activeChannelId } = this.props;
+    const { channels } = this.props;
 
-    return chat.map(channel => {
+    return channels.map(channel => {
       const className = cn("chat__chanels-item", {
         "chat__chanels-item_active": activeChannelId === channel.id
       });
+
       return (
         <div
           key={channel.id}
@@ -343,7 +351,7 @@ class Chat extends Component {
           <div className="chat__chanels-avatar">
             <img src={channel.avatar} alt="logo" />
           </div>
-          <div className="chat__chanels-title">{channel.title}</div>
+          <div className="chat__chanels-title">{channel.name}</div>
         </div>
       );
     });
@@ -352,6 +360,9 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const activeChannel = this.findActiveChannel();
+    console.log("Render chat");
+    const messages = (activeChannel && activeChannel.messages) || [];
+
     const cache = new CellMeasurerCache({
       fixedWidth: true,
       defaultHeight: 50
@@ -395,9 +406,7 @@ class Chat extends Component {
                         ref={this.listRef}
                         overscanRowCount={20}
                         onScroll={this.handleListScroll}
-                        rowCount={
-                          (activeChannel && activeChannel.messages.length) || 0
-                        }
+                        rowCount={messages.length}
                         width={width}
                         height={height}
                         deferredMeasurementCache={this.cache}
@@ -435,7 +444,10 @@ class Chat extends Component {
 
 const mapStateToProps = state => {
   return {
+    userId: state.Login.userId,
     chat: state.Chat.chat,
+    channels: state.Chat.channels,
+    activeChannelId: state.Chat.activeChannelId,
     isLoading: state.Chat.isLoading,
     socketError: state.Chat.socketError
   };
