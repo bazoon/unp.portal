@@ -59,7 +59,8 @@ class Chat extends Component {
 
   static defaultProps = {
     chat: [],
-    channels: []
+    channels: [],
+    activePages: {}
   };
 
   constructor(props) {
@@ -74,13 +75,17 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    // Actions.getChat();
     Actions.getChannels();
 
-    socket.on("channel-message", () => {
-      // Actions.getChat();
-      console.log("channel-message");
-      Actions.getChannelMessages(this.props.activeChannelId);
+    socket.on("channel-message", message => {
+      const { activeChannelId } = this.props;
+      let me = this;
+
+      // const scrollTop = me.listRef.current.Grid._scrollingContainer.scrollTop;
+      Actions.addNewMessage({ activeChannelId, message });
+      // setTimeout(() => {
+      //   // me.listRef.current.scrollToPosition(this.scrollTop);
+      // }, 1000);
     });
   };
 
@@ -100,6 +105,17 @@ class Chat extends Component {
         currentMessage: ""
       });
     });
+
+    // const message = {
+    //   id: Math.random(),
+    //   message: this.state.currentMessage,
+    //   userName: "foo",
+    //   type: "text"
+    // };
+    // Actions.addNewMessage({
+    //   activeChannelId: this.props.activeChannelId,
+    //   message
+    // });
   };
 
   scrollChatTalk = () => {
@@ -126,8 +142,7 @@ class Chat extends Component {
 
   renderMessageTemplate = (m, content) => {
     const { activeChannelId } = this.props;
-
-    const messageId = `${activeChannelId}-${m.id}`;
+    const messageId = `${activeChannelId}-${m.id}-${m.seen}`;
     const hash = Math.abs(hashCode(m.userName));
     const index = hash % 10;
     const colorStyle = {
@@ -143,8 +158,11 @@ class Chat extends Component {
           {m.userName}
         </div>
         {content}
-        <div className="chat__message-date">
-          {moment(m.date).format("HH:mm")}
+        <div className="chat__message-info">
+          <div className="chat__message-date">
+            {moment(m.createdAt).format("HH:mm")}
+          </div>
+          <div className="chat__message-seen">{m.seen ? "✔" : null}</div>
         </div>
       </div>
     );
@@ -281,56 +299,92 @@ class Chat extends Component {
   };
 
   handleChangeChanel = channelId => {
-    const { activeChannelId } = this.props;
-    Actions.getChannelMessages(channelId);
+    const { activePages } = this.props;
+    const channel = this.props.channels.find(ch => channelId === ch.id);
+
+    if (!channel.messages) {
+      this.loadMessages(channelId);
+    } else {
+      Actions.setActiveChannel(channelId);
+    }
+  };
+
+  loadMessages = channelId => {
+    const { activePages } = this.props;
+    const currentPage = activePages[channelId] || 1;
+    Actions.getChannelMessages({ channelId, currentPage });
   };
 
   handleMessageIntersection = e => {
     const { target } = e;
     const { dataset } = target;
-    const [channelId, messageId] = dataset.id.split("-");
-
-    if (e.isIntersecting) {
+    const { userId } = this.props;
+    const [channelId, messageId, seen] = dataset.id.split("-");
+    if (e.isIntersecting && seen !== "true") {
       Actions.chatMarkAsRead({
-        channelId,
-        messageId
+        messageId,
+        userId
       });
-      // setTimeout(() => {
-      //   target.querySelector(".chat__message-author").style.background = "gray";
-      // }, 500);
-    } else {
-      // setTimeout(() => {
-      //   target.querySelector(".chat__message-author").style.background =
-      //     "silver";
-      // }, 500);
+      requestAnimationFrame(() => {
+        target.querySelector(".chat__message-seen").textContent = "✔";
+      });
     }
   };
 
-  handleLoadMore = () => {
-    Actions.getMoreMessages(this.props.activeChannelId);
-  };
+  loadMore() {
+    const { activeChannelId } = this.props;
+    const { channelHasMessages } = this.props;
+    if (channelHasMessages[activeChannelId] === false) {
+      return false;
+    }
+
+    const { activePages } = this.props;
+    const currentPage = activePages[activeChannelId] || 1;
+    if (activeChannelId && currentPage) {
+      Actions.getMoreMessages({
+        activeChannelId,
+        currentPage: currentPage + 1
+      });
+    }
+  }
+
+  handleLoadMore = () => this.loadMore();
 
   handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
-    if (scrollTop === 0) {
-      Actions.getMoreMessages(this.props.activeChannelId);
+    const list = this.listRef.current;
+    window.foo = list;
+    // if (scrollTop === 0) {
+    //   this.loadMore();
+    //   setTimeout(() => {
+    //     // debugger;
 
-      setTimeout(() => {
-        // debugger;
-        const list = this.listRef.current;
-        window.foo = list;
-        // const currentTop = list.Grid.getTotalRowsHeight();
-        // const diff = currentTop - scrollTop;
-        // list.scrollToPosition();
-        list.scrollToRow(2);
-      }, 100);
+    //     // const currentTop = list.Grid.getTotalRowsHeight();
+    //     // const diff = currentTop - scrollTop;
+    //     // list.scrollToPosition();
+    //     list.scrollToRow(2);
+    //   }, 100);
+    // }
+  };
+
+  handleChatScroll = e => {
+    const { target } = e;
+    const { scrollTop } = target;
+    if (scrollTop === 0) {
+      if (this.loadMore() !== false) {
+        setTimeout(() => {
+          target.scrollTop = 100;
+        });
+      }
     }
   };
 
   handleScrollDown = () => {
-    const list = this.listRef.current;
+    // const list = this.listRef.current;
 
-    setTimeout(() => list.scrollToRow(-1), 300);
-    setTimeout(() => list.scrollToRow(-1), 300);
+    // setTimeout(() => list.scrollToRow(-1), 300);
+    // setTimeout(() => list.scrollToRow(-1), 300);
+    const chatTalks = this.chatTalkRef.current;
+    chatTalks.scrollTop = chatTalks.scrollHeight;
   };
 
   renderChatChanels() {
@@ -360,7 +414,6 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const activeChannel = this.findActiveChannel();
-    console.log("Render chat");
     const messages = (activeChannel && activeChannel.messages) || [];
 
     const cache = new CellMeasurerCache({
@@ -388,7 +441,11 @@ class Chat extends Component {
 
             <div className="chat__talks">
               <div className="chat__chanels">{this.renderChatChanels()}</div>
-              <div className="chat__talk" ref={this.chatTalkRef}>
+              <div
+                className="chat__talk"
+                ref={this.chatTalkRef}
+                onScroll={this.handleChatScroll}
+              >
                 <div className="chat__talk-spin">{isLoading && <Spin />}</div>
                 <div className="chat__talk-down">
                   <Button
@@ -398,8 +455,8 @@ class Chat extends Component {
                   />
                 </div>
 
-                {/* {this.renderMessages()} */}
-                <AutoSizer>
+                {this.renderMessages()}
+                {/* <AutoSizer>
                   {({ width, height }) => {
                     return (
                       <List
@@ -415,7 +472,7 @@ class Chat extends Component {
                       />
                     );
                   }}
-                </AutoSizer>
+                </AutoSizer> */}
               </div>
             </div>
             <div className="chat__controls">
@@ -449,7 +506,9 @@ const mapStateToProps = state => {
     channels: state.Chat.channels,
     activeChannelId: state.Chat.activeChannelId,
     isLoading: state.Chat.isLoading,
-    socketError: state.Chat.socketError
+    socketError: state.Chat.socketError,
+    activePages: state.Chat.activePages,
+    channelHasMessages: state.Chat.channelHasMessages
   };
 };
 

@@ -12,8 +12,16 @@ module.exports = {
         ChannelId: channelId,
         UserId: userId
       })
-        .then(() => {
-          resolve();
+        .then(message => {
+          models.User.findByPk(userId).then(user => {
+            resolve({
+              id: message.id,
+              type: message.type,
+              message: message.message,
+              userName: user.name,
+              avatar: user.avatar
+            });
+          });
         })
         .catch(err => {
           reject(err);

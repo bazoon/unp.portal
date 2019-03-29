@@ -27,33 +27,43 @@ class Chat {
     const { userName } = socket.decoded;
     socket.on("disconnect", this.onDisconnect.bind(this));
     this.socket = socket;
-    this.socket.on(
-      "channel-message",
-      this.onChannelMessage.bind(this, userName)
-    );
+    this.socket.on("channel-message", this.onChannelMessage.bind(this, {}));
 
-    this.socket.on(
-      "channel-message-mark",
-      this.onMarkAsRead.bind(this, userName)
-    );
+    this.socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
 
     this.socket.on("notify-upload", this.onNotifyUpload.bind(this, userName));
   }
 
   onDisconnect(socket) {
-    console.log("disconnect");
+    // console.log("disconnect");
   }
 
   onChannelMessage(userName, m, fn) {
-    console.log(999, m);
     const { channelId, message, type, userId } = m;
-    util.writeMessage(channelId, message, type, userId).then(() => fn());
-    this.io.emit("channel-message", m);
+    util.writeMessage(channelId, message, type, userId).then(message => {
+      this.io.emit("channel-message", message);
+      fn();
+    });
   }
 
-  onMarkAsRead(userName, m, fn) {
-    const { channelId, messageId } = m;
-    console.log(userName, channelId, messageId);
+  onMarkAsRead(m, fn) {
+    const { userId, messageId } = m;
+    console.log(userId, messageId);
+
+    models.Read.findOne({
+      where: {
+        UserId: userId,
+        MessageId: messageId
+      }
+    }).then(function(found) {
+      if (!found) {
+        models.Read.create({
+          UserId: userId,
+          MessageId: messageId,
+          seen: true
+        });
+      }
+    });
   }
 
   onNotifyUpload() {

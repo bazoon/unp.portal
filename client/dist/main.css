@@ -275,9 +275,18 @@
   max-height: 30px;
   border-radius: 50%;
 }
+.chat__message-info {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
 .chat__message-date {
   font-size: 8px;
   text-align: right;
+  margin-right: 5px;
+}
+.chat__message-seen {
+  font-size: 6px;
 }
 .chat__message-image {
   width: 200px;
@@ -288,6 +297,7 @@
   justify-content: space-between;
   padding: 10px;
   background: #ebebeb;
+  height: 52px;
 }
 .chat .ant-drawer-body {
   height: 100%;
@@ -299,8 +309,9 @@
   height: 100%;
 }
 .chat__talks {
-  height: 100%;
+  height: calc(100% - 52px - 52px);
   display: flex;
+  position: relative;
 }
 .chat__chanels {
   background: #ebebeb;
@@ -328,7 +339,6 @@
   flex: 3;
   padding: 10px 10px 0 10px;
   overflow-y: auto;
-  position: relative;
 }
 .chat__talk-spin {
   position: absolute;
@@ -346,6 +356,7 @@
   display: flex;
   padding: 10px;
   align-items: center;
+  height: 52px;
 }
 .chat__controls-file-icon {
   width: 40px;

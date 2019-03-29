@@ -69,16 +69,41 @@ app.post("/upload", upload.array("file", 12), function(req, res, next) {
   });
 });
 
-models.sequelize.sync().then(function() {
-  models.Channel.findByPk(5, {
-    include: {
-      model: models.Message,
-      as: "Messages",
-      include: { model: models.User }
+function create(i) {
+  return models.Message.create({
+    message: "hello" + i,
+    type: "text",
+    ChannelId: 7,
+    UserId: 2
+  }).then(function() {
+    if (i < 100) {
+      create(i + 1);
     }
-  }).then(channel => {
-    // console.log(channel.Messages[0].User);
   });
+}
+
+models.sequelize.sync().then(function() {
+  // create(0);
+
+  // models.sequelize.query('select *from "Users"').then(function(users) {
+  //   console.log(users);
+  // });
+
+  // models.Message.findByPk(3).then(function(m) {
+  //   // console.log(m.getRead());
+  // });
+
+  // models.Channel.findByPk(5, {
+  //   include: {
+  //     model: models.Message,
+  //     as: "Messages"
+  //   },
+  //   order: [[{ model: models.Message, as: "Messages" }, "createdAt", "DESC"]]
+  // }).then(channel => {
+  //   channel.Messages.forEach(function(m) {
+  //     console.log(m.createdAt);
+  //   });
+  // });
 
   // models.Message.findByPk(1, { include: { model: models.User } }).then(m => {
   //   console.log(m.User);

@@ -3,16 +3,32 @@ import api from "../../api/api";
 import socketIOClient from "socket.io-client";
 
 const Chat = State({
-  initial: { chat: [], isLoading: false, activeChannelId: undefined },
+  initial: {
+    chat: [],
+    isLoading: false,
+    activeChannelId: undefined,
+    activePages: {},
+    channelHasMessages: {}
+  },
   setChatChannels(state, payload) {
     return { ...state, channels: payload };
   },
-  setChatChannelMessages(state, { activeChannelId, messages }) {
+  setActiveChannel(state, activeChannelId) {
+    return { ...state, activeChannelId };
+  },
+  setChatChannelMessages(state, { channelId, messages }) {
     // TODO разобраться почему спред оператор не создает новый массив каналов
-    const newState = { ...state, activeChannelId };
+    const newState = { ...state, activeChannelId: channelId };
+    const channels = state.channels.map(channel => channel);
+    const channel = channels.find(c => c.id === channelId);
+    channel.messages = [...messages];
+    return { ...newState, channels };
+  },
+  addNewMessage(state, { activeChannelId, message }) {
+    const newState = { ...state };
     const channels = state.channels.map(channel => channel);
     const channel = channels.find(c => c.id === activeChannelId);
-    channel.messages = [...messages];
+    channel.messages = [...channel.messages, message];
     return { ...newState, channels };
   },
   setChat(state, payload) {
@@ -24,17 +40,18 @@ const Chat = State({
   setError(state) {
     return { ...state, socketError: true };
   },
-  setMoreMessages(state, { activeChannelId, messages }) {
-    const newState = {
-      ...state,
-      chat: [...state.chat]
-    };
-    const channel = newState.chat.find(ch => ch.id == activeChannelId);
-    if (channel) {
+  setMoreMessages(state, { messages, activeChannelId, currentPage }) {
+    const newState = { ...state, activeChannelId: state.activeChannelId };
+    newState.activePages[activeChannelId] = currentPage;
+    const channels = state.channels.map(channel => channel);
+    const channel = channels.find(c => c.id === state.activeChannelId);
+    if (messages.length > 0) {
       channel.messages = [...messages, ...channel.messages];
+    } else {
+      newState.channelHasMessages[activeChannelId] = false;
     }
 
-    return newState;
+    return { ...newState, channels };
   }
 });
 
@@ -44,10 +61,10 @@ Effect("getChannels", () => {
   });
 });
 
-Effect("getChannelMessages", activeChannelId => {
-  api.get("api/chat/messages", { activeChannelId }).then(response => {
+Effect("getChannelMessages", ({ channelId, currentPage }) => {
+  api.get("api/chat/messages", { channelId, currentPage }).then(response => {
     Actions.setChatChannelMessages({
-      activeChannelId,
+      channelId,
       messages: response.data
     });
   });
@@ -59,17 +76,26 @@ Effect("getChat", () => {
   });
 });
 
-Effect("getMoreMessages", activeChannelId => {
-  api.get("api/chat/more", { activeChannelId }).then(response => {
-    Actions.setMoreMessages(response.data);
-  });
+Effect("getMoreMessages", ({ activeChannelId, currentPage }) => {
+  // api.get("api/chat/more", { activeChannelId }).then(response => {
+  //   Actions.setMoreMessages(response.data);
+  // });
+
+  api
+    .get("api/chat/messages", { channelId: activeChannelId, currentPage })
+    .then(response => {
+      Actions.setMoreMessages({
+        messages: response.data,
+        activeChannelId,
+        currentPage
+      });
+    });
 });
 
 Effect("chatMarkAsRead", payload => {
   const socket = socketIOClient(location.host, {
     query: {
       token: localStorage.getItem("token"),
-      expiresIn: localStorage.getItem("expiresIn"),
       userName: localStorage.getItem("userName")
     }
   });

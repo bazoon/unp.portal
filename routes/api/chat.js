@@ -56,43 +56,34 @@ router.get("/channels", (req, res) => {
 //           type: message.type
 
 router.get("/messages", (req, res) => {
-  const { activeChannelId } = req.query;
+  const { channelId } = req.query;
+  const { currentPage } = req.query;
+  const limit = 5;
+  const offset = limit * (currentPage - 1);
 
-  models.Channel.findByPk(activeChannelId, {
-    include: {
-      model: models.Message,
-      as: "Messages",
-      include: { model: models.User }
-    }
-  }).then(channel => {
+  const query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
+               "avatar", "Messages"."createdAt", seen from "Messages" 
+               join "Users" on ("Messages"."UserId" = "Users"."id")
+               left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
+               where "Messages"."ChannelId" = ${channelId}
+               order by "Messages"."createdAt" desc
+               limit ${limit} offset ${offset}`;
+
+  models.sequelize.query(query).then(function(messages) {
     res.json(
-      channel.Messages.map(message => {
+      messages[0].map(message => {
         return {
           id: message.id,
           message: message.message,
           type: message.type,
-          userName: message.User && message.User.name,
-          avatar: message.User && message.User.avatar
+          userName: message.name,
+          avatar: message.avatar,
+          createdAt: message.createdAt,
+          seen: message.seen
         };
       })
     );
   });
-
-  // models.Channel.findByPk(activeChannelId).then(channel => {
-  //   channel.getMessages().then(messages => {
-  //     res.json(
-  //       messages.map(message => {
-  //         message.getUser().then(user => {
-  //           return {
-  //             id: message.id,
-  //             message: message.message,
-  //             type: message.type
-  //           };
-  //         });
-  //       })
-  //     );
-  //   });
-  // });
 });
 
 router.get("/list", (req, res) => {
@@ -130,7 +121,6 @@ router.post("/send", (req, res) => {
   const id = req.body.channelId;
   const text = req.body.message;
   const type = req.body.type;
-  console.log(models.Message.create);
 
   // fs.readFile(fileName, "utf8", function(err, contents) {
   //   if (!err) {
