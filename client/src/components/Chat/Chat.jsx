@@ -348,8 +348,9 @@ class Chat extends Component {
 
   loadMore() {
     const { activeChannelId } = this.props;
-    const { channelHasMessages } = this.props;
-    if (channelHasMessages[activeChannelId] === false) {
+    const { channelHasMessages, isLoading } = this.props;
+
+    if (channelHasMessages[activeChannelId] === false || isLoading) {
       return false;
     }
 
@@ -428,10 +429,11 @@ class Chat extends Component {
 
   render() {
     const { visible, isLoading, socketError } = this.props;
+    const { isSocketConnected } = this.state;
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
     const chatIndicatorCls = cn("chat__indicator", {
-      chat__indicator_connected: this.state.isSocketConnected
+      chat__indicator_connected: isSocketConnected
     });
 
     const cache = new CellMeasurerCache({
@@ -513,7 +515,7 @@ class Chat extends Component {
               </div>
               <Input
                 ref={this.inputRef}
-                disabled={isLoading || !activeChannel}
+                disabled={isLoading || !activeChannel || !isSocketConnected}
                 autoFocus
                 value={this.state.currentMessage}
                 onChange={this.handleMessageChange}

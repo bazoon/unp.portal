@@ -62,7 +62,9 @@ Effect("getChannels", () => {
 });
 
 Effect("getChannelMessages", ({ channelId, currentPage }) => {
+  Actions.setIsLoading(true);
   api.get("api/chat/messages", { channelId, currentPage }).then(response => {
+    Actions.setIsLoading(false);
     Actions.setChatChannelMessages({
       channelId,
       messages: response.data
@@ -80,10 +82,11 @@ Effect("getMoreMessages", ({ activeChannelId, currentPage }) => {
   // api.get("api/chat/more", { activeChannelId }).then(response => {
   //   Actions.setMoreMessages(response.data);
   // });
-
+  Actions.setIsLoading(true);
   api
     .get("api/chat/messages", { channelId: activeChannelId, currentPage })
     .then(response => {
+      Actions.setIsLoading(false);
       Actions.setMoreMessages({
         messages: response.data,
         activeChannelId,
