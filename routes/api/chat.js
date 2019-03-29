@@ -71,7 +71,7 @@ router.get("/messages", (req, res) => {
 
   models.sequelize.query(query).then(function(messages) {
     res.json(
-      messages[0].map(message => {
+      messages[0].reverse().map(message => {
         return {
           id: message.id,
           message: message.message,

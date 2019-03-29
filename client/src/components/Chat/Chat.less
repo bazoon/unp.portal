@@ -9,6 +9,18 @@
     cursor: pointer;
   }
 
+  &__indicator {
+    width: 10px;
+    height: 10px;
+    background-color: silver;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+    &_connected {
+      background-color: green;
+    }
+  }
+
   &__message {
     position: relative;
     width: 70%;

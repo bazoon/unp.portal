@@ -66,7 +66,8 @@ class Chat extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentMessage: ""
+      currentMessage: "",
+      isSocketConnected: false
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -77,9 +78,23 @@ class Chat extends Component {
   componentDidMount = () => {
     Actions.getChannels();
 
+    socket.on("connect", () => {
+      console.log("connect");
+      this.setState({
+        isSocketConnected: true
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("disconnect");
+      this.setState({
+        isSocketConnected: false
+      });
+    });
+
     socket.on("channel-message", message => {
       const { activeChannelId } = this.props;
-      let me = this;
+      // let me = this;
 
       // const scrollTop = me.listRef.current.Grid._scrollingContainer.scrollTop;
       Actions.addNewMessage({ activeChannelId, message });
@@ -415,6 +430,9 @@ class Chat extends Component {
     const { visible, isLoading, socketError } = this.props;
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
+    const chatIndicatorCls = cn("chat__indicator", {
+      chat__indicator_connected: this.state.isSocketConnected
+    });
 
     const cache = new CellMeasurerCache({
       fixedWidth: true,
@@ -435,7 +453,17 @@ class Chat extends Component {
         >
           <div className="chat__container">
             <div className="chat__search">
-              <Input placeholder="Поиск" style={{ width: "50%" }} />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  width: "50%"
+                }}
+              >
+                <div className={chatIndicatorCls} />
+                <Input placeholder="Поиск" style={{ width: "100%" }} />
+              </div>
+
               <Button icon="more" onClick={this.handleLoadMore} />
             </div>
 

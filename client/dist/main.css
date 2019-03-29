@@ -258,6 +258,17 @@
   z-index: 1;
   cursor: pointer;
 }
+.chat__indicator {
+  width: 10px;
+  height: 10px;
+  background-color: silver;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.chat__indicator_connected {
+  background-color: green;
+}
 .chat__message {
   position: relative;
   width: 70%;
