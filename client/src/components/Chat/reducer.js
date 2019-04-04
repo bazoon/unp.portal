@@ -8,7 +8,8 @@ const Chat = State({
     isLoading: false,
     activeChannelId: undefined,
     activePages: {},
-    channelHasMessages: {}
+    channelHasMessages: {},
+    lastMessageId: undefined
   },
   setChatChannels(state, payload) {
     return { ...state, channels: payload };
@@ -22,6 +23,13 @@ const Chat = State({
     const channels = state.channels.map(channel => channel);
     const channel = channels.find(c => c.id === channelId);
     channel.messages = [...messages];
+
+    if (messages && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const lastMessageId = lastMessage.id;
+      newState.lastMessageId = lastMessageId;
+    }
+
     return { ...newState, channels };
   },
   addNewMessage(state, { activeChannelId, message }) {
@@ -45,7 +53,11 @@ const Chat = State({
     newState.activePages[activeChannelId] = currentPage;
     const channels = state.channels.map(channel => channel);
     const channel = channels.find(c => c.id === state.activeChannelId);
-    if (messages.length > 0) {
+
+    if (messages && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const lastMessageId = lastMessage.id;
+      newState.lastMessageId = lastMessageId;
       channel.messages = [...messages, ...channel.messages];
     } else {
       newState.channelHasMessages[activeChannelId] = false;
@@ -78,13 +90,14 @@ Effect("getChat", () => {
   });
 });
 
-Effect("getMoreMessages", ({ activeChannelId, currentPage }) => {
-  // api.get("api/chat/more", { activeChannelId }).then(response => {
-  //   Actions.setMoreMessages(response.data);
-  // });
+Effect("getMoreMessages", ({ activeChannelId, currentPage, lastMessageId }) => {
   Actions.setIsLoading(true);
   api
-    .get("api/chat/messages", { channelId: activeChannelId, currentPage })
+    .get("api/chat/messages", {
+      channelId: activeChannelId,
+      currentPage,
+      lastMessageId
+    })
     .then(response => {
       Actions.setIsLoading(false);
       Actions.setMoreMessages({
@@ -123,7 +136,7 @@ Effect("sendChatMessage", payload => {
 
   socket.emit("channel-message", payload, () => {
     Actions.setIsLoading(false);
-    Actions.getChat();
+    // Actions.getChat();
   });
 
   // api.post("api/chat/send", payload).then(response => {
@@ -148,7 +161,7 @@ Effect("sendChatFile", payload => {
       },
       () => {
         Actions.setIsLoading(false);
-        Actions.getChat();
+        // Actions.getChat();
       }
     );
 

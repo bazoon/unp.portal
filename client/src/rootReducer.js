@@ -6,6 +6,8 @@ import Laws from "./components/Laws/reducer";
 import UserProfilePreferences from "./components/UserProfile/reducer";
 import Chat from "./components/Chat/reducer";
 import Login from "./components/LoginForm/reducer";
+import ProjectGroup from "./components/Group/reducer";
+import Conversation from "./components/Conversation/reducer";
 
 export default combineReducers({
   projectGroups,
@@ -14,5 +16,7 @@ export default combineReducers({
   Laws,
   UserProfilePreferences,
   Chat,
-  Login
+  Login,
+  ProjectGroup,
+  Conversation
 });

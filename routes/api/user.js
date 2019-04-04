@@ -26,7 +26,8 @@ router.post("/login", (req, res) => {
           res.json({
             userId: user.id,
             token,
-            userName
+            userName,
+            avatar: user.avatar
           });
         } else {
           res.status(403).json({
@@ -53,14 +54,22 @@ router.post("/signup", (req, res) => {
   models.User.findOrCreate({ where: { name: userName } }).then(
     ([user, created]) => {
       const hashedPassword = bcrypt.hashSync(password, 8);
-      user.update({ name: userName, password: hashedPassword });
+      const avatarId = getRandomArbitrary(0, 70);
+      const avatar = `http://i.pravatar.cc/150?img=${avatarId}`;
+
+      user.update({ name: userName, password: hashedPassword, avatar });
       res.json({
         userId: user.id,
         token,
-        userName
+        userName,
+        avatar
       });
     }
   );
 });
 
 module.exports = router;
+
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}

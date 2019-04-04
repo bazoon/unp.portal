@@ -7,7 +7,7 @@ import { Menu } from "./Menu";
 export class ProjectGroup extends Component {
   static propTypes = {
     group: PropTypes.shape({
-      id: PropTypes.string,
+      id: PropTypes.number,
       avatar: PropTypes.string,
       title: PropTypes.string,
       isOpen: PropTypes.bool,

@@ -6,7 +6,7 @@ import { MainMenu } from "./MainMenu/MainMenu";
 import { RightMenu } from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
 import { UserProfile } from "./UserProfile/UserProfile";
-import { Group } from "./Group/Group";
+import Group from "./Group/Group";
 import { GroupSidebar } from "./Group/GroupSidebar";
 import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
@@ -18,6 +18,7 @@ import logo from "./top-logo.svg";
 import "../favicon.ico";
 import "./App.less";
 import Notifications from "./Notifications/Notifications";
+import Conversation from "./Conversation/Conversation";
 
 const { Header, Sider, Content } = Layout;
 const { Search } = Input;
@@ -48,7 +49,7 @@ class L extends Component {
 
   render() {
     const { isChatOpen } = this.state;
-    const { userName } = this.props.login;
+    const { userName, avatar } = this.props.login;
     return (
       <HashRouter>
         <Layout>
@@ -100,7 +101,15 @@ class L extends Component {
                 СНИЛС 000-0000-000
               </div>
               <Link to="/profile">
-                <Icon type="user" className="icon__medium" />
+                {avatar ? (
+                  <img
+                    src={avatar}
+                    className="header__user-avatar"
+                    alt="avatar"
+                  />
+                ) : (
+                  <Icon type="user" className="icon__medium" />
+                )}
               </Link>
             </div>
           </Header>
@@ -124,10 +133,18 @@ class L extends Component {
                 />
                 <Route path="/profile" component={() => <UserProfile />} />
                 <Route
-                  path="/group"
-                  component={() => (
+                  path="/group/:id/conversation/:conversationId"
+                  component={props => (
                     <>
-                      <Group />
+                      <Conversation {...props} />
+                    </>
+                  )}
+                />
+                <Route
+                  path="/group/:id"
+                  component={props => (
+                    <>
+                      <Group {...props} />
                       <Feed />
                     </>
                   )}

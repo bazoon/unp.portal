@@ -51,23 +51,34 @@ router.get("/channels", (req, res) => {
   });
 });
 
-// id: message.id,
-//           message: message.message,
-//           type: message.type
-
 router.get("/messages", (req, res) => {
-  const { channelId } = req.query;
-  const { currentPage } = req.query;
+  const { channelId, currentPage, lastMessageId } = req.query;
+
   const limit = 5;
   const offset = limit * (currentPage - 1);
 
-  const query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
-               "avatar", "Messages"."createdAt", seen from "Messages" 
-               join "Users" on ("Messages"."UserId" = "Users"."id")
-               left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
-               where "Messages"."ChannelId" = ${channelId}
-               order by "Messages"."createdAt" desc
-               limit ${limit} offset ${offset}`;
+  let query;
+
+  // Используем id последнего сообщения чтобы не посылать дублирующие записи
+  // такая ситуация может возникнуть если загрузили первые сообщения, ввели новое сообщение
+  // и потом снова подгрузили
+  if (lastMessageId) {
+    query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
+            "avatar", "Messages"."createdAt", seen from "Messages" 
+            join "Users" on ("Messages"."UserId" = "Users"."id")
+            left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
+            where ("Messages"."ChannelId" = ${channelId}) and ("Messages"."id" < ${lastMessageId})
+            order by "Messages"."createdAt" desc
+            limit ${limit} offset ${offset}`;
+  } else {
+    query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
+            "avatar", "Messages"."createdAt", seen from "Messages" 
+            join "Users" on ("Messages"."UserId" = "Users"."id")
+            left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
+            where ("Messages"."ChannelId" = ${channelId})
+            order by "Messages"."createdAt" desc
+            limit ${limit} offset ${offset}`;
+  }
 
   models.sequelize.query(query).then(function(messages) {
     res.json(

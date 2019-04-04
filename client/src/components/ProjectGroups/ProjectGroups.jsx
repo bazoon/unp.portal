@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Tabs, Input } from "antd";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
-import ProjectGroup from "./ProjectGroup";
+import { ProjectGroup } from "./ProjectGroup";
 import "./ProjectGroups.less";
 
 const { TabPane } = Tabs;
@@ -19,7 +19,8 @@ class ProjectGroups extends Component {
   };
 
   componentDidMount = () => {
-    Actions.getProjectGroups(this.props.type);
+    const { type, userId } = this.props;
+    Actions.getProjectGroups({ type, userId });
   };
 
   renderGroups() {
@@ -45,7 +46,10 @@ class ProjectGroups extends Component {
 }
 
 const mapStateToProps = state => {
-  return { groups: state.projectGroups.groups };
+  return {
+    groups: state.projectGroups.groups,
+    userId: state.Login.userId
+  };
 };
 
 export default connect(mapStateToProps)(ProjectGroups);

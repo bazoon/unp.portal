@@ -3,16 +3,18 @@ import api from "../../api/api";
 
 const userToken = localStorage.getItem("token");
 const userName = localStorage.getItem("userName");
+const userAvatar = localStorage.getItem("avatar");
 
 const LoginForm = State({
   initial: {
     token: userToken,
     userName,
     userId: localStorage.getItem("userId"),
-    loginFailed: false
+    loginFailed: false,
+    avatar: userAvatar
   },
-  setLogin(state, { userName, token, userId }) {
-    return { userName, token, loginFailed: false, userId: userId };
+  setLogin(state, { userName, token, userId, avatar }) {
+    return { userName, token, loginFailed: false, userId, avatar };
   },
   setLoginFailed(state) {
     return { ...state, loginFailed: true };
@@ -29,10 +31,11 @@ Effect("login", ({ userName, password }) => {
       password
     })
     .then(response => {
-      const { token, userName, userId } = response.data;
+      const { token, userName, userId, avatar } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
       localStorage.setItem("userId", userId);
+      localStorage.setItem("avatar", avatar);
 
       Actions.setLogin(response.data);
       return true;
@@ -50,10 +53,11 @@ Effect("signup", ({ userName, password }) => {
       password
     })
     .then(response => {
-      const { token, userName, userId } = response.data;
+      const { token, userName, userId, avatar } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
       localStorage.setItem("userId", userId);
+      localStorage.setItem("avatar", avatar);
       Actions.setLogin(response.data);
       return true;
     })

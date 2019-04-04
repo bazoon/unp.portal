@@ -12,6 +12,8 @@ const laws = require("./api/laws");
 const user = require("./api/user");
 const profilePreferences = require("./api/profile_preferences");
 const chat = require("./api/chat");
+const conversations = require("./api/conversations");
+const comments = require("./api/comments");
 
 // Api routes
 
@@ -53,5 +55,7 @@ router.use("/feed", feed);
 router.use("/laws", laws);
 router.use("/profile_preferences", profilePreferences);
 router.use("/chat", chat);
+router.use("/conversations", conversations);
+router.use("/comments", comments);
 
 module.exports = router;

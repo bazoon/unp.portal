@@ -11,7 +11,14 @@ const api = {
 
     return axios.get(url, config);
   },
-  post: (url, data) => axios.post(url, data)
+  post: (url, data) => {
+    const token = localStorage.getItem("token");
+    const config = {
+      headers: { token }
+    };
+
+    return axios.post(url, data, config);
+  }
 };
 window.api = api;
 export default api;

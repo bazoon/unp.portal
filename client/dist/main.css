@@ -19803,6 +19803,11 @@ span.ant-typography-ellipsis {
   display: flex;
   align-items: center;
 }
+.header__user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
 .header__user a {
   margin-left: 10px;
 }
@@ -19830,6 +19835,130 @@ span.ant-typography-ellipsis {
 .notifications__avatar img {
   margin-right: 10px;
   border-radius: 50%;
+}
+
+.conversation__container {
+  padding: 10px;
+}
+.conversation__upload-files {
+  font-size: 10px;
+  cursor: pointer;
+}
+.conversation__post {
+  background-color: #f4f6f9;
+  border-radius: 5px;
+  padding: 10px;
+  padding-left: 20px;
+}
+.conversation__post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+.conversation__post-user {
+  font-weight: 300;
+  font-size: 16px;
+}
+.conversation__post-position {
+  font-family: Helvetica;
+  font-size: 14px;
+}
+.conversation__post-text {
+  font-size: 16px;
+  color: #000000;
+}
+.conversation__post-avatar img {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+.conversation__post-body {
+  margin-bottom: 20px;
+}
+.conversation__post-favorite {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  font-size: 13px;
+}
+.conversation__post-favorite div {
+  line-height: 20px;
+  margin-left: 5px;
+}
+.conversation__post-toggle-comment {
+  margin-left: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.conversation__post-toggle-comment div {
+  line-height: 24px;
+}
+.conversation__post-footer {
+  display: flex;
+}
+.conversation__post-comment {
+  padding: 10px;
+  padding-bottom: 5px;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+.conversation__post-comment img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.conversation__post-comment-text {
+  margin-bottom: 10px;
+}
+.conversation__post-comment-file {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+.conversation__post-comment-file-logo {
+  width: 40px;
+  height: 40px;
+  border: solid 1px silver;
+  margin-right: 10px;
+}
+.conversation__post-comment-file-size {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 10px;
+}
+.conversation__post-file {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.conversation__post-file-logo {
+  width: 40px;
+  height: 40px;
+  border: solid 1px silver;
+  margin-right: 20px;
+}
+.conversation__post-file-size {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+}
+.conversation__form {
+  display: flex;
+  align-items: center;
+}
+.conversation__form img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.conversation__form-container {
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+  background-color: #f4f6f9;
 }
 
 .login-form__container {

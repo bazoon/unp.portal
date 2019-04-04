@@ -82,16 +82,39 @@ function create(i) {
   });
 }
 
+async function getPosts() {
+  const query = `select "Posts"."id", text, "Users"."name", 
+                "Users"."avatar", "Users"."Position", "Posts"."createdAt"
+                from "Posts", "Users"
+                where ("ConversationId"=1) and ("Posts"."UserId" = "Users"."id")`;
+
+  const posts = await models.sequelize.query(query);
+
+  const f = posts.map(async function(post) {
+    const files = await models.PostFile.findAll({ where: { PostId: post.id } });
+    return {
+      ...post,
+      files
+    };
+  });
+
+  return f;
+}
+
 models.sequelize.sync().then(function() {
-  // create(0);
+  // getPosts().then(posts => {
+  //   console.log(posts);
+  // });
 
   // models.sequelize.query('select *from "Users"').then(function(users) {
   //   console.log(users);
   // });
 
-  // models.Message.findByPk(3).then(function(m) {
-  //   // console.log(m.getRead());
-  // });
+  models.ProjectGroup.findByPk(1).then(function(pg) {
+    // pg.getParticipants().then(ps => {
+    //   console.log(ps);
+    // });
+  });
 
   // models.Channel.findByPk(5, {
   //   include: {

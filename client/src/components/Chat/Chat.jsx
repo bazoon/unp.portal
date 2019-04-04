@@ -348,7 +348,7 @@ class Chat extends Component {
 
   loadMore() {
     const { activeChannelId } = this.props;
-    const { channelHasMessages, isLoading } = this.props;
+    const { channelHasMessages, isLoading, lastMessageId } = this.props;
 
     if (channelHasMessages[activeChannelId] === false || isLoading) {
       return false;
@@ -359,7 +359,8 @@ class Chat extends Component {
     if (activeChannelId && currentPage) {
       Actions.getMoreMessages({
         activeChannelId,
-        currentPage: currentPage + 1
+        currentPage: currentPage + 1,
+        lastMessageId
       });
     }
   }
@@ -538,7 +539,8 @@ const mapStateToProps = state => {
     isLoading: state.Chat.isLoading,
     socketError: state.Chat.socketError,
     activePages: state.Chat.activePages,
-    channelHasMessages: state.Chat.channelHasMessages
+    channelHasMessages: state.Chat.channelHasMessages,
+    lastMessageId: state.Chat.lastMessageId
   };
 };
 
