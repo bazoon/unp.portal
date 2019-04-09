@@ -48,7 +48,7 @@ class Group extends Component {
   }
 
   render() {
-    const { title, avatar, isOpen, conversations } = this.props.group[0] || {};
+    const { title, avatar, isOpen, conversations } = this.props.group || {};
 
     return (
       <div className="group">

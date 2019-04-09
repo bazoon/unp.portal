@@ -18,6 +18,16 @@ class ProjectGroups extends Component {
     groups: []
   };
 
+  handleUnsubscribe = groupId => {
+    const { userId } = this.props;
+    Actions.postUnsubscribeProjectGroup({ groupId, userId });
+  };
+
+  handleSubscribe = groupId => {
+    const { userId } = this.props;
+    Actions.postSubscribeProjectGroup({ groupId, userId });
+  };
+
   componentDidMount = () => {
     const { type, userId } = this.props;
     Actions.getProjectGroups({ type, userId });
@@ -25,7 +35,14 @@ class ProjectGroups extends Component {
 
   renderGroups() {
     const { groups } = this.props;
-    return groups.map(g => <ProjectGroup key={g.id} group={g} />);
+    return groups.map(g => (
+      <ProjectGroup
+        onUnsubscribe={this.handleUnsubscribe}
+        onSubscribe={this.handleSubscribe}
+        key={g.id}
+        group={g}
+      />
+    ));
   }
 
   render() {

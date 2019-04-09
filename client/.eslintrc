@@ -27,6 +27,7 @@
     "class-methods-use-this": "off",
     "object-curly-newline": "off",
     "arrow-parens": "off",
-    "react/sort-comp": "off"
+    "react/sort-comp": "off",
+    "arrow-body-style": "off"
   }
 }

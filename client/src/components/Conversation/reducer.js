@@ -1,5 +1,21 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
+import { func } from "prop-types";
+
+function findInTree(tree, leaf) {
+  for (let i = 0; i < tree.length; i++) {
+    let subTree = tree[i];
+    if (subTree.id === leaf.parentId) {
+      return subTree;
+    }
+    if (subTree.children && subTree.children.length > 0) {
+      const foundLeaf = findInTree(subTree.children, leaf);
+      if (foundLeaf) {
+        return foundLeaf;
+      }
+    }
+  }
+}
 
 const projectGroups = State({
   initial: { conversations: {}, posts: {} },
@@ -10,7 +26,18 @@ const projectGroups = State({
   },
   addPost(state, { conversationId, post }) {
     const conversations = { ...state.conversations };
-    const posts = [...conversations[conversationId], post];
+    let posts = [...conversations[conversationId]];
+
+    if (!post.parentId) {
+      posts = [...posts, post];
+    } else {
+      const parent = findInTree(posts, post);
+      if (parent) {
+        parent.children = parent.children || [];
+        parent.children.push(post);
+      }
+    }
+
     conversations[conversationId] = posts;
     return { ...state, conversations };
   },

@@ -177,7 +177,7 @@
 .group-sidebar__item-container li div {
   margin-right: 5px;
 }
-.group-sidebar__avatar {
+.group-sidebar__avatar img {
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -186,6 +186,20 @@
 .group-sidebar__video {
   width: 100%;
   margin-top: 10px;
+}
+.group-sidebar__links {
+  max-height: 100px;
+  overflow-y: auto;
+}
+.group-sidebar__docs {
+  max-height: 100px;
+  overflow-y: auto;
+}
+.links-form {
+  margin-top: 10px;
+}
+.links-form .ant-form-item {
+  margin-bottom: 10px;
 }
 
 .feed {
@@ -19849,6 +19863,22 @@ span.ant-typography-ellipsis {
   border-radius: 5px;
   padding: 10px;
   padding-left: 20px;
+  margin-bottom: 20px;
+}
+.conversation__post-parent {
+  border-left: solid 2px #0c4f7d;
+  padding-left: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.conversation__post-parent-text {
+  font-size: 12px;
+  margin-right: 20px;
+}
+.conversation__post-to-parent {
+  margin-right: 20px;
 }
 .conversation__post-header {
   display: flex;

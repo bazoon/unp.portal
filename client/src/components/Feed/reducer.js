@@ -3,14 +3,14 @@ import api from "../../api/api";
 
 const Feed = State({
   initial: { Feed: [] },
-  setFeed(state, payload) {
-    return { feed: payload };
+  setGroupPosts(state, payload) {
+    return { posts: payload };
   }
 });
 
-Effect("getFeed", payload => {
-  api.get("api/feed/list").then(response => {
-    Actions.setFeed(response.data);
+Effect("getGroupPosts", userId => {
+  api.get("api/feed/group_posts", { userId }).then(response => {
+    Actions.setGroupPosts(response.data);
   });
 });
 

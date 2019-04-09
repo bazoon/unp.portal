@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Link, Switch, HashRouter } from "react-router-dom";
+import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
 import { MainMenu } from "./MainMenu/MainMenu";
@@ -7,7 +7,7 @@ import { RightMenu } from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
 import { UserProfile } from "./UserProfile/UserProfile";
 import Group from "./Group/Group";
-import { GroupSidebar } from "./Group/GroupSidebar";
+import GroupSidebar from "./Group/GroupSidebar";
 import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
 import ChatIcon from "./Chat/ChatIcon";
@@ -15,6 +15,7 @@ import Chat from "./Chat/Chat";
 
 import "antd/dist/antd.less";
 import logo from "./top-logo.svg";
+
 import "../favicon.ico";
 import "./App.less";
 import Notifications from "./Notifications/Notifications";
@@ -51,13 +52,13 @@ class L extends Component {
     const { isChatOpen } = this.state;
     const { userName, avatar } = this.props.login;
     return (
-      <HashRouter>
+      <BrowserRouter>
         <Layout>
           <ChatIcon onClick={this.handleChatClick} />
           <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           <Header className="header">
             <Link to="/">
-              <img src={logo} alt="Logo" />
+              <img src={`${logo.slice(1)}`} alt="Logo" />
             </Link>
             <div className="header__search-container">
               <Search className="header__search-input" />
@@ -161,7 +162,7 @@ class L extends Component {
             </Sider>
           </Layout>
         </Layout>
-      </HashRouter>
+      </BrowserRouter>
     );
   }
 }

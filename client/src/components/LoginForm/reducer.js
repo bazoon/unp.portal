@@ -26,7 +26,7 @@ const LoginForm = State({
 
 Effect("login", ({ userName, password }) => {
   api
-    .post("/api/user/login", {
+    .post("api/user/login", {
       userName,
       password
     })
@@ -48,7 +48,7 @@ Effect("login", ({ userName, password }) => {
 
 Effect("signup", ({ userName, password }) => {
   api
-    .post("/api/user/signup", {
+    .post("api/user/signup", {
       userName,
       password
     })

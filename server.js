@@ -27,8 +27,6 @@ var storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.use("/api", apiRouter);
-
-app.use(express.static("client/dist"));
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
 
@@ -69,52 +67,31 @@ app.post("/upload", upload.array("file", 12), function(req, res, next) {
   });
 });
 
-function create(i) {
-  return models.Message.create({
-    message: "hello" + i,
-    type: "text",
-    ChannelId: 7,
-    UserId: 2
-  }).then(function() {
-    if (i < 100) {
-      create(i + 1);
-    }
-  });
-}
-
-async function getPosts() {
-  const query = `select "Posts"."id", text, "Users"."name", 
-                "Users"."avatar", "Users"."Position", "Posts"."createdAt"
-                from "Posts", "Users"
-                where ("ConversationId"=1) and ("Posts"."UserId" = "Users"."id")`;
-
-  const posts = await models.sequelize.query(query);
-
-  const f = posts.map(async function(post) {
-    const files = await models.PostFile.findAll({ where: { PostId: post.id } });
-    return {
-      ...post,
-      files
-    };
-  });
-
-  return f;
-}
+// client / dist;
+app.use(express.static("client/dist"));
+app.get("*", function(request, response) {
+  console.log(request.url);
+  response.sendFile(path.resolve(__dirname + "/client/dist", "index.html"));
+});
 
 models.sequelize.sync().then(function() {
   // getPosts().then(posts => {
   //   console.log(posts);
   // });
 
+  models.ProjectGroup.findOne({ where: { id: 9919 } }).then(r => {
+    console.log(r);
+  });
+
   // models.sequelize.query('select *from "Users"').then(function(users) {
   //   console.log(users);
   // });
 
-  models.ProjectGroup.findByPk(1).then(function(pg) {
-    // pg.getParticipants().then(ps => {
-    //   console.log(ps);
-    // });
-  });
+  // models.ProjectGroup.findByPk(1).then(function(pg) {
+  // pg.getParticipants().then(ps => {
+  //   console.log(ps);
+  // });
+  // });
 
   // models.Channel.findByPk(5, {
   //   include: {

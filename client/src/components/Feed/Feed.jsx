@@ -3,12 +3,12 @@ import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import { Button, Input, Icon } from "antd";
 import api from "../../api/api";
-import moment from "moment";
 import "./Feed.less";
+import Posts from "../Conversation/Posts";
 
 class Feed extends Component {
   static defaultProps = {
-    feed: []
+    posts: []
   };
 
   constructor(props) {
@@ -24,7 +24,7 @@ class Feed extends Component {
   };
 
   getFeed() {
-    Actions.getFeed();
+    Actions.getGroupPosts(this.props.userId);
   }
 
   toggleComments = id => {
@@ -60,6 +60,12 @@ class Feed extends Component {
       currentComment: newCurrentComment
     });
   };
+
+  handleSend = (text, uploadFiles) => {};
+
+  handleReplySend = (comment, postId, replyUploadFiles) => {};
+
+  // RENDERS
 
   renderComments = (id, comments = []) => {
     const { visibleComments, currentComment } = this.state;
@@ -128,7 +134,7 @@ class Feed extends Component {
   };
 
   render() {
-    const { feed } = this.props;
+    const { posts, avatar } = this.props;
     return (
       <div className="feed">
         <div className="feed__header">Лента</div>
@@ -136,14 +142,23 @@ class Feed extends Component {
         <Input placeholder="Написать сообщение. Используйте @ чтобы упомянуть конкретные лица" />
         <br />
         <br />
-        {feed.map(item => this.renderItem(item))}
+        <Posts
+          posts={posts}
+          avatar={avatar}
+          onSend={this.handleSend}
+          onReplySend={this.handleReplySend}
+        />
       </div>
     );
   }
 }
 
 const mapStateToProps = state => {
-  return { feed: state.Feed.feed };
+  return {
+    posts: state.Feed.posts,
+    userId: state.Login.userId,
+    avatar: state.Login.avatar
+  };
 };
 
 export default connect(mapStateToProps)(Feed);
