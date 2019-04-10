@@ -209,6 +209,12 @@
   font-weight: 900;
   font-size: 24px;
 }
+.feed-message {
+  margin-bottom: 10px;
+}
+.feed-whom {
+  display: flex;
+}
 .feed__item {
   margin-bottom: 20px;
 }

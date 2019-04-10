@@ -70,7 +70,6 @@ router.get("/get", (req, res) => {
 router.post("/post", upload.array("file", 12), function(req, res, next) {
   const { text, conversationId, userId, postId } = req.body;
   const files = req.files;
-  console.log(req.body, postId);
 
   models.Post.create({
     text,

@@ -32,15 +32,14 @@ class Conversation extends Component {
     return Actions.sendConversationPost({ conversationId, formData });
   };
 
-  handleReplySend = (comment, postId, replyUploadFiles) => {
+  handleReplySend = (comment, post, files = []) => {
     const { userId } = this.props;
     const { conversationId } = this.props.match.params;
-    const files = replyUploadFiles[postId] || [];
 
     const formData = new FormData();
 
     formData.append("conversationId", conversationId);
-    formData.append("postId", postId);
+    formData.append("postId", post.id);
     formData.append("userId", userId);
     formData.append("text", comment);
 

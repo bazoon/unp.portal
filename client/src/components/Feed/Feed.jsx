@@ -1,30 +1,45 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
-import { Button, Input, Icon } from "antd";
+import PropTypes from "prop-types";
+import { Button, Input, Icon, Avatar, Upload, Select } from "antd";
 import api from "../../api/api";
 import "./Feed.less";
 import Posts from "../Conversation/Posts";
 
+const { TextArea } = Input;
+const Option = Select.Option;
+
 class Feed extends Component {
+  static propTypes = {
+    posts: PropTypes.arrayOf(PropTypes.object),
+    recipients: PropTypes.arrayOf(PropTypes.object),
+    userId: PropTypes.string.isRequired
+  };
+
   static defaultProps = {
-    posts: []
+    posts: [],
+    recipients: []
   };
 
   constructor(props) {
     super(props);
     this.state = {
       visibleComments: {},
-      currentComment: {}
+      currentComment: {},
+      chosenRecipients: [],
+      message: ""
     };
   }
 
   componentDidMount = () => {
-    this.getFeed();
+    const { userId } = this.props;
+    this.getFeed(userId);
   };
 
-  getFeed() {
-    Actions.getGroupPosts(this.props.userId);
+  getFeed(userId) {
+    Actions.getRecipients(userId);
+    Actions.getGroupPosts(userId);
   }
 
   toggleComments = id => {
@@ -63,7 +78,69 @@ class Feed extends Component {
 
   handleSend = (text, uploadFiles) => {};
 
-  handleReplySend = (comment, postId, replyUploadFiles) => {};
+  handleReplySend = (text, post, files = []) => {
+    const { userId } = this.props;
+    const formData = new FormData();
+    formData.append("postId", post.id);
+    formData.append("conversationId", post.cid);
+    formData.append("userId", userId);
+    formData.append("text", text);
+    files.forEach(f => {
+      formData.append("file", f);
+    });
+
+    return Actions.postReplyToFeed({ userId, payload: formData });
+  };
+
+  handleMessageFilesChanged = info => {
+    this.setState({
+      messageFiles: info.fileList
+    });
+  };
+
+  handleRecipientChange = value => {
+    this.setState({
+      chosenRecipients: value
+    });
+  };
+
+  handleChangeMessage = e => {
+    this.setState({
+      message: e.target.value
+    });
+  };
+
+  handleSendMessage = () => {
+    const { userId } = this.props;
+    const { chosenRecipients, message } = this.state;
+    const { messageFiles } = this.state;
+
+    const groupKeys = chosenRecipients.map(r => r.split(":")[0].split("-"));
+    const config = {
+      groups: groupKeys
+    };
+
+    const formData = new FormData();
+    formData.append("to", JSON.stringify(config));
+    formData.append("message", message);
+    formData.append("userId", userId);
+
+    messageFiles.forEach(f => {
+      formData.append("file", f.originFileObj);
+    });
+
+    Actions.postToFeed({ userId, payload: formData }).then(() => {
+      this.handleCancelMessage();
+    });
+  };
+
+  handleCancelMessage = () => {
+    this.setState({
+      message: "",
+      chosenRecipients: [],
+      messageFiles: []
+    });
+  };
 
   // RENDERS
 
@@ -134,13 +211,63 @@ class Feed extends Component {
   };
 
   render() {
-    const { posts, avatar } = this.props;
+    const { posts, avatar, recipients } = this.props;
+    const { message } = this.state;
+
+    const suggestions = recipients.map(suggestion => {
+      const title = `${suggestion.title}-${suggestion.ctitle}`;
+      const key = `${suggestion.id}-${suggestion.cid}:${title}`;
+      return <Option key={key}>{title}</Option>;
+    });
+
     return (
       <div className="feed">
-        <div className="feed__header">Лента</div>
+        <div className="feed__header">Новости</div>
         <hr />
-        <Input placeholder="Написать сообщение. Используйте @ чтобы упомянуть конкретные лица" />
+        <div className="feed-message">
+          <TextArea
+            placeholder="Текст сообщения"
+            autosize={{ minRows: 2, maxRows: 6 }}
+            onChange={this.handleChangeMessage}
+            value={message}
+          />
+        </div>
+        <div className="feed-whom">
+          Кому&nbsp;
+          <Select
+            style={{ width: "100%" }}
+            mode="multiple"
+            onChange={this.handleRecipientChange}
+            value={this.state.chosenRecipients}
+          >
+            {suggestions}
+          </Select>
+        </div>
         <br />
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between"
+          }}
+        >
+          <Upload
+            onChange={this.handleMessageFilesChanged}
+            multiple
+            fileList={this.state.messageFiles}
+            beforeUpload={() => false}
+          >
+            <Button>
+              <Icon type="upload" />
+              Файлы
+            </Button>
+          </Upload>
+          <div>
+            <Button onClick={this.handleCancelMessage}>Отменить</Button>
+            <Button onClick={this.handleSendMessage}>Отправить</Button>
+          </div>
+        </div>
+
         <br />
         <Posts
           posts={posts}
@@ -156,6 +283,7 @@ class Feed extends Component {
 const mapStateToProps = state => {
   return {
     posts: state.Feed.posts,
+    recipients: state.Feed.recipients,
     userId: state.Login.userId,
     avatar: state.Login.avatar
   };

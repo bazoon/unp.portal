@@ -90,16 +90,17 @@ class Posts extends Component {
     this.setState(newState);
   };
 
-  handleReplyKeyPress = (e, postId) => {
+  handleReplyKeyPress = (e, post) => {
     const { onReplySend } = this.props;
+    const files = this.state.replyUploadFiles[post.id];
 
     if (e.charCode === 13) {
-      onReplySend(e.target.value, postId, replyUploadFiles).then(() => {
+      onReplySend(e.target.value, post, files).then(() => {
         const postReplies = { ...this.state.postReplies };
         const replyUploadFiles = { ...this.state.replyUploadFiles };
 
-        postReplies[postId] = "";
-        replyUploadFiles[postId] = [];
+        postReplies[post.id] = "";
+        replyUploadFiles[post.id] = [];
 
         this.setState({
           postReplies,
@@ -173,10 +174,10 @@ class Posts extends Component {
     );
   }
 
-  renderPostReply = postId => {
+  renderPostReply = post => {
     const { avatar } = this.props;
     const { postReplies } = this.state;
-    const reply = postReplies[postId];
+    const reply = postReplies[post.id];
 
     return (
       <div className="conversation__form-container">
@@ -190,16 +191,16 @@ class Posts extends Component {
               marginRight: "5px",
               cursor: "pointer"
             }}
-            onClick={() => this.handleReplyFileUpload(postId)}
+            onClick={() => this.handleReplyFileUpload(post.id)}
           />
           <Input
             value={reply}
             placeholder="Введите текст"
-            onKeyPress={e => this.handleReplyKeyPress(e, postId)}
-            onChange={e => this.handleReplyChange(e, postId)}
+            onKeyPress={e => this.handleReplyKeyPress(e, post)}
+            onChange={e => this.handleReplyChange(e, post.id)}
           />
         </div>
-        {this.renderReplyUploadFiles(postId)}
+        {this.renderReplyUploadFiles(post.id)}
       </div>
     );
   };
@@ -251,13 +252,17 @@ class Posts extends Component {
   }
 
   renderPost(post, parentPost) {
-    const date = moment(post.createdAt).format("D MMMM YYYY HH:mm");
     const { currentPost, postRepliesVisible } = this.state;
+    const date = moment(post.createdAt).format("D MMMM YYYY HH:mm");
     const postId = `post_${post.id}`;
-    const parentPostId = `#post_${post.parentId}`;
+    const parentPostId = `#post_${post.ParentId}`;
+
     return (
       <div key={post.id} id={postId}>
         <div className="conversation__post">
+          <h4>
+            {post.title} → {post.conversationTitle}
+          </h4>
           <div className="conversation__post-header">
             <div style={{ display: "flex" }}>
               <div className="conversation__post-avatar">
@@ -306,10 +311,41 @@ class Posts extends Component {
             </div>
           </div>
           {postRepliesVisible[post.id] && (
-            <div>{this.renderPostReply(post.id)}</div>
+            <div>{this.renderPostReply(post)}</div>
           )}
         </div>
         {post.children && this.renderPosts(post.children, post)}
+      </div>
+    );
+  }
+
+  renderConversationForm() {
+    const { avatar } = this.props;
+    const { currentPost } = this.state;
+    return (
+      <div className="conversation__form-container">
+        <div className="conversation__form">
+          <img src={avatar} alt="avatar" />
+          <Icon
+            type="paper-clip"
+            style={{
+              fontSize: "16px",
+              color: "#00ccff",
+              marginRight: "5px",
+              cursor: "pointer"
+            }}
+            onClick={this.handleFileUpload}
+          />
+          <Input
+            value={currentPost}
+            placeholder="Введите текст"
+            onKeyPress={this.handleKeyPress}
+            onChange={this.handlePostChange}
+          />
+
+          {this.renderFileForm()}
+        </div>
+        {this.renderUploadFiles()}
       </div>
     );
   }
@@ -319,38 +355,13 @@ class Posts extends Component {
   }
 
   render() {
-    const { posts } = this.props;
-    const { currentPost, postRepliesVisible } = this.state;
-    const { avatar } = this.props;
+    const { posts, showConversationForm } = this.props;
 
     return (
       <>
         {this.renderPosts(posts)}
-        <div className="conversation__form-container">
-          <div className="conversation__form">
-            <img src={avatar} alt="avatar" />
-            <Icon
-              type="paper-clip"
-              style={{
-                fontSize: "16px",
-                color: "#00ccff",
-                marginRight: "5px",
-                cursor: "pointer"
-              }}
-              onClick={this.handleFileUpload}
-            />
-            <Input
-              value={currentPost}
-              placeholder="Введите текст"
-              onKeyPress={this.handleKeyPress}
-              onChange={this.handlePostChange}
-            />
-
-            {this.renderFileForm()}
-            {this.renderReplyFileForm()}
-          </div>
-          {this.renderUploadFiles()}
-        </div>
+        {showConversationForm && this.renderConversationForm()}
+        {this.renderReplyFileForm()}
       </>
     );
   }
