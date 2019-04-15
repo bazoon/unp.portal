@@ -27,7 +27,6 @@ router.get("/recipients", (req, res) => {
                 "Conversations"."ProjectGroupId" = "ProjectGroups"."id"`;
 
   models.sequelize.query(query).then(function(groups) {
-    console.log(groups[0]);
     res.json(groups[0]);
   });
 });

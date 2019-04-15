@@ -29,7 +29,9 @@ export class MainMenu extends Component {
           </Menu.Item>
         </SubMenu>
         <SubMenu key="sub2" title="События">
-          <Menu.Item key="4">Мои события</Menu.Item>
+          <Menu.Item key="4">
+            <Link to="/events/my">Мои события</Link>
+          </Menu.Item>
           <Menu.Item key="5">Созданные мной</Menu.Item>
           <Menu.Item key="6">Все события</Menu.Item>
         </SubMenu>

@@ -4,6 +4,7 @@ import moment from "moment";
 import { Input, Icon, Button } from "antd";
 import { HashLink } from "react-router-hash-link";
 import prettyBytes from "pretty-bytes";
+import getFileIcon from "../../utils/getFileIcon";
 
 class Posts extends Component {
   static propTypes = {
@@ -205,24 +206,6 @@ class Posts extends Component {
     );
   };
 
-  getFileIcon(file) {
-    switch (true) {
-      case file.endsWith("pdf"):
-        return "file-pdf";
-      case file.endsWith("jpg"):
-      case file.endsWith("jpeg"):
-        return "file-jpg";
-      case file.endsWith("doc"):
-      case file.endsWith("docx"):
-        return "file-word";
-      case file.endsWith("xls"):
-      case file.endsWith("xlsx"):
-        return "file-excel";
-      default:
-        return "file";
-    }
-  }
-
   renderPostFiles(post) {
     const { files } = post;
     return (
@@ -235,7 +218,7 @@ class Posts extends Component {
               <div key={f.name} className="conversation__post-file">
                 <a download href={downloadUrl} style={{ display: "block" }}>
                   <Icon
-                    type={this.getFileIcon(f.name)}
+                    type={getFileIcon(f.name)}
                     style={{ fontSize: "32px" }}
                   />
                 </a>

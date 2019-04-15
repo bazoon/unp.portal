@@ -1,0 +1,59 @@
+.event-list {
+  padding: 10px;
+
+  &__header {
+    font-size: 16px;
+    font-weight: 900;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 20px;
+  }
+
+  &__date {
+    font-size: 16px;
+    display: inline-block;
+  }
+
+  &__no-events {
+    font-size: 20px;
+    font-weight: 900;
+    color: silver;
+  }
+}
+
+.event {
+  &__wrapper {
+    display: flex;
+    margin-bottom: 20px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &-show-files {
+      display: flex;
+      align-items: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    &-file {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+
+      &-size {
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 12px;
+      }
+    }
+  }
+
+  &__time {
+    flex: 2;
+  }
+
+  &__info {
+    flex: 5;
+  }
+}

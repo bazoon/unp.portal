@@ -1,32 +1,25 @@
 import React, { Component } from "react";
-import { Calendar } from "antd";
+import { connect } from "react-redux";
+import { Button, Input, Icon, Popover } from "antd";
+import Calendar from "../Calendar/Calendar";
 import News from "../News/News";
 
-export class RightMenu extends Component {
-  dateCellRender = d => {
-    const day = d.get("date");
-    let style = {};
-
-    switch (true) {
-      case day % 5 === 0:
-        style = { background: "#549069", textAlign: "center" };
-        break;
-      case day % 7 === 0:
-        style = { background: "#E39394", textAlign: "center" };
-        break;
-    }
-
-    return <div style={style}>{day}</div>;
-  };
-
+class RightMenu extends Component {
   render() {
     return (
       <React.Fragment>
-        <Calendar fullscreen={false} dateFullCellRender={this.dateCellRender} />
+        <Calendar />
         <News />
       </React.Fragment>
     );
   }
 }
 
-export default RightMenu;
+const mapStateToProps = state => {
+  return {
+    userId: state.Login.userId,
+    events: state.Events.events
+  };
+};
+
+export default connect(mapStateToProps)(RightMenu);

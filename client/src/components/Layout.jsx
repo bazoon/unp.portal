@@ -3,7 +3,7 @@ import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
 import { MainMenu } from "./MainMenu/MainMenu";
-import { RightMenu } from "./RightMenu/RightMenu";
+import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
 import { UserProfile } from "./UserProfile/UserProfile";
 import Group from "./Group/Group";
@@ -20,6 +20,8 @@ import "../favicon.ico";
 import "./App.less";
 import Notifications from "./Notifications/Notifications";
 import Conversation from "./Conversation/Conversation";
+import EventList from "./Events/EventList";
+import { Actions } from "jumpstate";
 
 const { Header, Sider, Content } = Layout;
 const { Search } = Input;
@@ -30,6 +32,13 @@ class L extends Component {
     this.state = {
       isChatOpen: false
     };
+  }
+
+  // Тут загрузка данных общих для разных
+  // дочерних компонентов
+  componentDidMount() {
+    const { userId } = this.props.login;
+    Actions.getAllEvents({ userId });
   }
 
   handleChatClick = () => {
@@ -50,7 +59,7 @@ class L extends Component {
 
   render() {
     const { isChatOpen } = this.state;
-    const { userName, avatar } = this.props.login;
+    const { userName, avatar, userId } = this.props.login;
     return (
       <BrowserRouter>
         <Layout>
@@ -151,13 +160,14 @@ class L extends Component {
                   )}
                 />
                 <Route path="/laws" component={() => <Laws />} />
+                <Route path="/events/my" component={EventList} />
                 <Route path="/" component={Feed} />
               </Switch>
             </Content>
             <Sider width="300" style={{ padding: "10px" }}>
               <Switch>
                 <Route path="/group/:id" component={GroupSidebar} />
-                <Route path="/" component={RightMenu} />
+                <Route path="/" component={props => <RightMenu {...props} />} />
               </Switch>
             </Sider>
           </Layout>
