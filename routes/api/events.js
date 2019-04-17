@@ -31,6 +31,7 @@ router.post("/create", upload.array("file", 12), function(req, res, next) {
     allDay,
     remindBefore
   } = req.body;
+  console.log(req.body);
   const files = req.files;
 
   console.log(remindBefore);

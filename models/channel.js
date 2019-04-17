@@ -4,7 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     "Channel",
     {
       name: DataTypes.STRING,
-      avatar: DataTypes.STRING
+      avatar: DataTypes.STRING,
+      private: DataTypes.BOOLEAN,
+      firstUserId: DataTypes.STRING,
+      secondUserId: DataTypes.STRING
     },
     {}
   );
