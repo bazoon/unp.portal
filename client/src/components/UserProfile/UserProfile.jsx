@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import "./UserProfile.less";
-import UserProfilePreferences from "./UserProfilePreferences";
+import NotificationPreferences from "./NotificationPreferences";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
+import Preferences from "./reducer";
 
 class UserProfile extends Component {
   static defaultProps = {
@@ -13,6 +14,7 @@ class UserProfile extends Component {
   componentDidMount = () => {
     const userId = localStorage.getItem("userId");
     Actions.getPreferences(userId);
+    Actions.getNotificationPreferences(userId);
   };
 
   renderGroups(groups) {
@@ -35,6 +37,7 @@ class UserProfile extends Component {
   }
 
   render() {
+    const { userId } = this.props;
     let { name, avatar, position, groups, adminGroups } = this.props.profile;
     groups = groups || [];
     adminGroups = adminGroups || [];
@@ -53,6 +56,7 @@ class UserProfile extends Component {
                 <div>Отдел</div>
                 <div>email</div>
                 <div>Телефон</div>
+                <div>{position}</div>
               </div>
               <div className="user-profile__groups">
                 <div className="user-profile__groups-in">
@@ -67,7 +71,10 @@ class UserProfile extends Component {
             </div>
           </div>
         </div>
-        <UserProfilePreferences />
+        <NotificationPreferences
+          userId={userId}
+          preferences={this.props.notificationPreferences}
+        />
       </div>
     );
   }
@@ -77,7 +84,9 @@ const mapStateToProps = state => {
   return {
     avatar: state.Login.avatar,
     userId: state.Login.userId,
-    profile: state.UserProfilePreferences.profile
+    profile: state.UserProfilePreferences.profile,
+    notificationPreferences:
+      state.UserProfilePreferences.notificationPreferences
   };
 };
 

@@ -2,9 +2,12 @@ import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
 const Preferences = State({
-  initial: { profile: {} },
+  initial: { profile: {}, notificationPreferences: [] },
   setPreferences(state, payload) {
-    return { profile: payload };
+    return { ...state, profile: payload };
+  },
+  setNotificationPreferences(state, payload) {
+    return { ...state, notificationPreferences: payload };
   }
 });
 
@@ -14,9 +17,17 @@ Effect("getPreferences", userId => {
   });
 });
 
-Effect("savePreferences", payload => {
-  api.post("api/profile_preferences/save", payload).then(response => {
-    Actions.getPreferences();
+Effect("getNotificationPreferences", userId => {
+  api
+    .get("api/profile_preferences/notifications", { userId })
+    .then(response => {
+      Actions.setNotificationPreferences(response.data);
+    });
+});
+
+Effect("saveNotificationPreferences", payload => {
+  api.post("api/profile_preferences/save", payload).then(() => {
+    Actions.getNotificationPreferences(payload.userId);
   });
 });
 

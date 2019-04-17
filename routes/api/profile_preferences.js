@@ -7,7 +7,6 @@ const models = require("../../models");
 
 router.get("/get", (req, res) => {
   const { userId } = req.query;
-  console.log(777, userId);
 
   const groupsQuery = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id" from
        "ProjectGroups", "Participants" 
@@ -35,6 +34,20 @@ router.get("/get", (req, res) => {
   });
 });
 
+router.get("/notifications", (req, res) => {
+  const { userId } = req.query;
+
+  const query = `select "ProjectGroups"."title", type, sms, push, email, "NotificationPreferences"."id" from
+       "ProjectGroups", "NotificationPreferences" 
+       where "ProjectGroups"."id" = "NotificationPreferences"."SourceId" and
+       "NotificationPreferences"."UserId" = ${userId}
+       order by id`;
+
+  models.sequelize.query(query).then(preferences => {
+    res.json(preferences[0]);
+  });
+});
+
 router.get("/list", (req, res) => {
   const readable = fs.createReadStream(fileName, "utf8");
   res.set({ "content-type": "application/json; charset=utf-8" });
@@ -45,21 +58,17 @@ router.get("/list", (req, res) => {
 });
 
 router.post("/save", (req, res) => {
-  const { key, sms, push, email } = req.body;
-  fs.readFile(fileName, function(err, text) {
-    const content = JSON.parse(text);
-    const row = content.find(r => r.key == key);
-    console.log(sms, push, email);
-    console.log(row);
-    row.sms = sms;
-    row.push = push;
-    row.email = email;
-    console.log(row);
-    // console.log(content);
-    fs.writeFile(fileName, JSON.stringify(content), function(err) {
-      res.json("ok");
-    });
-  });
+  const { id, type, value } = req.body;
+  console.log(id, type, value);
+
+  models.NotificationPreference.update(
+    {
+      [type]: value
+    },
+    {
+      where: { id }
+    }
+  ).then(() => res.json({}));
 });
 
 module.exports = router;

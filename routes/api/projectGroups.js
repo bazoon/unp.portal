@@ -35,7 +35,7 @@ function getGroups(userId, query, countQuery, res) {
             title: group.title,
             avatar: group.avatar,
             isOpen: group.is_open,
-            count: (count && count.count) || 0,
+            count: (count && +count.count) || 0,
             participant: participant !== null
           };
         });
@@ -231,21 +231,42 @@ router.post("/media/remove", (req, res) => {
 
 router.post("/unsubscribe", (req, res) => {
   const { groupId, userId } = req.body;
-  console.log(groupId, userId);
-  models.Participant.destroy({
+
+  const participantPromise = models.Participant.destroy({
     where: {
       [Op.and]: [{ UserId: userId }, { ProjectGroupId: groupId }]
     }
-  }).then(() => res.json({}));
+  });
+
+  const notificationPromise = models.NotificationPreference.destroy({
+    where: { UserId: userId, SourceId: groupId }
+  });
+
+  Promise.all([participantPromise, notificationPromise]).then(() => {
+    res.json({});
+  });
 });
 
 router.post("/subscribe", (req, res) => {
   const { groupId, userId } = req.body;
-  console.log(groupId, userId);
-  models.Participant.create({
+
+  const participantPromise = models.Participant.create({
     ProjectGroupId: groupId,
     UserId: userId
-  }).then(() => res.json({}));
+  });
+
+  const notificationPromise = models.NotificationPreference.create({
+    type: "Группа",
+    SourceId: groupId,
+    UserId: userId,
+    sms: false,
+    push: false,
+    email: false
+  });
+
+  Promise.all([participantPromise, notificationPromise]).then(() => {
+    res.json({});
+  });
 });
 
 module.exports = router;
