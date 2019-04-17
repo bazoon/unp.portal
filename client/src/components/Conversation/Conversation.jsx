@@ -66,6 +66,7 @@ class Conversation extends Component {
           avatar={this.props.avatar}
           onSend={this.handleSend}
           onReplySend={this.handleReplySend}
+          showConversationForm
         />
       </div>
     );
