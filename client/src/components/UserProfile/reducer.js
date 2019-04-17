@@ -2,14 +2,14 @@ import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
 const Preferences = State({
-  initial: { preferences: [] },
+  initial: { profile: {} },
   setPreferences(state, payload) {
-    return { preferences: payload };
+    return { profile: payload };
   }
 });
 
-Effect("getPreferences", payload => {
-  api.get("api/profile_preferences/list").then(response => {
+Effect("getPreferences", userId => {
+  api.get("api/profile_preferences/get", { userId }).then(response => {
     Actions.setPreferences(response.data);
   });
 });
