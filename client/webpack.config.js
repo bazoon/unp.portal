@@ -49,7 +49,8 @@ module.exports = {
               javascriptEnabled: true,
               modifyVars: {
                 "layout-header-background": "#fff",
-                "layout-body-background": "#fff"
+                "layout-body-background": "#fff",
+                "font-family": "PTSans"
               }
             }
           }

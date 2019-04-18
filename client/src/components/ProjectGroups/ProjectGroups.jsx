@@ -58,11 +58,6 @@ class ProjectGroups extends Component {
         <TabPane tab="Управление" key="1">
           <div className="project-groups-admin">
             <Button>Создать группу</Button>
-            <GroupCreateModal
-              visible={this.state.isAddModalVisible}
-              onCancel={this.handleCancel}
-              onOk={this.handleOk}
-            />
           </div>
         </TabPane>
       </Tabs>

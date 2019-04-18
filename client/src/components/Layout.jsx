@@ -68,48 +68,42 @@ class L extends Component {
           <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           <Header className="header">
             <Link to="/">
-              <img src={`${logo.slice(1)}`} alt="Logo" />
+              <img
+                className="header__logo"
+                src={`${logo.slice(1)}`}
+                alt="Logo"
+              />
             </Link>
-            <div className="header__search-container">
-              <Search className="header__search-input" />
-            </div>
-            <div className="header__support">
-              <Icon type="phone" className="icon__medium" />
-              <div>
-                Техническая поддержка
-                <br />
-                0000-000-000-000
+
+            <div className="header-icons">
+              <div className="header__support">
+                <div>
+                  <span className="header__support-phone">8–800–123-23-23</span>
+                  <br />
+                  <span className="header__support-text">
+                    Техническая поддержка
+                  </span>
+                </div>
               </div>
-            </div>
-            <Popover
-              title="Уведомления"
-              className="notifications__popover"
-              content={<Notifications />}
-              trigger="click"
-            >
-              <div className="header__notification">
-                <Badge count={5}>
-                  <Icon type="bell" className="icon__medium" />
+              <div>
+                <Icon type="search" className="icon__medium" />
+              </div>
+              <Popover
+                title="Уведомления"
+                className="notifications__popover"
+                content={<Notifications />}
+                trigger="click"
+              >
+                <div className="header__notification">
+                  <Badge count={5}>
+                    <Icon type="bell" className="icon__medium" />
+                  </Badge>
+                </div>
+              </Popover>
+              <div className="header__mail">
+                <Badge count={3}>
+                  <Icon type="mail" className="icon__medium" />
                 </Badge>
-              </div>
-            </Popover>
-            <div className="header__user">
-              <div>
-                <Popover
-                  content={
-                    <div
-                      style={{ cursor: "pointer" }}
-                      onClick={this.handleLogout}
-                    >
-                      Выйти
-                    </div>
-                  }
-                  trigger="click"
-                >
-                  <span style={{ cursor: "pointer" }}>{userName}</span>
-                </Popover>
-                <br />
-                СНИЛС 000-0000-000
               </div>
               <Link to="/profile">
                 {avatar ? (
@@ -122,11 +116,30 @@ class L extends Component {
                   <Icon type="user" className="icon__medium" />
                 )}
               </Link>
+              <div className="header__user">
+                <div>
+                  <Popover
+                    content={
+                      <div
+                        style={{ cursor: "pointer" }}
+                        onClick={this.handleLogout}
+                      >
+                        Выйти
+                      </div>
+                    }
+                    trigger="click"
+                  >
+                    <Icon style={{ cursor: "pointer" }} type="down" />
+                  </Popover>
+                </div>
+              </div>
             </div>
           </Header>
           <Layout>
             <Sider>
-              <Route path="/" component={MainMenu} />
+              <div className="main-menu">
+                <Route path="/" component={MainMenu} />
+              </div>
             </Sider>
             <Content>
               <Switch>

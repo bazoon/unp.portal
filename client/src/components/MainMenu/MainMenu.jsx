@@ -16,27 +16,20 @@ export class MainMenu extends Component {
         mode="inline"
         defaultOpenKeys={["sub1", "sub2"]}
       >
-        <SubMenu key="sub1" title="Группы">
-          <Menu.Item key="/mygroups">
-            <Link to="/mygroups">Мои группы</Link>
-          </Menu.Item>
-
-          <Menu.Item key="/createdgroups">
-            <Link to="/createdgroups">Созданные мной</Link>
-          </Menu.Item>
-          <Menu.Item key="/allgroups">
-            <Link to="/allgroups">Все группы</Link>
-          </Menu.Item>
-        </SubMenu>
-        <SubMenu key="sub2" title="События">
-          <Menu.Item key="/events/my">
-            <Link to="/events/my">Мои события</Link>
-          </Menu.Item>
-          <Menu.Item key="5">Созданные мной</Menu.Item>
-          <Menu.Item key="6">Все события</Menu.Item>
-        </SubMenu>
-        <Menu.Item key="/laws">
-          <Link to="/laws">Нормативная база</Link>
+        <Menu.Item key="/allgroups">
+          <Link to="/allgroups">
+            <span>Группы</span>
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="/events">
+          <Link to="/events">
+            <span>События</span>
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="/conversations">
+          <Link to="/conversations">
+            <span>Мои обсуждения</span>
+          </Link>
         </Menu.Item>
       </Menu>
     );

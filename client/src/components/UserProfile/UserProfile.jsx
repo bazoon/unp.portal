@@ -73,7 +73,13 @@ class UserProfile extends Component {
 
   render() {
     const { userId } = this.props;
-    let { name, avatar, position, groups, adminGroups } = this.props.profile;
+    let {
+      userName,
+      avatar,
+      position,
+      groups,
+      adminGroups
+    } = this.props.profile;
     groups = groups || [];
     adminGroups = adminGroups || [];
 
@@ -90,8 +96,7 @@ class UserProfile extends Component {
           <div className="user-profile__info-container">
             <div className="user-profile__info">
               <div className="user-profile__info-lines">
-                <div className="user-profile__title">{name}</div>
-                <hr />
+                <div className="user-profile__title">{userName}</div>
                 <div>Отдел</div>
                 <div>email</div>
                 <div>Телефон</div>
