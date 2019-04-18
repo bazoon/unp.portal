@@ -5,12 +5,12 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       avatar: DataTypes.STRING,
-      is_open: DataTypes.BOOLEAN
+      is_open: DataTypes.BOOLEAN,
+      description: DataTypes.TEXT
     },
     {}
   );
   ProjectGroup.associate = function(models) {
-    // associations can be defined here
     ProjectGroup.belongsTo(models.User);
     ProjectGroup.hasMany(models.Participant, { as: "Participants" });
     ProjectGroup.hasMany(models.Conversation, { as: "Conversations" });

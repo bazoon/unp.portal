@@ -4,6 +4,19 @@ const fs = require("fs");
 const jsonStream = require("JSONStream");
 const fileName = __dirname + "/profile_preferences.json";
 const models = require("../../models");
+const getUploadFilePath = require("../../utils/getUploadFilePath");
+
+const multer = require("multer");
+var storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function(req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+
+const upload = multer({ storage });
 
 router.get("/get", (req, res) => {
   const { userId } = req.query;
@@ -22,9 +35,9 @@ router.get("/get", (req, res) => {
     models.sequelize.query(groupsQuery).then(groups => {
       models.sequelize.query(adminsQuery).then(adminGroups => {
         res.json({
-          id: user.id,
-          name: user.name,
-          avatar: user.avatar,
+          userId: user.id,
+          userName: user.name,
+          avatar: getUploadFilePath(user.avatar),
           position: user.Position,
           groups: groups[0],
           adminGroups: adminGroups[0]
@@ -48,18 +61,8 @@ router.get("/notifications", (req, res) => {
   });
 });
 
-router.get("/list", (req, res) => {
-  const readable = fs.createReadStream(fileName, "utf8");
-  res.set({ "content-type": "application/json; charset=utf-8" });
-  readable
-    .pipe(jsonStream.parse("*"))
-    .pipe(jsonStream.stringify())
-    .pipe(res);
-});
-
 router.post("/save", (req, res) => {
   const { id, type, value } = req.body;
-  console.log(id, type, value);
 
   models.NotificationPreference.update(
     {
@@ -69,6 +72,22 @@ router.post("/save", (req, res) => {
       where: { id }
     }
   ).then(() => res.json({}));
+});
+
+router.post("/save/avatar", upload.array("file", 12), function(req, res, next) {
+  const { userId } = req.body;
+  const avatar = req.files && req.files[0].filename;
+
+  models.User.update(
+    {
+      avatar: avatar
+    },
+    { where: { id: userId } }
+  ).then(() =>
+    res.json({
+      avatar: getUploadFilePath(avatar)
+    })
+  );
 });
 
 module.exports = router;

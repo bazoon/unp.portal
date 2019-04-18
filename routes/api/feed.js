@@ -4,6 +4,7 @@ const fs = require("fs");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const models = require("../../models");
+const getUploadFilePath = require("../../utils/getUploadFilePath");
 
 const multer = require("multer");
 var storage = multer.diskStorage({
@@ -53,7 +54,7 @@ router.get("/group_posts", (req, res) => {
             id: post.id,
             parentId: post.ParentId,
             text: post.text,
-            avatar: post.avatar,
+            avatar: getUploadFilePath(post.avatar),
             userName: post.userName,
             position: post.position,
             createdAt: post.createdAt,
@@ -150,7 +151,7 @@ router.post("/postReplyToFeed", upload.array("file", 12), function(
           id: post.id,
           parentId: post.ParentId,
           text: post.text,
-          avatar: user.avatar,
+          avatar: getUploadFilePath(user.avatar),
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,

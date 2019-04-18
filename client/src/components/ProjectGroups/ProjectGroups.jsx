@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Tabs, Input } from "antd";
+import { Button, Tabs, Input } from "antd";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import { ProjectGroup } from "./ProjectGroup";
 import "./ProjectGroups.less";
+import GroupCreateModal from "./GroupCreateModal";
 
 const { TabPane } = Tabs;
 const { Search } = Input;
@@ -55,7 +56,14 @@ class ProjectGroups extends Component {
           <div className="project-groups">{this.renderGroups()}</div>
         </TabPane>
         <TabPane tab="Управление" key="1">
-          Управление
+          <div className="project-groups-admin">
+            <Button>Создать группу</Button>
+            <GroupCreateModal
+              visible={this.state.isAddModalVisible}
+              onCancel={this.handleCancel}
+              onOk={this.handleOk}
+            />
+          </div>
         </TabPane>
       </Tabs>
     );

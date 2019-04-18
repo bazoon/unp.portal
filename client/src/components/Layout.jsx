@@ -39,6 +39,7 @@ class L extends Component {
   componentDidMount() {
     const { userId } = this.props.login;
     Actions.getAllEvents({ userId });
+    Actions.getPreferences(localStorage.getItem("userId"));
   }
 
   handleChatClick = () => {
@@ -59,7 +60,7 @@ class L extends Component {
 
   render() {
     const { isChatOpen } = this.state;
-    const { userName, avatar, userId } = this.props.login;
+    const { userId, userName, avatar } = this.props.profile;
     return (
       <BrowserRouter>
         <Layout>
@@ -178,7 +179,10 @@ class L extends Component {
 }
 
 const mapStateToProps = state => {
-  return { login: state.Login };
+  return {
+    login: state.Login,
+    profile: state.UserProfilePreferences.profile
+  };
 };
 
 export default connect(mapStateToProps)(L);

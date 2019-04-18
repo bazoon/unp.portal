@@ -8,6 +8,11 @@ const Preferences = State({
   },
   setNotificationPreferences(state, payload) {
     return { ...state, notificationPreferences: payload };
+  },
+  updateAvatar(state, payload) {
+    const profile = { ...state.profile };
+    profile.avatar = payload;
+    return { ...state, profile };
   }
 });
 
@@ -28,6 +33,12 @@ Effect("getNotificationPreferences", userId => {
 Effect("saveNotificationPreferences", payload => {
   api.post("api/profile_preferences/save", payload).then(() => {
     Actions.getNotificationPreferences(payload.userId);
+  });
+});
+
+Effect("postUserAvatar", payload => {
+  api.post("api/profile_preferences/save/avatar", payload).then(response => {
+    Actions.updateAvatar(response.data.avatar);
   });
 });
 

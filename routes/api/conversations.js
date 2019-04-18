@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const models = require("../../models");
+const getUploadFilePath = require("../../utils/getUploadFilePath");
 
 const multer = require("multer");
 var storage = multer.diskStorage({
@@ -32,7 +33,7 @@ router.get("/get", (req, res) => {
             id: post.id,
             parentId: post.ParentId,
             text: post.text,
-            avatar: post.avatar,
+            avatar: getUploadFilePath(post.avatar),
             userName: post.name,
             position: post.Position,
             createdAt: post.createdAt,
@@ -90,7 +91,7 @@ router.post("/post", upload.array("file", 12), function(req, res, next) {
           id: post.id,
           parentId: post.ParentId,
           text: post.text,
-          avatar: user.avatar,
+          avatar: getUploadFilePath(user.avatar),
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,

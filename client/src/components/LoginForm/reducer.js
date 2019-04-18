@@ -34,8 +34,6 @@ Effect("login", ({ userName, password }) => {
       const { token, userName, userId, avatar } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("avatar", avatar);
 
       Actions.setLogin(response.data);
       return true;

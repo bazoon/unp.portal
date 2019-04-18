@@ -53,6 +53,9 @@
 .project-groups__search {
   padding: 10px;
 }
+.project-groups-admin {
+  padding: 10px;
+}
 .project-group {
   display: flex;
   justify-content: space-between;
@@ -116,6 +119,13 @@
 }
 .user-profile__avatar img {
   border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+.user-profile__avatar img:hover {
+  cursor: pointer;
+  filter: grayscale();
 }
 .user-profile__groups {
   display: flex;
@@ -131,6 +141,7 @@
 .user-profile__groups img {
   border-radius: 50%;
   margin-right: 5px;
+  border: solid 1px rgba(0, 0, 0, 0.1);
 }
 .user-profile__groups-in div {
   margin-bottom: 10px;
@@ -204,6 +215,7 @@
   height: 30px;
   border-radius: 50%;
   background: cadetblue;
+  object-fit: cover;
 }
 .group-sidebar__video {
   width: 100%;
@@ -19863,6 +19875,7 @@ span.ant-typography-ellipsis {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+  object-fit: cover;
 }
 .header__user a {
   margin-left: 10px;
@@ -19968,6 +19981,7 @@ span.ant-typography-ellipsis {
   border-radius: 50%;
   width: 50px;
   height: 50px;
+  object-fit: cover;
 }
 .conversation__post-body {
   margin-bottom: 20px;

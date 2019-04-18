@@ -11,10 +11,31 @@ class UserProfile extends Component {
     profile: {}
   };
 
+  constructor(props) {
+    super(props);
+    this.formRef = React.createRef();
+  }
+
   componentDidMount = () => {
     const userId = localStorage.getItem("userId");
-    Actions.getPreferences(userId);
     Actions.getNotificationPreferences(userId);
+  };
+
+  handleFileChange = e => {
+    const formData = new FormData();
+    const { userId } = this.props;
+    const files = Array.prototype.map.call(e.target.files, f => f);
+    formData.append("userId", userId);
+    files.forEach(f => {
+      formData.append("file", f);
+    });
+
+    Actions.postUserAvatar(formData);
+  };
+
+  handleAvatarClick = () => {
+    const input = this.formRef.current.querySelector("input[type=file]");
+    input.click();
   };
 
   renderGroups(groups) {
@@ -36,6 +57,20 @@ class UserProfile extends Component {
     );
   }
 
+  renderFileForm = () => {
+    return (
+      <form
+        action="/upload"
+        method="post"
+        encType="multipart/form-data"
+        ref={this.formRef}
+        style={{ display: "none" }}
+      >
+        <input type="file" name="file" onChange={this.handleFileChange} />
+      </form>
+    );
+  };
+
   render() {
     const { userId } = this.props;
     let { name, avatar, position, groups, adminGroups } = this.props.profile;
@@ -46,7 +81,11 @@ class UserProfile extends Component {
       <div className="user-profile__container">
         <div className="user-profile">
           <div className="user-profile__avatar">
-            <img src={avatar} alt="Фото пользователя" />
+            <img
+              src={avatar}
+              alt="Фото пользователя"
+              onClick={this.handleAvatarClick}
+            />
           </div>
           <div className="user-profile__info-container">
             <div className="user-profile__info">
@@ -75,6 +114,7 @@ class UserProfile extends Component {
           userId={userId}
           preferences={this.props.notificationPreferences}
         />
+        {this.renderFileForm()}
       </div>
     );
   }

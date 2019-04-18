@@ -7,6 +7,7 @@ const models = require("../../models");
 const multer = require("multer");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const getUploadFilePath = require("../../utils/getUploadFilePath");
 
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -93,15 +94,22 @@ router.get("/list/created", (req, res) => {
 router.get("/get", (req, res) => {
   const { id } = req.query;
 
-  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", "ProjectGroups"."is_open" from
+  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", 
+              "ProjectGroups"."is_open", "ProjectGroups"."description" from
               "ProjectGroups" where "ProjectGroups"."id" = ${id}`;
-  const conversationsQuery = `select id, title from "Conversations" where "ProjectGroupId"=${id}`;
+  const conversationsQuery = `select "Conversations"."id", title, count(*) from "Conversations"
+                              left join "Posts"
+                              on "Conversations"."id" = "Posts"."ConversationId"
+                              where "Conversations"."ProjectGroupId" = ${id}
+                              group by "Conversations"."id"
+                              `;
 
   const promises = models.sequelize.query(query).then(function(groups) {
     return models.sequelize
       .query(conversationsQuery)
       .then(function(conversations) {
         const group = groups[0][0];
+        console.log(group);
 
         const linksPromise = models.ProjectGroupLink.findAll({
           where: { ProjectGroupId: group.id }
@@ -149,14 +157,27 @@ router.get("/get", (req, res) => {
                 id: group.id,
                 isOpen: group.is_open,
                 title: group.title,
+                description: group.description,
                 avatar: group.avatar,
                 isOpen: group.is_open,
                 conversations: conversations[0],
                 links: results[0],
                 docs: results[1],
                 media: results[2],
-                participants: p,
-                admins: a
+                participants: p.map(u => {
+                  return {
+                    id: u.id,
+                    name: u.name,
+                    avatar: getUploadFilePath(u.avatar)
+                  };
+                }),
+                admins: a.map(u => {
+                  return {
+                    id: u.id,
+                    name: u.name,
+                    avatar: getUploadFilePath(u.avatar)
+                  };
+                })
               };
             }
           );
