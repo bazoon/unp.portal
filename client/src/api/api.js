@@ -9,7 +9,7 @@ const api = {
       params
     };
 
-    return axios.get(url, config);
+    return axios.get("/" + url, config);
   },
   post: (url, data) => {
     const token = localStorage.getItem("token");
@@ -17,7 +17,7 @@ const api = {
       headers: { token }
     };
 
-    return axios.post(url, data, config);
+    return axios.post("/" + url, data, config);
   }
 };
 window.api = api;

@@ -71,15 +71,36 @@
       }
     }
   }
-  &__avatar {
+  &__avatar img {
     width: 30px;
     height: 30px;
     border-radius: 50%;
     background: cadetblue;
+    object-fit: cover;
   }
 
   &__video {
     width: 100%;
     margin-top: 10px;
+  }
+
+  &__links {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  &__link {
+  }
+
+  &__docs {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+}
+
+.links-form {
+  margin-top: 10px;
+  .ant-form-item {
+    margin-bottom: 10px;
   }
 }

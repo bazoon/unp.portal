@@ -1,0 +1,20 @@
+.calendar-day {
+  text-align: center;
+
+  &__events {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__event {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: green;
+    margin-right: 2px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

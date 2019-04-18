@@ -61,10 +61,6 @@ class UserProfilePreferences extends Component {
     ];
   }
 
-  componentDidMount = () => {
-    Actions.getPreferences();
-  };
-
   handleCheckChange = (e, record, type) => {
     const payload = { ...record, [type]: e.target.checked };
     Actions.savePreferences(payload);

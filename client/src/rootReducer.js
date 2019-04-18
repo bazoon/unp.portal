@@ -8,6 +8,8 @@ import Chat from "./components/Chat/reducer";
 import Login from "./components/LoginForm/reducer";
 import ProjectGroup from "./components/Group/reducer";
 import Conversation from "./components/Conversation/reducer";
+import Events from "./components/Events/reducer";
+import Users from "./usersReducer";
 
 export default combineReducers({
   projectGroups,
@@ -18,5 +20,7 @@ export default combineReducers({
   Chat,
   Login,
   ProjectGroup,
-  Conversation
+  Conversation,
+  Events,
+  Users
 });

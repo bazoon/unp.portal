@@ -9,10 +9,19 @@ const Chat = State({
     activeChannelId: undefined,
     activePages: {},
     channelHasMessages: {},
-    lastMessageId: undefined
+    lastMessageId: undefined,
+    allChannels: []
   },
   setChatChannels(state, payload) {
     return { ...state, channels: payload };
+  },
+  setAllChannels(state, payload) {
+    return { ...state, allChannels: payload };
+  },
+  addChannel(state, payload) {
+    const { channels } = state;
+    const newChannels = [...channels, payload];
+    return { ...state, channels: newChannels };
   },
   setActiveChannel(state, activeChannelId) {
     return { ...state, activeChannelId };
@@ -67,9 +76,27 @@ const Chat = State({
   }
 });
 
-Effect("getChannels", () => {
-  api.get("api/chat/channels").then(response => {
+Effect("getChannels", userId => {
+  api.get("api/chat/channels", { userId }).then(response => {
     Actions.setChatChannels(response.data);
+  });
+});
+
+Effect("getAllChannels", userId => {
+  api.get("api/chat/channels/all", { userId }).then(response => {
+    Actions.setAllChannels(response.data);
+  });
+});
+
+Effect("postCreateChannel", payload => {
+  return api.post("api/chat/channels/create", payload).then(response => {
+    return Actions.addChannel(response.data);
+  });
+});
+
+Effect("postCreatePrivateChannel", payload => {
+  return api.post("api/chat/channels/createPrivate", payload).then(response => {
+    return Actions.addChannel(response.data);
   });
 });
 
@@ -164,17 +191,6 @@ Effect("sendChatFile", payload => {
         // Actions.getChat();
       }
     );
-
-    // api
-    //   .post("api/chat/send", {
-    //     channelId,
-    //     message: files.map(f => f.filename),
-    //     type: "file"
-    //   })
-    //   .then(() => {
-    //     Actions.getChat();
-    //     Actions.notifyUpload();
-    //   });
   });
 });
 

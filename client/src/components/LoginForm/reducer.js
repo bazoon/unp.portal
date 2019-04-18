@@ -26,7 +26,7 @@ const LoginForm = State({
 
 Effect("login", ({ userName, password }) => {
   api
-    .post("/api/user/login", {
+    .post("api/user/login", {
       userName,
       password
     })
@@ -34,8 +34,6 @@ Effect("login", ({ userName, password }) => {
       const { token, userName, userId, avatar } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("avatar", avatar);
 
       Actions.setLogin(response.data);
       return true;
@@ -48,7 +46,7 @@ Effect("login", ({ userName, password }) => {
 
 Effect("signup", ({ userName, password }) => {
   api
-    .post("/api/user/signup", {
+    .post("api/user/signup", {
       userName,
       password
     })

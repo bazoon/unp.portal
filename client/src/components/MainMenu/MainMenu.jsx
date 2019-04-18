@@ -14,7 +14,7 @@ export class MainMenu extends Component {
         selectedKeys={[pathname]}
         theme="white"
         mode="inline"
-        defaultOpenKeys={["sub1"]}
+        defaultOpenKeys={["sub1", "sub2"]}
       >
         <SubMenu key="sub1" title="Группы">
           <Menu.Item key="/mygroups">
@@ -29,7 +29,9 @@ export class MainMenu extends Component {
           </Menu.Item>
         </SubMenu>
         <SubMenu key="sub2" title="События">
-          <Menu.Item key="4">Мои события</Menu.Item>
+          <Menu.Item key="/events/my">
+            <Link to="/events/my">Мои события</Link>
+          </Menu.Item>
           <Menu.Item key="5">Созданные мной</Menu.Item>
           <Menu.Item key="6">Все события</Menu.Item>
         </SubMenu>

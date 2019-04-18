@@ -11,13 +11,25 @@ export class ProjectGroup extends Component {
       avatar: PropTypes.string,
       title: PropTypes.string,
       isOpen: PropTypes.bool,
-      count: PropTypes.string
-    }).isRequired
+      count: PropTypes.number
+    }).isRequired,
+    onUnsubscribe: PropTypes.func.isRequired,
+    onSubscribe: PropTypes.func.isRequired
+  };
+
+  handleUnsubscribe = () => {
+    const { group, onUnsubscribe } = this.props;
+    onUnsubscribe(group.id);
+  };
+
+  handleSubscribe = () => {
+    const { group, onSubscribe } = this.props;
+    onSubscribe(group.id);
   };
 
   render() {
     const { group } = this.props;
-    const { id, avatar, title, isOpen, count } = group;
+    const { id, avatar, title, isOpen, count, participant } = group;
 
     return (
       <div className="project-group">
@@ -39,8 +51,20 @@ export class ProjectGroup extends Component {
           </div>
         </div>
         <div className="project-group__operations">
-          <Button>Запрос на участие</Button>
-          <Popover placement="bottom" trigger="click" content={<Menu />}>
+          {participant ? (
+            <>
+              <span>Вы участник</span>
+              &nbsp;
+            </>
+          ) : (
+            <Button onClick={this.handleSubscribe}>Запрос на участие</Button>
+          )}
+
+          <Popover
+            placement="bottom"
+            trigger="click"
+            content={<Menu onUnsubscribe={this.handleUnsubscribe} />}
+          >
             <Button icon="more" />
           </Popover>
         </div>

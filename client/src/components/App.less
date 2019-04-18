@@ -39,6 +39,7 @@
       width: 50px;
       height: 50px;
       border-radius: 50%;
+      object-fit: cover;
     }
 
     a {
@@ -51,4 +52,33 @@
   &__medium {
     font-size: 20px;
   }
+}
+
+.flex-container {
+  display: flex;
+
+  &_between {
+    justify-content: space-between;
+  }
+
+  &_gutter-5 * {
+    margin-right: 5px;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+  &__row {
+    margin-bottom: 20px;
+  }
+}
+
+.flex-1 {
+  flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+
+.flex-3 {
+  flex: 3;
 }

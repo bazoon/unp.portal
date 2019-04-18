@@ -3,11 +3,15 @@ import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import cn from "classnames";
 import moment from "moment";
-import { Drawer, Input, Button, Icon, Spin } from "antd";
+import { Drawer, Input, Button, Icon, Spin, Popover, Tooltip } from "antd";
 import PropTypes from "prop-types";
 import socketIOClient from "socket.io-client";
 import "intersection-observer";
 import Observer from "@researchgate/react-intersection-observer";
+import NewChannel from "./NewChannel";
+import NewUser from "./NewUser";
+import JoinChannel from "./JoinChannel";
+
 import {
   List,
   AutoSizer,
@@ -67,7 +71,10 @@ class Chat extends Component {
     super(props);
     this.state = {
       currentMessage: "",
-      isSocketConnected: false
+      isSocketConnected: false,
+      isNewChannelWindowOpen: false,
+      isNewUserWindowOpen: false,
+      isJoinWindowOpen: false
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -76,7 +83,8 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    Actions.getChannels();
+    Actions.getChannels(this.props.userId);
+    Actions.getAllChannels();
 
     socket.on("connect", () => {
       console.log("connect");
@@ -404,9 +412,81 @@ class Chat extends Component {
     chatTalks.scrollTop = chatTalks.scrollHeight;
   };
 
+  handleAddChannel = () => {
+    this.setState({
+      isNewChannelWindowOpen: true
+    });
+  };
+
+  handleNewChannelCancel = () => {
+    this.setState({
+      isNewChannelWindowOpen: false
+    });
+  };
+
+  handleNewChannelOk = fields => {
+    this.setState({
+      isNewChannelWindowOpen: false
+    });
+    return Actions.postCreateChannel(fields);
+  };
+
+  handleAddNewUser = () => {
+    this.setState({
+      isNewUserWindowOpen: true
+    });
+  };
+
+  handleNewUserCancel = () => {
+    this.setState({
+      isNewUserWindowOpen: false
+    });
+  };
+
+  handleNewUserOk = fields => {
+    this.setState({
+      isNewUserWindowOpen: false
+    });
+    return Actions.postCreatePrivateChannel(fields);
+  };
+
+  handleJoinChannel = () => {
+    this.setState({
+      isJoinWindowOpen: true
+    });
+  };
+
+  handleJoinChannelCancel = () => {
+    this.setState({
+      isJoinWindowOpen: false
+    });
+  };
+
+  handleJoinChannelOk = fields => {
+    this.setState({
+      isJoinWindowOpen: false
+    });
+    return Actions.postJoinChannel(fields);
+  };
+
+  renderChannelAvatar(avatar) {
+    if (!avatar) return <div className="placeholder" />;
+    return avatar.includes("http") ? (
+      <img src={avatar} alt="logo" />
+    ) : (
+      <img src={`/uploads/${avatar}`} alt="logo" />
+    );
+  }
+
   renderChatChanels() {
     const { activeChannelId } = this.props;
     const { channels } = this.props;
+
+    const content = (
+      <div>
+        <Button onClick={this.handleCreatePrivateChat}>Чат</Button>
+      </div>
+    );
 
     return channels.map(channel => {
       const className = cn("chat__chanels-item", {
@@ -420,7 +500,9 @@ class Chat extends Component {
           onClick={() => this.handleChangeChanel(channel.id)}
         >
           <div className="chat__chanels-avatar">
-            <img src={channel.avatar} alt="logo" />
+            <Popover content={content} trigger="contextMenu">
+              {this.renderChannelAvatar(channel.avatar)}
+            </Popover>
           </div>
           <div className="chat__chanels-title">{channel.name}</div>
         </div>
@@ -466,8 +548,19 @@ class Chat extends Component {
                 <div className={chatIndicatorCls} />
                 <Input placeholder="Поиск" style={{ width: "100%" }} />
               </div>
+              <div className="chat__search-controls">
+                <Tooltip placement="bottom" title="Создать канал">
+                  <Button icon="plus" onClick={this.handleAddChannel} />
+                </Tooltip>
+                <Tooltip placement="bottom" title="Присоединится к каналу">
+                  <Button icon="link" onClick={this.handleJoinChannel} />
+                </Tooltip>
+                <Tooltip placement="bottom" title="Создать приватный чат">
+                  <Button icon="user-add" onClick={this.handleAddNewUser} />
+                </Tooltip>
 
-              <Button icon="more" onClick={this.handleLoadMore} />
+                <Button icon="more" onClick={this.handleLoadMore} />
+              </div>
             </div>
 
             <div className="chat__talks">
@@ -525,6 +618,21 @@ class Chat extends Component {
             </div>
           </div>
         </Drawer>
+        <NewChannel
+          isOpen={this.state.isNewChannelWindowOpen}
+          onOk={this.handleNewChannelOk}
+          onCancel={this.handleNewChannelCancel}
+        />
+        <NewUser
+          isOpen={this.state.isNewUserWindowOpen}
+          onOk={this.handleNewUserOk}
+          onCancel={this.handleNewUserCancel}
+        />
+        <JoinChannel
+          isOpen={this.state.isJoinWindowOpen}
+          onOk={this.handleJoinChannelOk}
+          onCancel={this.handleJoinChannelCancel}
+        />
       </div>
     );
   }

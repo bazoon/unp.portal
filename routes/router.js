@@ -14,6 +14,7 @@ const profilePreferences = require("./api/profile_preferences");
 const chat = require("./api/chat");
 const conversations = require("./api/conversations");
 const comments = require("./api/comments");
+const events = require("./api/events");
 
 // Api routes
 
@@ -57,5 +58,6 @@ router.use("/profile_preferences", profilePreferences);
 router.use("/chat", chat);
 router.use("/conversations", conversations);
 router.use("/comments", comments);
+router.use("/events", events);
 
 module.exports = router;

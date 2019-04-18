@@ -1,3 +1,21 @@
+.calendar-day {
+  text-align: center;
+}
+.calendar-day__events {
+  display: flex;
+  justify-content: center;
+}
+.calendar-day__event {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: green;
+  margin-right: 2px;
+}
+.calendar-day__event:last-child {
+  margin-right: 0;
+}
+
 .news__header {
   font-size: 14px;
   font-weight: 900;
@@ -33,6 +51,9 @@
   padding: 10px;
 }
 .project-groups__search {
+  padding: 10px;
+}
+.project-groups-admin {
   padding: 10px;
 }
 .project-group {
@@ -98,6 +119,13 @@
 }
 .user-profile__avatar img {
   border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+.user-profile__avatar img:hover {
+  cursor: pointer;
+  filter: grayscale();
 }
 .user-profile__groups {
   display: flex;
@@ -113,9 +141,14 @@
 .user-profile__groups img {
   border-radius: 50%;
   margin-right: 5px;
+  border: solid 1px rgba(0, 0, 0, 0.1);
 }
 .user-profile__groups-in div {
   margin-bottom: 10px;
+}
+.user-profile__group-logo {
+  width: 50px;
+  height: 50px;
 }
 
 .group {
@@ -177,15 +210,30 @@
 .group-sidebar__item-container li div {
   margin-right: 5px;
 }
-.group-sidebar__avatar {
+.group-sidebar__avatar img {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   background: cadetblue;
+  object-fit: cover;
 }
 .group-sidebar__video {
   width: 100%;
   margin-top: 10px;
+}
+.group-sidebar__links {
+  max-height: 100px;
+  overflow-y: auto;
+}
+.group-sidebar__docs {
+  max-height: 100px;
+  overflow-y: auto;
+}
+.links-form {
+  margin-top: 10px;
+}
+.links-form .ant-form-item {
+  margin-bottom: 10px;
 }
 
 .feed {
@@ -194,6 +242,12 @@
 .feed__header {
   font-weight: 900;
   font-size: 24px;
+}
+.feed-message {
+  margin-bottom: 10px;
+}
+.feed-whom {
+  display: flex;
 }
 .feed__item {
   margin-bottom: 20px;
@@ -310,6 +364,12 @@
   background: #ebebeb;
   height: 52px;
 }
+.chat__search-controls * {
+  margin-right: 5px;
+}
+.chat__search-controls * :last-child {
+  margin-right: 0;
+}
 .chat .ant-drawer-body {
   height: 100%;
   padding: 0;
@@ -340,6 +400,14 @@
   background: #fff;
 }
 .chat__chanels-avatar img {
+  border-radius: 50%;
+  margin-right: 5px;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+.chat__chanels-avatar .placeholder {
+  border: solid 1px silver;
   border-radius: 50%;
   margin-right: 5px;
   width: 50px;
@@ -19807,12 +19875,37 @@ span.ant-typography-ellipsis {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+  object-fit: cover;
 }
 .header__user a {
   margin-left: 10px;
 }
 .icon__medium {
   font-size: 20px;
+}
+.flex-container {
+  display: flex;
+}
+.flex-container_between {
+  justify-content: space-between;
+}
+.flex-container_gutter-5 * {
+  margin-right: 5px;
+}
+.flex-container_gutter-5 *:last-child {
+  margin-right: 0;
+}
+.flex-container__row {
+  margin-bottom: 20px;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
 }
 
 .notifications {
@@ -19849,6 +19942,22 @@ span.ant-typography-ellipsis {
   border-radius: 5px;
   padding: 10px;
   padding-left: 20px;
+  margin-bottom: 20px;
+}
+.conversation__post-parent {
+  border-left: solid 2px #0c4f7d;
+  padding-left: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.conversation__post-parent-text {
+  font-size: 12px;
+  margin-right: 20px;
+}
+.conversation__post-to-parent {
+  margin-right: 20px;
 }
 .conversation__post-header {
   display: flex;
@@ -19872,6 +19981,7 @@ span.ant-typography-ellipsis {
   border-radius: 50%;
   width: 50px;
   height: 50px;
+  object-fit: cover;
 }
 .conversation__post-body {
   margin-bottom: 20px;
@@ -19959,6 +20069,55 @@ span.ant-typography-ellipsis {
   margin: 10px;
   border-radius: 5px;
   background-color: #f4f6f9;
+}
+
+.event-list {
+  padding: 10px;
+}
+.event-list__header {
+  font-size: 16px;
+  font-weight: 900;
+  display: inline-block;
+  margin-right: 10px;
+  margin-bottom: 20px;
+}
+.event-list__date {
+  font-size: 16px;
+  display: inline-block;
+}
+.event-list__no-events {
+  font-size: 20px;
+  font-weight: 900;
+  color: silver;
+}
+.event__wrapper {
+  display: flex;
+  margin-bottom: 20px;
+}
+.event__wrapper:last-child {
+  margin-bottom: 0;
+}
+.event__wrapper-show-files {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  cursor: pointer;
+}
+.event__wrapper-file {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.event__wrapper-file-size {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+}
+.event__time {
+  flex: 2;
+}
+.event__info {
+  flex: 5;
 }
 
 .login-form__container {

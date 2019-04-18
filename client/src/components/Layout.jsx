@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import { Route, Link, Switch, HashRouter } from "react-router-dom";
+import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
 import { MainMenu } from "./MainMenu/MainMenu";
-import { RightMenu } from "./RightMenu/RightMenu";
+import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
-import { UserProfile } from "./UserProfile/UserProfile";
+import UserProfile from "./UserProfile/UserProfile";
 import Group from "./Group/Group";
-import { GroupSidebar } from "./Group/GroupSidebar";
+import GroupSidebar from "./Group/GroupSidebar";
 import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
 import ChatIcon from "./Chat/ChatIcon";
@@ -15,10 +15,13 @@ import Chat from "./Chat/Chat";
 
 import "antd/dist/antd.less";
 import logo from "./top-logo.svg";
+
 import "../favicon.ico";
 import "./App.less";
 import Notifications from "./Notifications/Notifications";
 import Conversation from "./Conversation/Conversation";
+import EventList from "./Events/EventList";
+import { Actions } from "jumpstate";
 
 const { Header, Sider, Content } = Layout;
 const { Search } = Input;
@@ -29,6 +32,14 @@ class L extends Component {
     this.state = {
       isChatOpen: false
     };
+  }
+
+  // Тут загрузка данных общих для разных
+  // дочерних компонентов
+  componentDidMount() {
+    const { userId } = this.props.login;
+    Actions.getAllEvents({ userId });
+    Actions.getPreferences(localStorage.getItem("userId"));
   }
 
   handleChatClick = () => {
@@ -49,15 +60,15 @@ class L extends Component {
 
   render() {
     const { isChatOpen } = this.state;
-    const { userName, avatar } = this.props.login;
+    const { userId, userName, avatar } = this.props.profile;
     return (
-      <HashRouter>
+      <BrowserRouter>
         <Layout>
           <ChatIcon onClick={this.handleChatClick} />
           <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           <Header className="header">
             <Link to="/">
-              <img src={logo} alt="Logo" />
+              <img src={`${logo.slice(1)}`} alt="Logo" />
             </Link>
             <div className="header__search-container">
               <Search className="header__search-input" />
@@ -150,24 +161,28 @@ class L extends Component {
                   )}
                 />
                 <Route path="/laws" component={() => <Laws />} />
+                <Route path="/events/my" component={EventList} />
                 <Route path="/" component={Feed} />
               </Switch>
             </Content>
             <Sider width="300" style={{ padding: "10px" }}>
               <Switch>
                 <Route path="/group/:id" component={GroupSidebar} />
-                <Route path="/" component={RightMenu} />
+                <Route path="/" component={props => <RightMenu {...props} />} />
               </Switch>
             </Sider>
           </Layout>
         </Layout>
-      </HashRouter>
+      </BrowserRouter>
     );
   }
 }
 
 const mapStateToProps = state => {
-  return { login: state.Login };
+  return {
+    login: state.Login,
+    profile: state.UserProfilePreferences.profile
+  };
 };
 
 export default connect(mapStateToProps)(L);
