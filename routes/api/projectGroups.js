@@ -20,6 +20,23 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.post("/create", upload.array("file", 12), function(req, res, next) {
+  const { userId, groupTitle, isOpen, groupDescription } = req.body;
+  const files = req.files;
+
+  models.ProjectGroup.create({
+    title: groupTitle,
+    avatar: files && files[0] && files[0].filename,
+    is_open: isOpen,
+    description: groupDescription
+  }).then(group => {
+    models.Participant.create({
+      ProjectGroupId: group.id,
+      UserId: userId
+    }).then(() => res.json({}));
+  });
+});
+
 function getGroups(userId, query, countQuery, res) {
   const promise = models.sequelize.query(query).then(function(groups) {
     return models.sequelize.query(countQuery).then(function(counts) {
@@ -34,7 +51,7 @@ function getGroups(userId, query, countQuery, res) {
             id: group.id,
             isOpen: group.is_open,
             title: group.title,
-            avatar: group.avatar,
+            avatar: getUploadFilePath(group.avatar),
             isOpen: group.is_open,
             count: (count && +count.count) || 0,
             participant: participant !== null
@@ -92,7 +109,7 @@ router.get("/list/created", (req, res) => {
 });
 
 router.get("/get", (req, res) => {
-  const { id } = req.query;
+  const { id, userId } = req.query;
 
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", 
               "ProjectGroups"."is_open", "ProjectGroups"."description" from
@@ -109,7 +126,6 @@ router.get("/get", (req, res) => {
       .query(conversationsQuery)
       .then(function(conversations) {
         const group = groups[0][0];
-        console.log(group);
 
         const linksPromise = models.ProjectGroupLink.findAll({
           where: { ProjectGroupId: group.id }
@@ -137,40 +153,35 @@ router.get("/get", (req, res) => {
           const participants = results[3];
           const admins = results[4];
 
-          const participantsPromises = participants.map(participant => {
-            return models.User.findAll({
-              where: { id: participant.id }
-            });
-          });
-
-          const participantsPromise = models.User.findAll({
-            where: { id: { [Op.in]: participants.map(p => p.id) } }
+          const usersPromise = models.User.findAll({
+            where: { id: { [Op.in]: participants.map(p => p.UserId) } }
           });
 
           const adminsPromise = models.User.findAll({
             where: { id: { [Op.in]: admins.map(p => p.id) } }
           });
 
-          return Promise.all([participantsPromise, adminsPromise]).then(
-            ([p, a]) => {
+          return Promise.all([usersPromise, adminsPromise]).then(
+            ([users, a]) => {
               return {
                 id: group.id,
                 isOpen: group.is_open,
                 title: group.title,
                 description: group.description,
-                avatar: group.avatar,
+                avatar: getUploadFilePath(group.avatar),
                 isOpen: group.is_open,
                 conversations: conversations[0],
                 links: results[0],
                 docs: results[1],
                 media: results[2],
-                participants: p.map(u => {
+                participants: users.map(u => {
                   return {
                     id: u.id,
                     name: u.name,
                     avatar: getUploadFilePath(u.avatar)
                   };
                 }),
+                participant: !!users.find(user => user.id == userId),
                 admins: a.map(u => {
                   return {
                     id: u.id,

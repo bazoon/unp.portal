@@ -2,12 +2,47 @@
   width: 100%;
   padding: 10px;
 
+  &__header {
+    display: flex;
+    justify-content: space-between;
+  }
+
   &__title {
-    font-size: 16px;
-    font-weight: 900;
+    font-family: PTSans;
+    font-size: 24px;
+    margin-bottom: 30px;
 
     &_small {
       font-weight: 900;
+    }
+  }
+
+  &__conversations {
+    background: #15507c;
+    border-radius: 8px;
+    color: white;
+    padding: 24px;
+  }
+
+  &__conversation {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+
+    &-title a {
+      font-family: FiraSans;
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    &-badge {
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 6px;
+      font-family: FiraSans;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-left: 16px;
+      padding: 0px 8px 0px 8px;
     }
   }
 

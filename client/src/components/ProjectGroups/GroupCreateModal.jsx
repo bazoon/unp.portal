@@ -34,7 +34,7 @@ class GroupCreateModal extends Component {
       files.forEach(f => {
         formData.append("file", f);
       });
-      Actions.postCreateEvent({ payload: formData, userId });
+      Actions.postCreateGroup({ payload: formData, userId });
     });
     this.onFormSubmit();
     onOk();
@@ -53,7 +53,7 @@ class GroupCreateModal extends Component {
         onOk={this.handleOk}
         width={600}
       >
-        <EventForm ref={this.formRef} onSubmit={this.handleSubmit} />
+        <GroupForm ref={this.formRef} onSubmit={this.handleSubmit} />
       </Modal>
     );
   }

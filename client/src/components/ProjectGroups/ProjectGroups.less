@@ -1,6 +1,18 @@
 .project-groups {
   padding: 10px;
 
+  &__title {
+    font-family: PTSans, sans-serif;
+    font-size: 24px;
+    margin-bottom: 16px;
+
+    &-list {
+      font-family: FiraSans, sans-serif;
+      font-size: 16px;
+      margin-bottom: 48px;
+    }
+  }
+
   &__search {
     padding: 10px;
   }
@@ -12,8 +24,14 @@
 
 .project-group {
   display: flex;
+  padding-left: 24px;
+  padding-right: 24px;
+  height: 88px;
   justify-content: space-between;
   margin-bottom: 10px;
+  background-color: #51bbc7;
+  color: white;
+  border-radius: 8px;
 
   &__avatar img {
     width: 150px;
@@ -32,19 +50,26 @@
   }
 
   &__title {
-    font-size: 15px;
+    font-family: PTSans, sans-serif;
+
+    font-size: 22px;
     font-weight: 900;
     line-height: 30px;
+    a {
+      color: #fff;
+    }
   }
 
   &__text {
-    color: gray;
+    color: #fff;
     line-height: 30px;
   }
 
   &__operations {
     display: flex;
     align-items: center;
+    width: 300px;
+    justify-content: space-between;
   }
 
   &__more-button {
@@ -60,5 +85,13 @@
       cursor: pointer;
       font-size: 10px;
     }
+  }
+
+  &__leave-button {
+    background-color: #f27171 !important;
+    border-color: #f27171 !important;
+    font-family: OpenSans !important;
+    font-size: 14px !important;
+    color: #fff !important;
   }
 }

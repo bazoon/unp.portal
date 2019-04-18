@@ -50,6 +50,16 @@
 .project-groups {
   padding: 10px;
 }
+.project-groups__title {
+  font-family: PTSans, sans-serif;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.project-groups__title-list {
+  font-family: FiraSans, sans-serif;
+  font-size: 16px;
+  margin-bottom: 48px;
+}
 .project-groups__search {
   padding: 10px;
 }
@@ -58,8 +68,14 @@
 }
 .project-group {
   display: flex;
+  padding-left: 24px;
+  padding-right: 24px;
+  height: 88px;
   justify-content: space-between;
   margin-bottom: 10px;
+  background-color: #51bbc7;
+  color: white;
+  border-radius: 8px;
 }
 .project-group__avatar img {
   width: 150px;
@@ -75,17 +91,23 @@
   margin-left: 10px;
 }
 .project-group__title {
-  font-size: 15px;
+  font-family: PTSans, sans-serif;
+  font-size: 22px;
   font-weight: 900;
   line-height: 30px;
 }
+.project-group__title a {
+  color: #fff;
+}
 .project-group__text {
-  color: gray;
+  color: #fff;
   line-height: 30px;
 }
 .project-group__operations {
   display: flex;
   align-items: center;
+  width: 300px;
+  justify-content: space-between;
 }
 .project-group__more-button {
   width: 20px;
@@ -96,6 +118,13 @@
 .project-group__menu span {
   cursor: pointer;
   font-size: 10px;
+}
+.project-group__leave-button {
+  background-color: #f27171 !important;
+  border-color: #f27171 !important;
+  font-family: OpenSans !important;
+  font-size: 14px !important;
+  color: #fff !important;
 }
 
 .user-profile {
@@ -155,12 +184,42 @@
   width: 100%;
   padding: 10px;
 }
+.group__header {
+  display: flex;
+  justify-content: space-between;
+}
 .group__title {
-  font-size: 16px;
-  font-weight: 900;
+  font-family: PTSans;
+  font-size: 24px;
+  margin-bottom: 30px;
 }
 .group__title_small {
   font-weight: 900;
+}
+.group__conversations {
+  background: #15507c;
+  border-radius: 8px;
+  color: white;
+  padding: 24px;
+}
+.group__conversation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.group__conversation-title a {
+  font-family: FiraSans;
+  font-size: 13px;
+  color: #ffffff;
+}
+.group__conversation-badge {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  font-family: FiraSans;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 16px;
+  padding: 0px 8px 0px 8px;
 }
 .group__text {
   color: gray;
@@ -19950,6 +20009,18 @@ span.ant-typography-ellipsis {
 @font-face {
   font-family: "FiraSans";
   src: url("/fonts/Firasansregular.woff2");
+}
+@font-face {
+  font-family: "FiraSansBold";
+  src: url("/fonts/Firasansbold.woff2");
+}
+@font-face {
+  font-family: "OpenSansSemiBold";
+  src: url("/fonts/opensanssemibold.woff2");
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url("/fonts/opensans.woff2");
 }
 
 .notifications {

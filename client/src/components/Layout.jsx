@@ -169,7 +169,6 @@ class L extends Component {
                   component={props => (
                     <>
                       <Group {...props} />
-                      <Feed />
                     </>
                   )}
                 />

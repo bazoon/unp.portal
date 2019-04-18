@@ -20,6 +20,7 @@ import { FlexItem } from "../Form/FlexItem";
 import moment from "moment";
 
 const { Option } = Select;
+const { TextArea } = Input;
 
 class GroupForm extends Component {
   constructor(props) {
@@ -52,62 +53,36 @@ class GroupForm extends Component {
     return (
       <Form layout="vertical" onSubmit={this.handleSubmit}>
         <FlexRow>
-          {getFieldDecorator("eventTitle", {
-            rules: [{ required: true, message: "Название события" }]
-          })(<Input placeholder="Название события" />)}
-        </FlexRow>
-
-        <FlexRow>
-          {getFieldDecorator("fromDate", { initialValue: moment() })(
-            <DatePicker format="DD.MM.YYYY HH:mm" placeholder="" showTime />
-          )}
-
-          <div style={{ textAlign: "center" }}>―</div>
-
-          {getFieldDecorator("toDate", { initialValue: moment() })(
-            <DatePicker format="DD.MM.YYYY HH:mm" placeholder="" showTime />
-          )}
+          {getFieldDecorator("groupTitle", {
+            rules: [{ required: true, message: "Название группы" }]
+          })(<Input placeholder="Название группы" />)}
         </FlexRow>
 
         <FlexRow>
           <FlexItem flex={1}>
-            {getFieldDecorator("allDay", {})(<Checkbox>Весь день</Checkbox>)}
-          </FlexItem>
-
-          <FlexItem flex={2} isFlexContainer>
-            <label style={{ minWidth: "100px" }}>Напомнить за</label>
-            {getFieldDecorator("remindBefore", { initialValue: 15 })(
-              <Select onChange={this.handleChangeRemindBefore}>
-                <Option value="15">15 минут</Option>
-                <Option value="30">30 минут</Option>
-                <Option value="45">45 минут</Option>
-                <Option value="60">60 минут</Option>
-              </Select>
-            )}
+            {getFieldDecorator("isOpen", {
+              valuePropName: "checked",
+              initialValue: true
+            })(<Checkbox>Открытая группа</Checkbox>)}
           </FlexItem>
         </FlexRow>
 
         <FlexRow>
-          {getFieldDecorator("place", {
-            rules: [{ required: true, message: "Место проведения" }]
-          })(<Input placeholder="Место проведения" />)}
+          {getFieldDecorator("groupDescription")(
+            <TextArea placeholder="Описание группы" />
+          )}
         </FlexRow>
-        <FlexRow>
-          {getFieldDecorator("description", {
-            rules: [{ required: true, message: "Место проведения" }]
-          })(<Input.TextArea placeholder="Описание" />)}
-        </FlexRow>
+
         <FlexRow>
           {getFieldDecorator("files", {})(
             <Upload
               onChange={this.handleFilesChanged}
-              multiple
               fileList={this.state.files}
               beforeUpload={() => false}
             >
               <Button>
                 <Icon type="upload" />
-                Файлы
+                Лого
               </Button>
             </Upload>
           )}

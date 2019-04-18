@@ -15,6 +15,13 @@ class ProjectGroups extends Component {
     groups: PropTypes.arrayOf(PropTypes.object)
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      isCreateModalVisible: false
+    };
+  }
+
   static defaultProps = {
     groups: []
   };
@@ -27,6 +34,24 @@ class ProjectGroups extends Component {
   handleSubscribe = groupId => {
     const { userId } = this.props;
     Actions.postSubscribeProjectGroup({ groupId, userId });
+  };
+
+  handleAddGroup = () => {
+    this.setState({
+      isCreateModalVisible: true
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({
+      isCreateModalVisible: false
+    });
+  };
+
+  handleOk = () => {
+    this.setState({
+      isCreateModalVisible: false
+    });
   };
 
   componentDidMount = () => {
@@ -48,19 +73,20 @@ class ProjectGroups extends Component {
 
   render() {
     return (
-      <Tabs defaultActiveKey="0">
-        <TabPane tab="Группы" key="0">
-          <div className="project-groups__search">
-            <Search />
-          </div>
-          <div className="project-groups">{this.renderGroups()}</div>
-        </TabPane>
-        <TabPane tab="Управление" key="1">
-          <div className="project-groups-admin">
-            <Button>Создать группу</Button>
-          </div>
-        </TabPane>
-      </Tabs>
+      <>
+        <div className="project-groups__title">Группы</div>
+        <div className="project-groups__title-list">Список групп</div>
+        <div className="project-groups-admin">
+          <Button onClick={this.handleAddGroup}>Создать группу</Button>
+        </div>
+        <GroupCreateModal
+          visible={this.state.isCreateModalVisible}
+          onCancel={this.handleCancel}
+          onOk={this.handleOk}
+          userId={this.props.userId}
+        />
+        <div className="project-groups">{this.renderGroups()}</div>
+      </>
     );
   }
 }

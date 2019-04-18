@@ -27,6 +27,21 @@ export class ProjectGroup extends Component {
     onSubscribe(group.id);
   };
 
+  renderJoinButton = () => {
+    return <Button onClick={this.handleSubscribe}>Присоединиться</Button>;
+  };
+
+  renderLeaveButton = () => {
+    return (
+      <Button
+        className="project-group__leave-button"
+        onClick={this.handleUnsubscribe}
+      >
+        Покинуть группу
+      </Button>
+    );
+  };
+
   render() {
     const { group } = this.props;
     const { id, avatar, title, isOpen, count, participant } = group;
@@ -34,9 +49,6 @@ export class ProjectGroup extends Component {
     return (
       <div className="project-group">
         <div className="project-group__info-container">
-          <div className="project-group__avatar">
-            <img src={avatar} alt="Лого группы" />
-          </div>
           <div className="project-group__info">
             <div className="project-group__title">
               <Link to={`/group/${id}`}>{title}</Link>
@@ -44,28 +56,21 @@ export class ProjectGroup extends Component {
             <div className="project-group__text">
               {isOpen ? "Открытая группа" : "Закрытая группа"}
             </div>
-            <div className="project-group__text">
-              {count}
-              &nbsp;участников
-            </div>
           </div>
         </div>
         <div className="project-group__operations">
-          {participant ? (
-            <>
-              <span>Вы участник</span>
-              &nbsp;
-            </>
-          ) : (
-            <Button onClick={this.handleSubscribe}>Запрос на участие</Button>
-          )}
+          <div className="project-group__text">
+            {count}
+            &nbsp;участников
+          </div>
+          {participant ? this.renderLeaveButton() : this.renderJoinButton()}
 
           <Popover
             placement="bottom"
             trigger="click"
             content={<Menu onUnsubscribe={this.handleUnsubscribe} />}
           >
-            <Button icon="more" />
+            <Button icon="bell" />
           </Popover>
         </div>
       </div>

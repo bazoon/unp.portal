@@ -34,6 +34,12 @@ Effect("getProjectGroups", ({ type, userId }) => {
   });
 });
 
+Effect("postCreateGroup", ({ payload, userId }) => {
+  api.post("api/ProjectGroups/create", payload).then(response => {
+    Actions.getProjectGroups({ type: "all", userId });
+  });
+});
+
 Effect("postUnsubscribeProjectGroup", ({ groupId, userId }) => {
   api
     .post("api/ProjectGroups/unsubscribe", {

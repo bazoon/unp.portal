@@ -2,9 +2,21 @@ import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
 const projectGroups = State({
-  initial: { groups: [] },
+  initial: { groups: [], group: {} },
   setProjectGroup(state, payload) {
     return { ...state, group: payload };
+  },
+  unsubscribeGroup(state) {
+    const { group } = state;
+    group.participant = false;
+    group.count -= 1;
+    return { ...state, group: { ...group } };
+  },
+  subscribeGroup(state) {
+    const { group } = state;
+    group.participant = true;
+    group.count += 1;
+    return { ...state, group: { ...group } };
   },
   addProjectGroupLink(state, payload) {
     const { group } = state;
@@ -44,12 +56,10 @@ const projectGroups = State({
   }
 });
 
-Effect("getProjectGroup", projectGroupId => {
-  return api
-    .get("api/projectGroups/get", { id: projectGroupId })
-    .then(response => {
-      return Actions.setProjectGroup(response.data);
-    });
+Effect("getProjectGroup", ({ id, userId }) => {
+  return api.get("api/projectGroups/get", { id, userId }).then(response => {
+    return Actions.setProjectGroup(response.data);
+  });
 });
 
 Effect("postProjectGroupLink", ({ link, title, id }) => {
@@ -88,6 +98,28 @@ Effect("postRemoveProjectGroupMedia", id => {
   return api.post("api/projectGroups/media/remove", { id }).then(() => {
     return Actions.removeProjectGroupMedia(id);
   });
+});
+
+Effect("postUnsubscribeGroup", ({ groupId, userId }) => {
+  api
+    .post("api/ProjectGroups/unsubscribe", {
+      groupId,
+      userId
+    })
+    .then(() => {
+      Actions.unsubscribeGroup();
+    });
+});
+
+Effect("postSubscribeGroup", ({ groupId, userId }) => {
+  api
+    .post("api/ProjectGroups/subscribe", {
+      groupId,
+      userId
+    })
+    .then(() => {
+      Actions.subscribeGroup();
+    });
 });
 
 export default projectGroups;

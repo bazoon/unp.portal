@@ -21,8 +21,8 @@ export class MainMenu extends Component {
             <span>Группы</span>
           </Link>
         </Menu.Item>
-        <Menu.Item key="/events">
-          <Link to="/events">
+        <Menu.Item key="/events/my">
+          <Link to="/events/my">
             <span>События</span>
           </Link>
         </Menu.Item>
