@@ -238,7 +238,7 @@ class Posts extends Component {
     const { currentPost, postRepliesVisible } = this.state;
     const date = moment(post.createdAt).format("D MMMM YYYY HH:mm");
     const postId = `post_${post.id}`;
-    const parentPostId = `#post_${post.ParentId}`;
+    const parentPostId = `#post_${post.parentId}`;
 
     return (
       <div key={post.id} id={postId}>
