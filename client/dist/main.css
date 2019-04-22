@@ -244,6 +244,106 @@
 .group__discussion-info {
   display: flex;
 }
+.group__post {
+  border-radius: 6px;
+  background-color: #51b8c7;
+  color: white;
+  border-radius: 5px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.group__post-form {
+  width: 100%;
+  display: flex;
+}
+.group__post-form-container input {
+  margin-bottom: 16px;
+}
+.group__post-parent {
+  color: #000;
+  background: #fff;
+  padding: 16px;
+  border-radius: 6px;
+}
+.group__post-parent-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.group__post-parent-avatar img {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+.group__post-parent-user {
+  font-family: PTSansBold, sans-serif;
+  font-size: 14px;
+  margin-left: 8px;
+}
+.group__post-parent-date {
+  font-family: FiraSans, sans-serif;
+  font-size: 12px;
+}
+.group__post-parent-text {
+  font-size: 12px;
+  margin-right: 20px;
+}
+.group__post-to-parent {
+  margin-right: 20px;
+}
+.group__post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+.group__post-user {
+  font-family: PTSansBold, sans-serif;
+  font-size: 18px;
+}
+.group__post-date {
+  font-family: FiraSans, sans-serif;
+  font-size: 13px;
+}
+.group__post-position {
+  font-family: Helvetica;
+  font-size: 14px;
+}
+.group__post-text {
+  font-size: 16px;
+  font-family: FiraSans, sans-serif;
+}
+.group__post-avatar img {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+.group__post-body {
+  margin-bottom: 20px;
+}
+.group__post-favorite {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  font-size: 13px;
+}
+.group__post-favorite div {
+  line-height: 20px;
+  margin-left: 5px;
+}
+.group__post-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.group__post-footer-line {
+  width: 100%;
+  height: 1px;
+  background: #fff;
+  margin-bottom: 16px;
+}
 .group-sidebar__item {
   font-weight: 900;
   display: flex;
@@ -20005,6 +20105,10 @@ span.ant-typography-ellipsis {
 @font-face {
   font-family: "PTSans";
   src: url("/fonts/ptsans.woff2");
+}
+@font-face {
+  font-family: "PTSansBold";
+  src: url("/fonts/ptsansbold.woff2");
 }
 @font-face {
   font-family: "FiraSans";

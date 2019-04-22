@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover } from "antd";
+
 import { MainMenu } from "./MainMenu/MainMenu";
 import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
@@ -12,19 +13,17 @@ import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
 import ChatIcon from "./Chat/ChatIcon";
 import Chat from "./Chat/Chat";
-
 import "antd/dist/antd.less";
 import logo from "./top-logo.svg";
-
 import "../favicon.ico";
 import "./App.less";
 import Notifications from "./Notifications/Notifications";
 import Conversation from "./Conversation/Conversation";
 import EventList from "./Events/EventList";
+import GroupFeed from "./Group/GroupFeed";
 import { Actions } from "jumpstate";
 
 const { Header, Sider, Content } = Layout;
-const { Search } = Input;
 
 class L extends Component {
   constructor(props) {
@@ -172,9 +171,13 @@ class L extends Component {
                 <Route path="/" component={Feed} />
               </Switch>
             </Content>
-            <Sider width="300" style={{ padding: "10px" }}>
+            <Sider width="400" style={{ padding: "10px" }}>
               <Switch>
-                <Route path="/groups/:id" component={GroupSidebar} />
+                {/* <Route path="/groups/:id" component={GroupSidebar} /> */}
+                <Route
+                  path="/groups/:id"
+                  component={props => <GroupFeed {...props} />}
+                />
                 <Route path="/" component={props => <RightMenu {...props} />} />
               </Switch>
             </Sider>
