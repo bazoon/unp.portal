@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Menu } from "antd";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const { SubMenu } = Menu;
 
@@ -16,20 +16,20 @@ export class MainMenu extends Component {
         mode="inline"
         defaultOpenKeys={["sub1", "sub2"]}
       >
-        <Menu.Item key="/allgroups">
-          <Link to="/allgroups">
+        <Menu.Item>
+          <NavLink to="/groups" activeClassName="active">
             <span>Группы</span>
-          </Link>
+          </NavLink>
         </Menu.Item>
         <Menu.Item key="/events/my">
-          <Link to="/events/my">
+          <NavLink to="/events/my">
             <span>События</span>
-          </Link>
+          </NavLink>
         </Menu.Item>
         <Menu.Item key="/conversations">
-          <Link to="/conversations">
+          <NavLink to="/conversations">
             <span>Мои обсуждения</span>
-          </Link>
+          </NavLink>
         </Menu.Item>
       </Menu>
     );

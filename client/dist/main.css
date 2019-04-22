@@ -19989,13 +19989,13 @@ span.ant-typography-ellipsis {
 .main-menu .ant-menu-inline .ant-menu-item:not(:last-child) {
   margin-bottom: 15px;
 }
-.main-menu .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+.main-menu .active {
   background-color: #fff;
 }
-.main-menu .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected:after {
+.main-menu .active:after {
   display: none;
 }
-.main-menu .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected a span {
+.main-menu .active span {
   border-bottom: solid 2px black;
   padding-bottom: 4px;
 }

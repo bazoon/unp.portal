@@ -144,20 +144,14 @@ class L extends Component {
             <Content>
               <Switch>
                 <Route
-                  path="/mygroups"
-                  component={() => <ProjectGroups type="my" />}
-                />
-                <Route
-                  path="/createdgroups"
-                  component={() => <ProjectGroups type="created" />}
-                />
-                <Route
-                  path="/allgroups"
+                  exact
+                  path="/groups"
                   component={() => <ProjectGroups type="all" />}
                 />
                 <Route path="/profile" component={() => <UserProfile />} />
                 <Route
-                  path="/group/:id/conversation/:conversationId"
+                  exact
+                  path="/groups/:id/conversation/:conversationId"
                   component={props => (
                     <>
                       <Conversation {...props} />
@@ -165,7 +159,8 @@ class L extends Component {
                   )}
                 />
                 <Route
-                  path="/group/:id"
+                  exact
+                  path="/groups/:id"
                   component={props => (
                     <>
                       <Group {...props} />
@@ -179,7 +174,7 @@ class L extends Component {
             </Content>
             <Sider width="300" style={{ padding: "10px" }}>
               <Switch>
-                <Route path="/group/:id" component={GroupSidebar} />
+                <Route path="/groups/:id" component={GroupSidebar} />
                 <Route path="/" component={props => <RightMenu {...props} />} />
               </Switch>
             </Sider>

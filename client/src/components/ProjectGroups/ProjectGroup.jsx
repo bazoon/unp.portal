@@ -51,7 +51,7 @@ export class ProjectGroup extends Component {
         <div className="project-group__info-container">
           <div className="project-group__info">
             <div className="project-group__title">
-              <Link to={`/group/${id}`}>{title}</Link>
+              <Link to={`/groups/${id}`}>{title}</Link>
             </div>
             <div className="project-group__text">
               {isOpen ? "Открытая группа" : "Закрытая группа"}
