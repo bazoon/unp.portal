@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+const Router = require("koa-router");
+const router = new Router();
 const fs = require("fs");
 const jsonStream = require("JSONStream");
 const faker = require("faker");
@@ -51,24 +51,24 @@ function getRandomUser() {
   return users[Math.floor(Math.random() * users.length)];
 }
 
-router.get("/channels/all", (req, res) => {
-  models.Channel.findAll({ where: { private: { [Op.not]: true } } }).then(
-    channels => {
-      res.json(
-        channels.map(channel => {
-          return {
-            id: channel.id,
-            name: channel.name,
-            avatar: channel.avatar
-          };
-        })
-      );
-    }
-  );
+router.get("/channels/all", async (ctx, next) => {
+  const response = await models.Channel.findAll({
+    where: { private: { [Op.not]: true } }
+  }).then(channels => {
+    return channels.map(channel => {
+      return {
+        id: channel.id,
+        name: channel.name,
+        avatar: channel.avatar
+      };
+    });
+  });
+
+  ctx.body = response;
 });
 
-router.get("/channels", (req, res) => {
-  const { userId } = req.query;
+router.get("/channels", async (ctx, next) => {
+  const { userId } = ctx.request.query;
 
   const query = `select distinct "Channels"."name", "Channels"."avatar", "Channels"."id",
                 "Channels"."firstUserId", "Channels"."secondUserId"
@@ -106,12 +106,15 @@ router.get("/channels", (req, res) => {
     });
   });
 
-  promise.then(r => {
-    Promise.all(r).then(channels => {
-      console.log(channels);
+  const channelsPromise = await promise.then(r => {
+    return Promise.all(r).then(channels => {
+      return channels;
       res.json(channels);
     });
   });
+
+  const channels = await channelsPromise;
+  ctx.body = channels;
 });
 
 router.post("/channels/create", upload.array("file", 12), function(

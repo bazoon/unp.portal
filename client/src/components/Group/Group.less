@@ -1,10 +1,16 @@
 .group {
   width: 100%;
-  padding: 10px;
+  padding-left: 40px;
 
   &__header {
     display: flex;
     justify-content: space-between;
+  }
+
+  &__name {
+    font-family: PTSansBold;
+    font-size: 24px;
+    color: #000000;
   }
 
   &__title {
@@ -18,10 +24,9 @@
   }
 
   &__conversations {
-    background: #15507c;
+    background: #f4f6f9;
     border-radius: 8px;
-    color: white;
-    padding: 24px;
+    // padding: 24px;
   }
 
   &__conversation {
@@ -29,20 +34,39 @@
     align-items: center;
     margin-bottom: 18px;
 
-    &-title a {
-      font-family: FiraSans;
-      font-size: 13px;
-      color: #ffffff;
+    &-header {
+      display: flex;
     }
 
-    &-badge {
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: 6px;
-      font-family: FiraSans;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.7);
+    &-info {
       margin-left: 16px;
-      padding: 0px 8px 0px 8px;
+      border-bottom: solid 1px silver;
+      padding-bottom: 16px;
+    }
+
+    &-title {
+      margin-top: -3px;
+
+      a {
+        display: inline-block;
+        width: 100%;
+        font-family: PTSans;
+        font-size: 16px;
+        color: #15507c;
+        line-height: 14px;
+      }
+    }
+
+    &-divider {
+      width: 100%;
+      height: 1px;
+    }
+
+    &-badge,
+    &-date {
+      font-family: FiraSans;
+      font-size: 12px;
+      color: #909090;
     }
   }
 
@@ -74,13 +98,27 @@
     display: flex;
   }
 
+  &__posts {
+  }
+
   &__post {
-    border-radius: 6px;
-    background-color: #51b8c7;
-    color: white;
-    border-radius: 5px;
     padding: 24px;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #000;
+    border-radius: 5px;
     margin-bottom: 16px;
+
+    &_child {
+      padding: 0;
+    }
+
+    &-show-more {
+      font-family: PTSans;
+      font-size: 16px;
+      color: #15507c;
+      cursor: pointer;
+    }
 
     &-form {
       width: 100%;
@@ -90,6 +128,14 @@
           margin-bottom: 16px;
         }
       }
+    }
+
+    &-reply {
+      margin-left: 8px;
+      font-family: FiraSans;
+      font-size: 12px;
+      color: #15507c;
+      cursor: pointer;
     }
 
     &-parent {
@@ -139,23 +185,27 @@
     }
 
     &-user {
-      font-family: PTSansBold, sans-serif;
-      font-size: 18px;
+      font-family: PTSans, sans-serif;
+      font-size: 16px;
+      color: #000000;
     }
 
     &-date {
       font-family: FiraSans, sans-serif;
-      font-size: 13px;
+      font-size: 12px;
+      color: #909090;
     }
 
     &-position {
-      font-family: Helvetica;
-      font-size: 14px;
+      font-family: PTSans;
+      font-size: 12px;
+      color: #909090;
     }
 
     &-text {
-      font-size: 16px;
-      font-family: FiraSans, sans-serif;
+      font-family: PTSans, sans-serif;
+      font-size: 14px;
+      color: #000000;
     }
     &-avatar img {
       border-radius: 50%;
@@ -185,7 +235,7 @@
       &-line {
         width: 100%;
         height: 1px;
-        background: #fff;
+        background: silver;
         margin-bottom: 16px;
       }
     }

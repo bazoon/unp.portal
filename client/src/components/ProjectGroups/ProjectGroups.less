@@ -1,10 +1,21 @@
 .project-groups {
-  padding: 10px;
+  padding: 16px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    margin-bottom: 16px;
+    padding-left: 16px;
+    margin-right: 16px;
+  }
 
   &__title {
-    font-family: PTSans, sans-serif;
+    font-family: PTSansBold, sans-serif;
     font-size: 24px;
-    margin-bottom: 16px;
+    margin-left: 8px;
+    text-transform: uppercase;
 
     &-list {
       font-family: FiraSans, sans-serif;
@@ -18,26 +29,25 @@
   }
 
   &-admin {
-    padding: 10px;
+    padding-left: 16px;
   }
 }
 
 .project-group {
   display: flex;
-  padding-left: 24px;
-  padding-right: 24px;
-  height: 88px;
+  padding-left: 16px;
+  padding-right: 16px;
+  height: 80px;
   justify-content: space-between;
   margin-bottom: 10px;
-  background-color: #51bbc7;
-  color: white;
+  background-color: #fff;
+  color: #000;
   border-radius: 8px;
 
-  &__avatar img {
-    width: 150px;
-    height: 150px;
+  &__avatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: cadetblue;
   }
 
   &__info-container {
@@ -56,13 +66,21 @@
     font-weight: 900;
     line-height: 30px;
     a {
-      color: #fff;
+      color: #000;
     }
   }
 
   &__text {
-    color: #fff;
-    line-height: 30px;
+    font-family: FiraSans;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  &__count {
+    font-family: PTSans;
+    font-size: 22px;
+    color: #000000;
+    margin-left: 16px;
   }
 
   &__operations {
@@ -88,10 +106,24 @@
   }
 
   &__leave-button {
-    background-color: #f27171 !important;
-    border-color: #f27171 !important;
     font-family: OpenSans !important;
     font-size: 14px !important;
+    color: #d8d8d8 !important;
+    background: #f1f1f1;
+    border-radius: 6px;
+    font-family: PTSans-Regular;
+    width: 150px;
+    margin-left: 24px;
+  }
+
+  &__join-button {
+    border-radius: 6px;
+    border: 1px solid #0042d7 !important;
     color: #fff !important;
+    font-size: 14px;
+    font-family: PTSans;
+    background: #0042d7 !important;
+    width: 150px;
+    margin-left: 24px;
   }
 }

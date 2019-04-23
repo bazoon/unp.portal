@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Button, Tabs, Input } from "antd";
+import { Button, Tabs, Input, Icon } from "antd";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import { ProjectGroup } from "./ProjectGroup";
@@ -74,8 +74,13 @@ class ProjectGroups extends Component {
   render() {
     return (
       <>
-        <div className="project-groups__title">Группы</div>
-        <div className="project-groups__title-list">Список групп</div>
+        <div className="project-groups__header">
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Icon type="left" />
+            <div className="project-groups__title">Группы</div>
+          </div>
+          <Search placeholder="Поиск по группам" style={{ width: "30%" }} />
+        </div>
         <div className="project-groups-admin">
           <Button onClick={this.handleAddGroup}>Создать группу</Button>
         </div>

@@ -1,4 +1,5 @@
 export default function getFileIcon(file) {
+  file = file || "";
   switch (true) {
     case file.endsWith("pdf"):
       return "file-pdf";

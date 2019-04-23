@@ -23,6 +23,7 @@ const projectGroups = State({
 });
 
 Effect("getProjectGroups", ({ type, userId }) => {
+  console.log(777, type, userId);
   const urls = {
     my: "api/projectGroups/list/my",
     created: "api/projectGroups/list/created",

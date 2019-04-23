@@ -1,8 +1,19 @@
-const express = require("express");
+const Koa = require("koa");
+const bodyParser = require("koa-body");
+const serve = require("koa-static");
+const send = require("koa-send");
+const Router = require("koa-router");
+const mount = require("koa-mount");
+const router = new Router();
+
+const app = new Koa();
+
 const path = require("path");
-const app = express();
 const apiRouter = require("./routes/router");
-var http = require("http").Server(app);
+
+const eventsRouter = require("./routes/api/events");
+
+var http = require("http").Server(app.callback());
 
 var io = require("socket.io")(http);
 const models = require("./models");
@@ -10,10 +21,10 @@ const models = require("./models");
 const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
 
-const bodyParser = require("body-parser");
 const multer = require("multer");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser());
+// app.use(bodyParser.json());
 
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -26,88 +37,84 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.use("/api", apiRouter);
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
+// app.use(eventsRouter.routes());
+// app.use(eventsRouter.allowedMethods());
 
-// io.on("connection", function(socket) {
-//   sock = socket;
-//   console.log("connected");
-//   socket.emit("foo", "look2");
-//   socket.on("foo", function(m, fn) {
-//     console.log("FOO");
-//     socket.broadcast.emit("foo2", "look");
-//   });
+// app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+// app.use("/downloads", express.static(path.join(__dirname, "/downloads")));
 
-//   // setInterval(function() {
-//   //   socket.emit("foo2", "hello");
-//   //   console.log("Emit foo");
-//   // }, 3000);
-// });
+// console.log(apiRouter);
 
-// const Sequelize = require("sequelize");
-
-// // // Option 1: Passing parameters separately
-// const connection = new Sequelize("unp_portal", "vn", "t9788886", {
-//   host: "localhost",
-//   dialect: "postgres"
-// });
-
-// connection.sync();
+app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 const chat = new chatFactory(io);
 
 // Uploads
-app.post("/upload", upload.array("file", 12), function(req, res, next) {
-  // console.log(111, req.body);
-  const { channelId } = req.body;
-  res.send({
-    channelId,
-    files: req.files
-  });
-});
+// app.post("/upload", upload.array("file", 12), function(req, res, next) {
+//   // console.log(111, req.body);
+//   const { channelId } = req.body;
+//   res.send({
+//     channelId,
+//     files: req.files
+//   });
+// });
 
 // client / dist;
-app.use(express.static("client/dist"));
-app.get("*", function(request, response) {
-  console.log(request.url);
-  response.sendFile(path.resolve(__dirname + "/client/dist", "index.html"));
+app.use(serve("client/dist"));
+// app.use(serve("uploads"));
+
+app.use(mount("/uploads", serve("uploads")));
+
+// app.get("*", function(request, response) {
+//   console.log(request.url);
+//   response.sendFile(path.resolve(__dirname + "/client/dist", "index.html"));
+// });
+
+app.use(async ctx => {
+  // if (ctx.path != "/") {
+  //   // console.log(111, "/client/dist" + ctx.path);
+  //   await send(ctx, "/client/dist" + ctx.path);
+  // } else {
+  await send(ctx, path.resolve("/client/dist", "index.html"));
+  // }
 });
 
-models.sequelize.sync().then(function() {
-  // getPosts().then(posts => {
-  //   console.log(posts);
-  // });
+// models.sequelize.sync().then(function() {
+// getPosts().then(posts => {
+//   console.log(posts);
+// });
 
-  models.ProjectGroup.findOne({ where: { id: 9919 } }).then(r => {
-    console.log(r);
-  });
+// models.ProjectGroup.findOne({ where: { id: 9919 } }).then(r => {
+//   console.log(r);
+// });
 
-  // models.sequelize.query('select *from "Users"').then(function(users) {
-  //   console.log(users);
-  // });
+// models.sequelize.query('select *from "Users"').then(function(users) {
+//   console.log(users);
+// });
 
-  // models.ProjectGroup.findByPk(1).then(function(pg) {
-  // pg.getParticipants().then(ps => {
-  //   console.log(ps);
-  // });
-  // });
+// models.ProjectGroup.findByPk(1).then(function(pg) {
+// pg.getParticipants().then(ps => {
+//   console.log(ps);
+// });
+// });
 
-  // models.Channel.findByPk(5, {
-  //   include: {
-  //     model: models.Message,
-  //     as: "Messages"
-  //   },
-  //   order: [[{ model: models.Message, as: "Messages" }, "createdAt", "DESC"]]
-  // }).then(channel => {
-  //   channel.Messages.forEach(function(m) {
-  //     console.log(m.createdAt);
-  //   });
-  // });
+// models.Channel.findByPk(5, {
+//   include: {
+//     model: models.Message,
+//     as: "Messages"
+//   },
+//   order: [[{ model: models.Message, as: "Messages" }, "createdAt", "DESC"]]
+// }).then(channel => {
+//   channel.Messages.forEach(function(m) {
+//     console.log(m.createdAt);
+//   });
+// });
 
-  // models.Message.findByPk(1, { include: { model: models.User } }).then(m => {
-  //   console.log(m.User);
-  // });
+// models.Message.findByPk(1, { include: { model: models.User } }).then(m => {
+//   console.log(m.User);
+// });
 
-  http.listen(port, () => console.log(`Server is running on ${port}`));
-});
+// app.listen(port);
+// var server = http.createServer(app.callback());
+http.listen(port, () => console.log(`Server is running on ${port}`));
+// });

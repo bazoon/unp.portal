@@ -5,6 +5,7 @@ import { Input, Icon, Button } from "antd";
 import { HashLink } from "react-router-hash-link";
 import prettyBytes from "pretty-bytes";
 import getFileIcon from "../../utils/getFileIcon";
+import cn from "classnames";
 
 class GroupPosts extends Component {
   static propTypes = {
@@ -20,7 +21,8 @@ class GroupPosts extends Component {
       postRepliesVisible: {},
       postReplies: {},
       uploadFiles: [],
-      replyUploadFiles: {}
+      replyUploadFiles: {},
+      visiblePosts: {}
     };
     this.formRef = React.createRef();
     this.replyFormRef = React.createRef();
@@ -108,6 +110,18 @@ class GroupPosts extends Component {
         });
       });
     }
+  };
+
+  handleShowMorePosts = (id, posts) => {
+    const { visiblePosts } = this.state;
+    const visibleForParent = visiblePosts[id];
+    if (visibleForParent < posts.length) {
+      visiblePosts[id] += 5;
+    }
+
+    this.setState({
+      visiblePosts: { ...visiblePosts }
+    });
   };
 
   // RENDERS
@@ -243,17 +257,23 @@ class GroupPosts extends Component {
     );
   }
 
-  renderPost(post, parentPost) {
+  renderPost(post, level, parentPost, isFirstLevel) {
     const { currentPost, postRepliesVisible } = this.state;
     const date = moment(post.createdAt).fromNow();
     const postId = `post_${post.id}`;
     const parentPostId = `#post_${post.parentId}`;
     const parentDate = parentPost && moment(parentPost.createdAt).fromNow();
     const postChildrenCount = (post.children && post.children.length) || 0;
+    const postCls = cn("group__post", {
+      group__post_child: !!parentPost
+    });
+    const { visiblePosts } = this.state;
+    const hasMorePosts =
+      isFirstLevel && visiblePosts[post.id] < post.children.length;
 
     return (
       <div key={post.id} id={postId}>
-        <div className="group__post">
+        <div className={postCls} style={{ paddingLeft: `${level}px` }}>
           <div className="group__post-header">
             <div style={{ display: "flex" }}>
               <div className="group__post-avatar">
@@ -261,9 +281,10 @@ class GroupPosts extends Component {
               </div>
               <div style={{ marginLeft: "10px" }}>
                 <div className="group__post-user">{post.userName}</div>
-                <div className="group__post-date">{date}</div>
+                <div className="group__post-position">{post.position}</div>
               </div>
             </div>
+            <div className="group__post_date">{date}</div>
           </div>
           <div className="group__post-body">
             <div className="group__post-text">{post.text}</div>
@@ -271,42 +292,38 @@ class GroupPosts extends Component {
           {this.renderPostFiles(post)}
           <div className="group__post-footer">
             <div>
-              <Icon
-                type="message"
-                style={{ marginRight: "8px" }}
-                onClick={() => this.handlePostReply(post.id)}
-              />
+              <Icon type="message" style={{ marginRight: "8px" }} />
               <span>{postChildrenCount}</span>
+              {parentPost && (
+                <span
+                  className="group__post-reply"
+                  onClick={() => this.handlePostReply(post.id)}
+                >
+                  Ответить
+                </span>
+              )}
             </div>
             <div>
               <Icon type="heart" style={{ marginRight: "24px" }} />
               <Icon type="eye" />
             </div>
-            {/* <Button size="small" onClick={() => this.handlePostReply(post.id)}>
-              Ответить
-            </Button> */}
           </div>
-          {postRepliesVisible[post.id] && (
+          {(!parentPost || postRepliesVisible[post.id]) && (
             <div>{this.renderPostReply(post)}</div>
           )}
           <div className="group__post-footer-line" />
-          {parentPost && (
-            <div className="group__post-parent">
-              <div className="group__post-parent-header">
-                <div className="group__post-parent-avatar">
-                  <img src={parentPost.avatar} alt="post user" />
-                </div>
-                <div className="group__post-parent-user">
-                  {parentPost.userName}
-                  <div className="group__post-parent-date">{parentDate}</div>
-                </div>
-              </div>
-              <div className="group__post-parent-text">{parentPost.text}</div>
+          {post.children && this.renderPosts(post.children, level, post)}
+          {hasMorePosts && (
+            <div
+              className="group__post-show-more"
+              onClick={() =>
+                this.handleShowMorePosts(post.id, post && post.children)
+              }
+            >
+              Показать следующие комментарии
             </div>
           )}
         </div>
-
-        {post.children && this.renderPosts(post.children, post)}
       </div>
     );
   }
@@ -341,19 +358,35 @@ class GroupPosts extends Component {
     );
   }
 
-  renderPosts(posts, parentPost) {
-    return <div>{posts.map(post => this.renderPost(post, parentPost))}</div>;
+  renderPosts(posts, level, parentPost, isFirstLevel) {
+    const { visiblePosts } = this.state;
+    let postsToShow;
+
+    if (parentPost) {
+      visiblePosts[parentPost.id] = visiblePosts[parentPost.id] || 5;
+      postsToShow = posts.slice(0, visiblePosts[parentPost.id]);
+    } else {
+      postsToShow = posts;
+    }
+
+    return (
+      <div>
+        {postsToShow.map(post =>
+          this.renderPost(post, level, parentPost, isFirstLevel)
+        )}
+      </div>
+    );
   }
 
   render() {
     const { posts } = this.props;
 
     return (
-      <>
+      <div className="group__posts">
         {this.renderConversationForm()}
-        {this.renderPosts(posts)}
+        {this.renderPosts(posts, 24, undefined, true)}
         {this.renderReplyFileForm()}
-      </>
+      </div>
     );
   }
 }

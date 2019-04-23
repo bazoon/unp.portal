@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
-import { Input } from "antd";
+import { Input, Layout } from "antd";
 import { ProjectGroup } from "../ProjectGroups/ProjectGroup";
 import { Actions } from "jumpstate";
 import Posts from "./GroupPosts";
+const { Sider } = Layout;
 
 class GroupFeed extends Component {
   componentDidMount() {
@@ -30,11 +31,10 @@ class GroupFeed extends Component {
   handleReplySend = (comment, post, files = []) => {
     const { id } = this.props.match.params;
     const { userId } = this.props;
-    const { conversationId } = this.props.match.params;
 
     const formData = new FormData();
 
-    formData.append("conversationId", conversationId);
+    formData.append("groupId", id);
     formData.append("postId", post.id);
     formData.append("userId", userId);
     formData.append("text", comment);
@@ -47,8 +47,11 @@ class GroupFeed extends Component {
   };
 
   render() {
+    const { title } = this.props.group;
+
     return (
       <div className="group-feed">
+        <div className="group__name">{title}</div>
         <Posts
           posts={this.props.posts}
           onReplySend={this.handleReplySend}
@@ -61,7 +64,8 @@ class GroupFeed extends Component {
 const mapStateToProps = state => {
   return {
     userId: state.Login.userId,
-    posts: state.ProjectGroup.posts
+    posts: state.ProjectGroup.posts,
+    group: state.ProjectGroup.group
   };
 };
 

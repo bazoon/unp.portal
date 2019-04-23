@@ -1,16 +1,17 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Button, Input, Icon, Popover } from "antd";
+import { Button, Input, Icon, Popover, Layout } from "antd";
 import Calendar from "../Calendar/Calendar";
 import News from "../News/News";
+const { Sider } = Layout;
 
 class RightMenu extends Component {
   render() {
     return (
-      <React.Fragment>
+      <Sider width="400" style={{ padding: "10px" }}>
         <Calendar />
         <News />
-      </React.Fragment>
+      </Sider>
     );
   }
 }

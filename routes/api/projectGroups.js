@@ -1,5 +1,6 @@
-const express = require("express");
-const router = express.Router();
+const Router = require("koa-router");
+const router = new Router();
+const koaBody = require("koa-body");
 const fs = require("fs");
 const jsonStream = require("JSONStream");
 const fileName = __dirname + "/project_groups.json";
@@ -8,36 +9,29 @@ const multer = require("multer");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const getUploadFilePath = require("../../utils/getUploadFilePath");
+const uploadFiles = require("../../utils/uploadFiles");
 
-var storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
+router.post("/create", koaBody({ multipart: true }), async ctx => {
+  const { userId, groupTitle, isOpen, groupDescription } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const files = Array.isArray(file) ? file : [file];
+  await uploadFiles(files);
 
-const upload = multer({ storage });
-
-router.post("/create", upload.array("file", 12), function(req, res, next) {
-  const { userId, groupTitle, isOpen, groupDescription } = req.body;
-  const files = req.files;
-
-  models.ProjectGroup.create({
+  const result = await models.ProjectGroup.create({
     title: groupTitle,
-    avatar: files && files[0] && files[0].filename,
+    avatar: files && files[0] && files[0].name,
     is_open: isOpen,
     description: groupDescription
   }).then(group => {
-    models.Participant.create({
+    return models.Participant.create({
       ProjectGroupId: group.id,
       UserId: userId
-    }).then(() => res.json({}));
+    });
   });
+  ctx.body = result;
 });
 
-function getGroups(userId, query, countQuery, res) {
+function getGroups(userId, query, countQuery) {
   const promise = models.sequelize.query(query).then(function(groups) {
     return models.sequelize.query(countQuery).then(function(counts) {
       return groups[0].map(group => {
@@ -60,16 +54,14 @@ function getGroups(userId, query, countQuery, res) {
       });
     });
   });
-  // console.log(promises);
-  promise.then(ps => {
-    Promise.all(ps).then(r => {
-      res.json(r);
-    });
+
+  return promise.then(ps => {
+    return Promise.all(ps);
   });
 }
 
-router.get("/list", (req, res) => {
-  const { userId } = req.query;
+router.get("/list", async (ctx, next) => {
+  const { userId } = ctx.request.query;
 
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", is_open from
               "ProjectGroups"`;
@@ -77,11 +69,12 @@ router.get("/list", (req, res) => {
   const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
                     where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
                     group by "ProjectGroups"."id"`;
-  getGroups(userId, query, countQuery, res);
+  const groups = await getGroups(userId, query, countQuery);
+  ctx.body = groups;
 });
 
-router.get("/list/my", (req, res) => {
-  const { userId } = req.query;
+router.get("/list/my", async (ctx, next) => {
+  const { userId } = ctx.request.query;
 
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id",is_open from
               "ProjectGroups", "Users", "Participants" where ("ProjectGroups"."id" = "Participants"."ProjectGroupId") and
@@ -91,11 +84,12 @@ router.get("/list/my", (req, res) => {
   const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
                     where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
                     group by "ProjectGroups"."id"`;
-  getGroups(userId, query, countQuery, res);
+  const groups = await getGroups(userId, query, countQuery);
+  ctx.body = groups;
 });
 
-router.get("/list/created", (req, res) => {
-  const { userId } = req.query;
+router.get("/list/created", async (ctx, next) => {
+  const { userId } = ctx.request.query;
 
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", is_open from
               "ProjectGroups" where 
@@ -105,11 +99,12 @@ router.get("/list/created", (req, res) => {
                     where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
                     group by "ProjectGroups"."id"`;
 
-  getGroups(userId, query, countQuery, res);
+  const groups = await getGroups(userId, query, countQuery);
+  ctx.body = groups;
 });
 
-router.get("/get", (req, res) => {
-  const { id, userId } = req.query;
+router.get("/get", async (ctx, next) => {
+  const { id, userId } = ctx.request.query;
 
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", 
               "ProjectGroups"."is_open", "ProjectGroups"."description" from
@@ -196,9 +191,8 @@ router.get("/get", (req, res) => {
       });
   });
 
-  promises.then(function(results) {
-    res.json(results);
-  });
+  const group = await promises;
+  ctx.body = group;
 });
 
 router.post("/links/post", (req, res) => {
@@ -219,33 +213,33 @@ router.post("/links/remove", (req, res) => {
   });
 });
 
-router.post("/docs/post", upload.array("file", 12), function(req, res, next) {
-  const { ProjectGroupId } = req.body;
-  models.ProjectGroupDoc.bulkCreate(
-    req.files.map(f => ({
-      ProjectGroupId: ProjectGroupId,
-      file: f.filename,
-      size: f.size
-    })),
-    { returning: true }
-  ).then(docs => {
-    res.json(docs);
-  });
-});
+// router.post("/docs/post", upload.array("file", 12), function(req, res, next) {
+//   const { ProjectGroupId } = req.body;
+//   models.ProjectGroupDoc.bulkCreate(
+//     req.files.map(f => ({
+//       ProjectGroupId: ProjectGroupId,
+//       file: f.filename,
+//       size: f.size
+//     })),
+//     { returning: true }
+//   ).then(docs => {
+//     res.json(docs);
+//   });
+// });
 
-router.post("/media/post", upload.array("file", 12), function(req, res, next) {
-  const { ProjectGroupId } = req.body;
-  models.ProjectGroupMedia.bulkCreate(
-    req.files.map(f => ({
-      ProjectGroupId: ProjectGroupId,
-      file: f.filename,
-      size: f.size
-    })),
-    { returning: true }
-  ).then(media => {
-    res.json(media);
-  });
-});
+// router.post("/media/post", upload.array("file", 12), function(req, res, next) {
+//   const { ProjectGroupId } = req.body;
+//   models.ProjectGroupMedia.bulkCreate(
+//     req.files.map(f => ({
+//       ProjectGroupId: ProjectGroupId,
+//       file: f.filename,
+//       size: f.size
+//     })),
+//     { returning: true }
+//   ).then(media => {
+//     res.json(media);
+//   });
+// });
 
 router.post("/docs/remove", (req, res) => {
   const { id } = req.body;
@@ -261,8 +255,8 @@ router.post("/media/remove", (req, res) => {
   });
 });
 
-router.post("/unsubscribe", (req, res) => {
-  const { groupId, userId } = req.body;
+router.post("/unsubscribe", ctx => {
+  const { groupId, userId } = ctx.request.body;
 
   const participantPromise = models.Participant.destroy({
     where: {
@@ -274,13 +268,12 @@ router.post("/unsubscribe", (req, res) => {
     where: { UserId: userId, SourceId: groupId }
   });
 
-  Promise.all([participantPromise, notificationPromise]).then(() => {
-    res.json({});
-  });
+  const result = [participantPromise, notificationPromise];
+  ctx.body = result;
 });
 
-router.post("/subscribe", (req, res) => {
-  const { groupId, userId } = req.body;
+router.post("/subscribe", ctx => {
+  const { groupId, userId } = ctx.request.body;
 
   const participantPromise = models.Participant.create({
     ProjectGroupId: groupId,
@@ -296,13 +289,12 @@ router.post("/subscribe", (req, res) => {
     email: false
   });
 
-  Promise.all([participantPromise, notificationPromise]).then(() => {
-    res.json({});
-  });
+  const result = Promise.all([participantPromise, notificationPromise]);
+  ctx.body = result;
 });
 
-router.get("/get/posts", (req, res) => {
-  const { id } = req.query;
+router.get("/get/posts", async (ctx, next) => {
+  const { id } = ctx.request.query;
 
   const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
                 "Users"."avatar", "Users"."Position", "Posts"."createdAt"
@@ -310,7 +302,7 @@ router.get("/get/posts", (req, res) => {
                 where ("GroupId"=${id}) and ("Posts"."UserId" = "Users"."id")
                 order by "Posts"."createdAt" desc`;
 
-  models.sequelize.query(query).then(function(posts) {
+  const postsTree = await models.sequelize.query(query).then(function(posts) {
     const promises = posts[0].map(post => {
       return models.PostFile.findAll({ where: { PostId: post.id } }).then(
         postFiles => {
@@ -333,7 +325,7 @@ router.get("/get/posts", (req, res) => {
 
     const postsLookup = {};
 
-    Promise.all(promises).then(posts => {
+    return Promise.all(promises).then(posts => {
       posts.forEach(post => {
         postsLookup[post.id] = post;
       });
@@ -343,36 +335,40 @@ router.get("/get/posts", (req, res) => {
           const parentPost = postsLookup[post.parentId];
           parentPost.children = parentPost.children || [];
           parentPost.children.push(post);
+
           return acc;
         }
         return acc.concat([post]);
       }, []);
 
-      res.json(postsTree);
+      return postsTree;
     });
   });
+  ctx.body = postsTree;
 });
 
-router.post("/post/post", upload.array("file", 12), function(req, res, next) {
-  const { text, groupId, userId, postId } = req.body;
-  const files = req.files;
+router.post("/post/post", koaBody({ multipart: true }), async ctx => {
+  const { text, groupId, userId, postId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(files);
 
-  models.Post.create({
+  const result = await models.Post.create({
     text,
     GroupId: groupId,
     UserId: userId,
     ParentId: postId
   }).then(post => {
-    models.PostFile.bulkCreate(
-      files.map(f => ({ PostId: post.id, file: f.filename, size: f.size }))
+    return models.PostFile.bulkCreate(
+      files.map(f => ({ PostId: post.id, file: f.name, size: f.size }))
     ).then(() => {
       const query = `select "Users"."name", "Users"."avatar", "Users"."Position"
                 from "Users"
                 where "Users"."id"=${userId}`;
 
-      models.sequelize.query(query).then(function(users) {
+      return models.sequelize.query(query).then(function(users) {
         const user = users[0][0];
-        res.json({
+        return {
           id: post.id,
           parentId: post.ParentId,
           text: post.text,
@@ -380,11 +376,12 @@ router.post("/post/post", upload.array("file", 12), function(req, res, next) {
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.filename, size: f.size }))
-        });
+          files: files.map(f => ({ name: f.name, size: f.size }))
+        };
       });
     });
   });
+  ctx.body = result;
 });
 
 module.exports = router;

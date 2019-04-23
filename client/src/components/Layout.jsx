@@ -158,29 +158,32 @@ class L extends Component {
                   )}
                 />
                 <Route
-                  exact
                   path="/groups/:id"
-                  component={props => (
-                    <>
-                      <Group {...props} />
-                    </>
-                  )}
+                  component={props => <GroupFeed {...props} />}
                 />
+
                 <Route path="/laws" component={() => <Laws />} />
                 <Route path="/events/my" component={EventList} />
                 <Route path="/" component={Feed} />
               </Switch>
             </Content>
-            <Sider width="400" style={{ padding: "10px" }}>
-              <Switch>
-                {/* <Route path="/groups/:id" component={GroupSidebar} /> */}
-                <Route
-                  path="/groups/:id"
-                  component={props => <GroupFeed {...props} />}
-                />
-                <Route path="/" component={props => <RightMenu {...props} />} />
-              </Switch>
-            </Sider>
+            <Switch>
+              <Route
+                exact
+                path="/groups/:id"
+                component={props => (
+                  <>
+                    <Group {...props} />
+                  </>
+                )}
+              />
+              <Route path="/groups" component={null} />
+              <Route
+                exact
+                path="/"
+                component={props => <RightMenu {...props} />}
+              />
+            </Switch>
           </Layout>
         </Layout>
       </BrowserRouter>

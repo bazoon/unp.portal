@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Layout, Icon } from "antd";
 import "./Group.less";
 import { Actions } from "jumpstate";
+
+const { Sider } = Layout;
 
 class Group extends Component {
   static defaultProps = {
@@ -106,11 +108,17 @@ class Group extends Component {
     const link = `${id}/conversation/${conversation.id}`;
     return (
       <div className="group__conversation">
-        <div className="group__conversation-title">
-          <Link to={link}>{conversation.title}</Link>
-        </div>
-        <div className="group__conversation-badge">
-          {conversation.count} &nbsp; постов
+        <div className="group__conversation-header">
+          <Icon type="message" />
+          <div className="group__conversation-info">
+            <div className="group__conversation-title">
+              <Link to={link}>{conversation.title}</Link>
+            </div>
+            <div className="group__conversation-badge">
+              {conversation.count} &nbsp; постов
+            </div>
+            <div className="group__conversation-date">4 апреля 2019</div>
+          </div>
         </div>
       </div>
     );
@@ -136,20 +144,16 @@ class Group extends Component {
       this.props.group || {};
 
     return (
-      <div className="group">
-        <div className="group__header">
-          <div className="group__title">{title}</div>
-          <div>
-            <div>
-              <div />
-            </div>
-            {participant ? this.renderLeaveButton() : this.renderJoinButton()}
-            <Button icon="bell" style={{ marginLeft: "8px" }} />
+      <Sider width="350">
+        <div className="group">
+          <div className="group__header">
+            <div className="group__title">Обсуждения</div>
           </div>
-        </div>
 
-        {this.renderConversations(conversations)}
-      </div>
+          {this.renderConversations(conversations)}
+          {participant ? this.renderLeaveButton() : this.renderJoinButton()}
+        </div>
+      </Sider>
     );
   }
 }

@@ -1,11 +1,10 @@
-const express = require("express");
-const router = express.Router();
+const Router = require("koa-router");
+const router = new Router();
+const models = require("../../models");
 
-router.get("/list/all", (req, res) => {
-  const models = require("../../models");
-  models.User.findAll().then(users => {
-    res.json(users);
-  });
+router.get("/list/all", async (ctx, next) => {
+  const users = await models.User.findAll();
+  ctx.body = users;
 });
 
 module.exports = router;

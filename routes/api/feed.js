@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+const Router = require("koa-router");
+const router = new Router();
 const fs = require("fs");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
@@ -18,8 +18,8 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/recipients", (req, res) => {
-  const { userId } = req.query;
+router.get("/recipients", async (ctx, next) => {
+  const { userId } = ctx.request.query;
   const query = `select "ProjectGroups"."title",  "ProjectGroups"."id", "ProjectGroups"."avatar", 
 				       "Conversations"."title" as ctitle, "Conversations"."id" as cid
                 from "ProjectGroups", "Participants", "Conversations"
@@ -27,12 +27,11 @@ router.get("/recipients", (req, res) => {
                 "Participants"."UserId" = ${userId} and
                 "Conversations"."ProjectGroupId" = "ProjectGroups"."id"`;
 
-  models.sequelize.query(query).then(function(groups) {
-    res.json(groups[0]);
-  });
+  const groups = await models.sequelize.query(query);
+  ctx.body = groups[0];
 });
 
-router.get("/group_posts", (req, res) => {
+router.get("/group_posts", async (ctx, next) => {
   const { userId } = req.query;
   const query = `select "ProjectGroups"."title","Posts"."id", 
               "Posts"."text", "Posts"."createdAt", "Posts"."ParentId",
@@ -46,7 +45,7 @@ router.get("/group_posts", (req, res) => {
               "Posts"."UserId"="Users"."id" 
               order by "Posts"."createdAt" desc`;
 
-  const promise = models.sequelize.query(query).then(function(posts) {
+  const postsTree = await models.sequelize.query(query).then(function(posts) {
     const promises = posts[0].map(post => {
       return models.PostFile.findAll({ where: { PostId: post.id } }).then(
         postFiles => {
@@ -75,7 +74,7 @@ router.get("/group_posts", (req, res) => {
       postsLookup[post.id] = post;
     });
 
-    Promise.all(promises).then(posts => {
+    return Promise.all(promises).then(posts => {
       posts.forEach(post => {
         postsLookup[post.id] = post;
       });
@@ -90,9 +89,11 @@ router.get("/group_posts", (req, res) => {
         return acc.concat([post]);
       }, []);
 
-      res.json(postsTree);
+      return postsTree;
     });
   });
+
+  ctx.body = postsTree;
 });
 
 router.post("/postToFeed", upload.array("file", 12), function(req, res, next) {

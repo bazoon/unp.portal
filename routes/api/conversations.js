@@ -1,10 +1,13 @@
-const express = require("express");
-const router = express.Router();
+const Router = require("koa-router");
+const router = new Router();
 const fs = require("fs");
 const models = require("../../models");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
+const koaBody = require("koa-body");
+const uploadFiles = require("../../utils/uploadFiles");
 
-const multer = require("multer");
+const multer = require("koa-multer");
+
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, "uploads/");
@@ -16,8 +19,8 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/get", (req, res) => {
-  const { id } = req.query;
+router.get("/get", async (ctx, next) => {
+  const { id } = ctx.request.query;
 
   const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
                 "Users"."avatar", "Users"."Position", "Posts"."createdAt"
@@ -25,7 +28,7 @@ router.get("/get", (req, res) => {
                 where ("ConversationId"=${id}) and ("Posts"."UserId" = "Users"."id")
                 order by "Posts"."createdAt" asc`;
 
-  models.sequelize.query(query).then(function(posts) {
+  const postsTree = await models.sequelize.query(query).then(function(posts) {
     const promises = posts[0].map(post => {
       return models.PostFile.findAll({ where: { PostId: post.id } }).then(
         postFiles => {
@@ -48,7 +51,7 @@ router.get("/get", (req, res) => {
 
     const postsLookup = {};
 
-    Promise.all(promises).then(posts => {
+    return Promise.all(promises).then(posts => {
       posts.forEach(post => {
         postsLookup[post.id] = post;
       });
@@ -63,31 +66,34 @@ router.get("/get", (req, res) => {
         return acc.concat([post]);
       }, []);
 
-      res.json(postsTree);
+      return postsTree;
     });
   });
+  ctx.body = postsTree;
 });
 
-router.post("/post", upload.array("file", 12), function(req, res, next) {
-  const { text, conversationId, userId, postId } = req.body;
-  const files = req.files;
+router.post("/post", koaBody({ multipart: true }), async ctx => {
+  const { text, conversationId, userId, postId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(files);
 
-  models.Post.create({
+  const posts = await models.Post.create({
     text,
     ConversationId: conversationId,
     UserId: userId,
     ParentId: postId
   }).then(post => {
-    models.PostFile.bulkCreate(
-      files.map(f => ({ PostId: post.id, file: f.filename, size: f.size }))
+    return models.PostFile.bulkCreate(
+      files.map(f => ({ PostId: post.id, file: f.name, size: f.size }))
     ).then(() => {
       const query = `select "Users"."name", "Users"."avatar", "Users"."Position"
                 from "Users"
                 where "Users"."id"=${userId}`;
 
-      models.sequelize.query(query).then(function(users) {
+      return models.sequelize.query(query).then(function(users) {
         const user = users[0][0];
-        res.json({
+        return {
           id: post.id,
           parentId: post.ParentId,
           text: post.text,
@@ -95,11 +101,13 @@ router.post("/post", upload.array("file", 12), function(req, res, next) {
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.filename, size: f.size }))
-        });
+          files: files.map(f => ({ name: f.name, size: f.size }))
+        };
       });
     });
   });
+
+  ctx.body = posts;
 });
 
 module.exports = router;

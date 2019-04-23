@@ -32,6 +32,14 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "koa": "^2.7.0",
+    "koa-better-body": "^3.0.4",
+    "koa-body": "^4.1.0",
+    "koa-mount": "^4.0.0",
+    "koa-multer": "^1.0.2",
+    "koa-router": "^7.4.0",
+    "koa-send": "^5.0.0",
+    "koa-static": "^5.0.0",
     "sequelize-erd": "^1.2.0"
   }
 }

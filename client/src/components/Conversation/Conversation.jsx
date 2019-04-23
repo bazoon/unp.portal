@@ -13,7 +13,9 @@ const { TextArea } = Input;
 class Conversation extends Component {
   componentDidMount = () => {
     const { id, conversationId } = this.props.match.params;
-    Actions.getProjectGroup(id);
+    const { userId } = this.props;
+
+    Actions.getProjectGroup({ id, userId });
     Actions.getConversation(conversationId);
   };
 
