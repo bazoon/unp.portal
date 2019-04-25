@@ -7,6 +7,9 @@ const models = require("../../models");
 const fileName = __dirname + "/chat.json";
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const koaBody = require("koa-body");
+const getUploadFilePath = require("../../utils/getUploadFilePath");
+const uploadFiles = require("../../utils/uploadFiles");
 
 const multer = require("multer");
 var storage = multer.diskStorage({
@@ -59,7 +62,7 @@ router.get("/channels/all", async (ctx, next) => {
       return {
         id: channel.id,
         name: channel.name,
-        avatar: channel.avatar
+        avatar: getUploadFilePath(channel.avatar)
       };
     });
   });
@@ -85,7 +88,7 @@ router.get("/channels", async (ctx, next) => {
           }).then(user => {
             return {
               id: channel.id,
-              avatar: user.avatar,
+              avatar: getUploadFilePath(user.avatar),
               name: user.name
             };
           });
@@ -95,58 +98,70 @@ router.get("/channels", async (ctx, next) => {
           }).then(user => {
             return {
               id: channel.id,
-              avatar: user.avatar,
+              avatar: getUploadFilePath(user.avatar),
               name: user.name
             };
           });
         }
       }
 
-      return Promise.resolve(channel);
+      return Promise.resolve({
+        id: channel.id,
+        name: channel.name,
+        avatar: getUploadFilePath(channel.avatar)
+      });
     });
   });
 
   const channelsPromise = await promise.then(r => {
     return Promise.all(r).then(channels => {
       return channels;
-      res.json(channels);
     });
   });
 
   const channels = await channelsPromise;
+  console.log(77, channels);
   ctx.body = channels;
 });
 
-router.post("/channels/create", upload.array("file", 12), function(
-  req,
-  res,
-  next
-) {
-  const { channelTitle, userId } = req.body;
-  const avatar = req.files && req.files[0] && req.files[0].filename;
-  models.Channel.create({
+router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
+  const { channelTitle, userId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  const avatar = files[0].name;
+  await uploadFiles(files);
+  const result = await models.Channel.create({
     name: channelTitle,
     avatar: avatar
   }).then(channel => {
-    models.UserChannel.create({
+    return models.UserChannel.create({
       channelId: channel.id,
       userId
-    }).then(() => res.json(channel));
+    }).then(() => {
+      return {
+        id: channel.id,
+        avatar: getUploadFilePath(channel.avatar),
+        name: channel.name
+      };
+    });
   });
+  ctx.body = result;
 });
 
-router.post("/channels/createPrivate", function(req, res, next) {
-  const { selectedUserId, userId } = req.body;
-  console.log(selectedUserId, userId);
-  models.User.findOne({ where: { id: selectedUserId } }).then(selectedUser => {
-    models.Channel.create({
+router.post("/channels/createPrivate", async ctx => {
+  const { selectedUserId, userId } = ctx.request.body;
+
+  const result = await models.User.findOne({
+    where: { id: selectedUserId }
+  }).then(selectedUser => {
+    return models.Channel.create({
       name: selectedUserId + userId,
       avatar: "",
       firstUserId: userId,
       secondUserId: selectedUserId,
       private: true
     }).then(channel => {
-      models.UserChannel.bulkCreate([
+      return models.UserChannel.bulkCreate([
         {
           channelId: channel.id,
           userId
@@ -155,19 +170,32 @@ router.post("/channels/createPrivate", function(req, res, next) {
           channelId: channel.id,
           selectedUserId
         }
-      ]).then(() =>
-        res.json({
+      ]).then(() => {
+        return {
           id: channel.id,
-          avatar: selectedUser.avatar,
+          avatar: getUploadFilePath(selectedUser.avatar),
           name: selectedUser.name
-        })
-      );
+        };
+      });
     });
   });
+  ctx.body = result;
 });
 
-router.get("/messages", (req, res) => {
-  const { channelId, currentPage, lastMessageId } = req.query;
+function getMessageFiles(message) {
+  if (message.type !== "file") return Promise.resolve([]);
+  const filesQuery = `select "Files"."id", "Files"."file", "Files"."size"
+                      from "Files", "MessageFiles"
+                      where ("Files"."id" = "MessageFiles"."FileId") and "MessageFiles"."MessageId" = ${
+                        message.id
+                      }`;
+  return models.sequelize.query(filesQuery).then(function(messageFiles) {
+    return messageFiles[0];
+  });
+}
+
+router.get("/messages", async ctx => {
+  const { channelId, currentPage, lastMessageId } = ctx.request.query;
 
   const limit = 5;
   const offset = limit * (currentPage - 1);
@@ -195,21 +223,27 @@ router.get("/messages", (req, res) => {
             limit ${limit} offset ${offset}`;
   }
 
-  models.sequelize.query(query).then(function(messages) {
-    res.json(
-      messages[0].reverse().map(message => {
+  const result = await models.sequelize.query(query).then(function(messages) {
+    return messages[0].reverse().map(message => {
+      return getMessageFiles(message).then(messageFiles => {
         return {
           id: message.id,
           message: message.message,
           type: message.type,
           userName: message.name,
-          avatar: message.avatar,
+          avatar: getUploadFilePath(message.avatar),
           createdAt: message.createdAt,
-          seen: message.seen
+          seen: message.seen,
+          files: messageFiles.map(f => ({
+            id: f.id,
+            file: getUploadFilePath(f.file),
+            size: f.size
+          }))
         };
-      })
-    );
+      });
+    });
   });
+  ctx.body = await Promise.all(result);
 });
 
 router.get("/list", (req, res) => {
@@ -231,7 +265,7 @@ router.get("/more", (req, res) => {
       id: i + Math.round(Math.random() * i * 100) + 119818,
       type: "text",
       date: "2019-03-20T03:48:14.482Z",
-      avatar: user.avatar,
+      avatar: getUploadFilePath(user.avatar),
       author: user.name,
       content: faker.lorem.paragraphs(Math.round(Math.random() * 2) + 1)
     });
@@ -247,6 +281,29 @@ router.post("/send", (req, res) => {
   const id = req.body.channelId;
   const text = req.body.message;
   const type = req.body.type;
+});
+
+// Uploads
+router.post("/upload", koaBody({ multipart: true }), async ctx => {
+  const { channelId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(files);
+
+  const createdFiles = await models.File.bulkCreate(
+    files.map(f => {
+      return {
+        file: f.name,
+        size: f.size
+      };
+    }),
+    { returning: true }
+  );
+
+  ctx.body = {
+    channelId,
+    files: createdFiles
+  };
 });
 
 module.exports = router;

@@ -4,15 +4,21 @@ import { func } from "prop-types";
 import findInTree from "../../utils/findPostInTree";
 
 const projectGroups = State({
-  initial: { conversations: {}, posts: {} },
-  setPosts(state, { posts, conversationId }) {
+  initial: { conversations: {}, posts: {}, title: "" },
+  setPosts(state, { data, conversationId }) {
     const conversations = { ...state.conversations };
-    conversations[conversationId] = posts;
+    conversations[conversationId] = {
+      postsTree: data.postsTree,
+      title: data.title
+    };
     return { ...state, conversations };
   },
   addPost(state, { conversationId, post }) {
     const conversations = { ...state.conversations };
-    let posts = [...conversations[conversationId]];
+    const conversation = conversations[conversationId];
+    const { postsTree } = conversation;
+    let posts = [...postsTree];
+    debugger;
 
     if (!post.parentId) {
       posts = [...posts, post];
@@ -24,7 +30,7 @@ const projectGroups = State({
       }
     }
 
-    conversations[conversationId] = posts;
+    conversation.postsTree = posts;
     return { ...state, conversations };
   },
   addReply(state, { postId, comment }) {
@@ -43,7 +49,7 @@ const projectGroups = State({
 
 Effect("getConversation", conversationId => {
   api.get("api/conversations/get", { id: conversationId }).then(response => {
-    Actions.setPosts({ posts: response.data, conversationId });
+    Actions.setPosts({ data: response.data, conversationId });
   });
 });
 

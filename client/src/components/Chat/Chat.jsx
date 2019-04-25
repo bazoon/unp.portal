@@ -204,19 +204,21 @@ class Chat extends Component {
       );
     };
 
-    const content = m.content.map(f => {
-      const downloadUrl = `/uploads/${f}`;
-      return (
-        <div key={f}>
-          <a download href={downloadUrl} style={{ display: "block" }}>
-            {f}
-          </a>
-          {isImage(f) && (
-            <img className="chat__message-image" src={downloadUrl} alt="some" />
-          )}
-        </div>
-      );
-    });
+    const content =
+      (m.files &&
+        m.files.map(f => {
+          return (
+            <div key={f.id}>
+              <a download href={f.file} style={{ display: "block" }}>
+                {f.file}
+              </a>
+              {isImage(f.file) && (
+                <img className="chat__message-image" src={f.file} alt="some" />
+              )}
+            </div>
+          );
+        })) ||
+      "";
 
     return this.renderMessageTemplate(m, content);
   };
@@ -310,15 +312,15 @@ class Chat extends Component {
   };
 
   handleFileChange = e => {
+    const { userId, activeChannelId } = this.props;
     const formData = new FormData();
-    const { activeChannelId } = this.props;
     const files = Array.prototype.map.call(e.target.files, f => f);
     formData.append("channelId", activeChannelId);
     files.forEach(f => {
       formData.append("file", f);
     });
 
-    Actions.sendChatFile(formData);
+    Actions.sendChatFile({ payload: formData, userId });
   };
 
   handleChangeChanel = channelId => {
@@ -474,7 +476,7 @@ class Chat extends Component {
     return avatar.includes("http") ? (
       <img src={avatar} alt="logo" />
     ) : (
-      <img src={`/uploads/${avatar}`} alt="logo" />
+      <img src={avatar} alt="logo" />
     );
   }
 

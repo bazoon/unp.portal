@@ -5,7 +5,7 @@ import moment from "moment";
 import { Input, Tooltip, Icon, Button } from "antd";
 import { HashLink } from "react-router-hash-link";
 
-import Posts from "./Posts";
+import Posts from "../Group/GroupPosts";
 import "./Conversation.less";
 
 const { TextArea } = Input;
@@ -55,16 +55,18 @@ class Conversation extends Component {
   render() {
     const { conversationId } = this.props.match.params;
 
-    const posts =
+    const conversation =
       (this.props.conversations &&
         this.props.conversations[conversationId] &&
         this.props.conversations[conversationId]) ||
-      [];
-
+      {};
+    const postsTree = (conversation && conversation.postsTree) || [];
+    const title = conversation && conversation.title;
     return (
       <div className="conversation__container">
+        <div className="conversation__title">{title}</div>
         <Posts
-          posts={posts}
+          posts={postsTree}
           avatar={this.props.avatar}
           onSend={this.handleSend}
           onReplySend={this.handleReplySend}

@@ -22,6 +22,8 @@ const upload = multer({ storage });
 router.get("/get", async (ctx, next) => {
   const { id } = ctx.request.query;
 
+  const conversation = await models.Conversation.findOne({ where: { id: id } });
+
   const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
                 "Users"."avatar", "Users"."Position", "Posts"."createdAt"
                 from "Posts", "Users"
@@ -57,6 +59,7 @@ router.get("/get", async (ctx, next) => {
       });
 
       const postsTree = posts.reduce((acc, post) => {
+        post.children = post.children || [];
         if (post.parentId) {
           const parentPost = postsLookup[post.parentId];
           parentPost.children = parentPost.children || [];
@@ -69,7 +72,11 @@ router.get("/get", async (ctx, next) => {
       return postsTree;
     });
   });
-  ctx.body = postsTree;
+
+  ctx.body = {
+    title: conversation.title,
+    postsTree
+  };
 });
 
 router.post("/post", koaBody({ multipart: true }), async ctx => {
@@ -101,7 +108,8 @@ router.post("/post", koaBody({ multipart: true }), async ctx => {
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.name, size: f.size }))
+          files: files.map(f => ({ name: f.name, size: f.size })),
+          children: []
         };
       });
     });

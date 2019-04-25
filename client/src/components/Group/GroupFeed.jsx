@@ -47,11 +47,18 @@ class GroupFeed extends Component {
   };
 
   render() {
-    const { title } = this.props.group;
+    const { title, avatar, description } = this.props.group;
 
     return (
-      <div className="group-feed">
-        <div className="group__name">{title}</div>
+      <div className="group__feed">
+        <div className="group__feed-title">
+          <img src={avatar} alt="avatar" />
+          <div className="group__name">{title}</div>
+        </div>
+        <div className="group__description">
+          <div className="group__description-title">Информация</div>
+          {description}
+        </div>
         <Posts
           posts={this.props.posts}
           onReplySend={this.handleReplySend}

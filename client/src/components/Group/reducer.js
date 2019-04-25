@@ -1,6 +1,7 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 import findInTree from "../../utils/findPostInTree";
+import Conversation from "../Conversation/Conversation";
 
 const projectGroups = State({
   initial: { groups: [], group: {}, posts: [] },
@@ -44,12 +45,12 @@ const projectGroups = State({
     let { posts } = state;
 
     if (!post.parentId) {
-      posts = [post, ...posts];
+      posts = [...posts, post];
     } else {
       const parent = findInTree(posts, post);
       if (parent) {
         parent.children = parent.children || [];
-        parent.children.unshift(post);
+        parent.children.push(post);
       }
     }
     return { ...state, posts: [...posts] };
@@ -71,6 +72,13 @@ const projectGroups = State({
     const { media } = group;
     const newMedia = media.filter(l => l.id !== linkId);
     return { ...state, group: { ...group, media: newMedia } };
+  },
+  addConversation(state, conversation) {
+    const conversations = [...state.group.conversations, conversation];
+    return {
+      ...state,
+      group: { ...state.group, conversations: [...conversations] }
+    };
   }
 });
 
@@ -153,6 +161,14 @@ Effect("sendGroupPost", ({ id, formData }) => {
       post: response.data
     });
   });
+});
+
+Effect("postCreateConversation", payload => {
+  return api
+    .post("api/projectGroups/conversation/create", payload)
+    .then(response => {
+      Actions.addConversation(response.data);
+    });
 });
 
 export default projectGroups;

@@ -39,8 +39,10 @@ class Chat {
   }
 
   onChannelMessage(userName, m, fn) {
-    const { channelId, message, type, userId } = m;
-    util.writeMessage(channelId, message, type, userId).then(message => {
+    const { channelId, message, type, userId, files } = m;
+    console.log(1111, m);
+
+    util.writeMessage(channelId, message, type, userId, files).then(message => {
       this.io.emit("channel-message", message);
       fn();
     });

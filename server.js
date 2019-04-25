@@ -1,10 +1,11 @@
 const Koa = require("koa");
-const bodyParser = require("koa-body");
 const serve = require("koa-static");
 const send = require("koa-send");
 const Router = require("koa-router");
 const mount = require("koa-mount");
 const router = new Router();
+const koaBody = require("koa-body");
+const uploadFiles = require("./utils/uploadFiles");
 
 const app = new Koa();
 
@@ -22,9 +23,6 @@ const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
 
 const multer = require("multer");
-// app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser());
-// app.use(bodyParser.json());
 
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -48,16 +46,6 @@ const upload = multer({ storage });
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 const chat = new chatFactory(io);
-
-// Uploads
-// app.post("/upload", upload.array("file", 12), function(req, res, next) {
-//   // console.log(111, req.body);
-//   const { channelId } = req.body;
-//   res.send({
-//     channelId,
-//     files: req.files
-//   });
-// });
 
 // client / dist;
 app.use(serve("client/dist"));

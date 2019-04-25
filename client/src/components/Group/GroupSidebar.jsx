@@ -204,64 +204,6 @@ class GroupSidebar extends Component {
     );
   }
 
-  renderParticipants(participants = []) {
-    return (
-      <>
-        <div className="group-sidebar__item">
-          <div>
-            <Icon type="team" />
-            <span>Участники</span>
-            <span className="group-sidebar__item-note">
-              {participants && participants.length}
-            </span>
-          </div>
-          <Icon type="eye" />
-        </div>
-        <ul>
-          {participants.map(participant => {
-            return (
-              <li key={participant.id}>
-                <div className="group-sidebar__avatar">
-                  <img src={participant.avatar} alt="Участник" />
-                </div>
-                {participant.name}
-              </li>
-            );
-          })}
-        </ul>
-      </>
-    );
-  }
-
-  renderAdmins(admins = []) {
-    return (
-      <>
-        <div className="group-sidebar__item">
-          <div>
-            <Icon type="meh" />
-            <span>Администраторы</span>
-            <span className="group-sidebar__item-note">
-              {admins && admins.length}
-            </span>
-          </div>
-          <Icon type="eye" />
-        </div>
-        <ul>
-          {admins.map(admin => {
-            return (
-              <li key={admin.id}>
-                <div className="group-sidebar__avatar">
-                  <img src={admin.avatar} alt="Участник" />
-                </div>
-                {admin.name}
-              </li>
-            );
-          })}
-        </ul>
-      </>
-    );
-  }
-
   render() {
     const { docs, links, media, participants, admins } = this.props.group || {};
     const firstMedia = media && media[0] && media[0].file;

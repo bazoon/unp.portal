@@ -142,7 +142,6 @@
   border-radius: 6px;
   font-family: PTSans-Regular;
   width: 150px;
-  margin-left: 24px;
 }
 .project-group__join-button {
   border-radius: 6px;
@@ -152,7 +151,6 @@
   font-family: PTSans;
   background: #0042d7 !important;
   width: 150px;
-  margin-left: 24px;
 }
 
 .user-profile {
@@ -187,6 +185,7 @@
 .user-profile__groups {
   display: flex;
   justify-content: space-between;
+  width: 50%;
 }
 .user-profile__groups ul {
   padding: 0;
@@ -211,6 +210,30 @@
 .group {
   width: 100%;
   padding-left: 40px;
+  padding-right: 24px;
+}
+.group__description {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 24px 32px 32px 64px;
+  margin-bottom: 24px;
+}
+.group__description-title {
+  font-family: PTSans;
+  font-size: 16px;
+  color: #000000;
+  margin-bottom: 16px;
+}
+.group__feed-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.group__feed img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 16px;
 }
 .group__header {
   display: flex;
@@ -222,9 +245,10 @@
   color: #000000;
 }
 .group__title {
-  font-family: PTSans;
-  font-size: 24px;
-  margin-bottom: 30px;
+  margin-right: 16px;
+  font-family: PTSansBold;
+  font-size: 20px;
+  color: #000000;
 }
 .group__title_small {
   font-weight: 900;
@@ -238,13 +262,25 @@
   align-items: center;
   margin-bottom: 18px;
 }
+.group__conversation-count {
+  font-family: PTSans;
+  font-size: 20px;
+  color: #a2a2a2;
+}
 .group__conversation-header {
   display: flex;
+  width: 100%;
 }
 .group__conversation-info {
   margin-left: 16px;
+  width: 100%;
   border-bottom: solid 1px silver;
   padding-bottom: 16px;
+}
+.group__conversation:last-child .group__conversation-info {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: -16px;
 }
 .group__conversation-title {
   margin-top: -3px;
@@ -310,6 +346,7 @@
 .group__post-form {
   width: 100%;
   display: flex;
+  align-items: baseline;
 }
 .group__post-form-container input {
   margin-bottom: 16px;
@@ -410,6 +447,39 @@
   background: silver;
   margin-bottom: 16px;
 }
+.group__participants,
+.group__admins,
+.group__materials {
+  list-style-type: none;
+  padding-left: 0px;
+}
+.group__participants li,
+.group__admins li,
+.group__materials li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.group__participants li div,
+.group__admins li div,
+.group__materials li div {
+  margin-right: 5px;
+}
+.group .ant-collapse {
+  background-color: #f4f6f9;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+.group .ant-collapse-header {
+  padding-left: 0 !important;
+}
+.group .ant-collapse-content {
+  background-color: #f4f6f9;
+}
+.group .ant-collapse-content-box {
+  padding-left: 0px !important;
+}
 .group-sidebar__item {
   font-weight: 900;
   display: flex;
@@ -422,18 +492,6 @@
 .group-sidebar__item-note {
   font-size: 12px;
   font-weight: 300;
-}
-.group-sidebar__item-container ul {
-  list-style-type: none;
-  padding-left: 20px;
-}
-.group-sidebar__item-container li {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-.group-sidebar__item-container li div {
-  margin-right: 5px;
 }
 .group-sidebar__avatar img {
   width: 30px;
@@ -20213,6 +20271,12 @@ span.ant-typography-ellipsis {
 
 .conversation__container {
   padding: 10px;
+}
+.conversation__title {
+  font-family: PTSans;
+  font-size: 24px;
+  color: #000000;
+  margin-bottom: 24px;
 }
 .conversation__upload-files {
   font-size: 10px;

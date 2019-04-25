@@ -1,16 +1,29 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Button, Layout, Icon } from "antd";
+import { Button, Layout, Icon, Collapse } from "antd";
 import "./Group.less";
 import { Actions } from "jumpstate";
+import { pluralizeComments } from "../../utils/pluralize";
+import moment from "moment";
+import ConversationModal from "./Conversation/ConversationModal";
+
+const Panel = Collapse.Panel;
 
 const { Sider } = Layout;
 
 class Group extends Component {
   static defaultProps = {
-    group: {}
+    group: {},
+    conversations: []
   };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      isConversationModalVisible: false
+    };
+  }
 
   componentDidMount() {
     const { id } = this.props.match.params;
@@ -21,78 +34,41 @@ class Group extends Component {
   handleUnsubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
-    Actions.postUnsubscribeGroup({ groupId: id, userId });
+    Actions.postUnsubscribeGroup({ groupId: id, userId }).then(() => {
+      Actions.getProjectGroup({ id, userId });
+    });
   };
 
   handleSubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
-    Actions.postSubscribeGroup({ groupId: id, userId });
+    Actions.postSubscribeGroup({ groupId: id, userId }).then(() => {
+      Actions.getProjectGroup({ id, userId });
+    });
   };
 
+  handleCreateConversation = () => {
+    this.setState({
+      isConversationModalVisible: true
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({
+      isConversationModalVisible: false
+    });
+  };
+
+  handleOk = () => {
+    this.setState({
+      isConversationModalVisible: false
+    });
+  };
+
+  // Renders
   renderIsOpen(isOpen) {
     return isOpen ? "Открытая группа" : "Закрытая группа";
   }
-
-  renderConversations2(conversations = []) {
-    const { id } = this.props.match.params;
-    return (
-      <div className="group__discussions-container">
-        <div className="group__title_small">Обсуждения</div>
-        <div className="group__discussions">
-          {conversations.map(conversation => {
-            const link = `${id}/conversation/${conversation.id}`;
-            return (
-              <div className="group__discusstion" key={conversation.id}>
-                <div className="group__discussion-title">
-                  <Link to={link}>{conversation.title}</Link>
-                </div>
-                <div className="group__discussion-info">
-                  <div className="group__text_small">
-                    {conversation.count} постов &nbsp;
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  render2() {
-    const { title, avatar, isOpen, conversations, description } =
-      this.props.group || {};
-
-    return (
-      <div className="group">
-        <div className="group__info-container">
-          <div className="group__avatar">
-            <img src={avatar} alt={title} />
-          </div>
-          <div className="group__info">
-            <div className="group__text">{this.renderIsOpen(isOpen)}</div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <div className="group__title">{title}</div>
-              <span>Вы участник</span>
-            </div>
-            <hr />
-            <div className="group__text">О группе</div>
-            <div className="group__text_small">{description}</div>
-          </div>
-        </div>
-        {this.renderConversations(conversations)}
-        <div className="groups__feed" />
-      </div>
-    );
-  }
-
   renderConversations(conversations = []) {
     return (
       <div className="group__conversations">
@@ -104,10 +80,13 @@ class Group extends Component {
   renderConversation = conversation => {
     const { id } = this.props.match.params;
     const { userId } = this.props;
+    const lastPostDate =
+      conversation.lastpostdate &&
+      moment(conversation.lastpostdate).format("DD MMM YYYY HH:mm");
 
     const link = `${id}/conversation/${conversation.id}`;
     return (
-      <div className="group__conversation">
+      <div className="group__conversation" key={conversation.id}>
         <div className="group__conversation-header">
           <Icon type="message" />
           <div className="group__conversation-info">
@@ -115,9 +94,9 @@ class Group extends Component {
               <Link to={link}>{conversation.title}</Link>
             </div>
             <div className="group__conversation-badge">
-              {conversation.count} &nbsp; постов
+              {pluralizeComments(conversation.count)}
             </div>
-            <div className="group__conversation-date">4 апреля 2019</div>
+            <div className="group__conversation-date">{lastPostDate}</div>
           </div>
         </div>
       </div>
@@ -125,7 +104,14 @@ class Group extends Component {
   };
 
   renderJoinButton = () => {
-    return <Button onClick={this.handleSubscribe}>Присоединиться</Button>;
+    return (
+      <Button
+        className="project-group__join-button"
+        onClick={this.handleSubscribe}
+      >
+        Присоединиться
+      </Button>
+    );
   };
 
   renderLeaveButton = () => {
@@ -139,20 +125,150 @@ class Group extends Component {
     );
   };
 
+  renderParticipants(participants = []) {
+    return (
+      <ul className="group__participants">
+        {participants.map(participant => {
+          return (
+            <li key={participant.id}>
+              <div className="group-sidebar__avatar">
+                <img src={participant.avatar} alt="Участник" />
+              </div>
+              {participant.name}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  renderAdmins(admins = []) {
+    return (
+      <ul className="group__admins">
+        {admins.map(admin => {
+          return (
+            <li key={admin.id}>
+              <div className="group-sidebar__avatar">
+                <img src={admin.avatar} alt="Участник" />
+              </div>
+              {admin.name}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  renderMaterials = (links = [], docs = [], media = []) => {
+    return (
+      <ul className="group__materials">
+        {links.map(link => {
+          return (
+            <li key={link.id}>
+              <a href={link.link}>{link.title}</a>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   render() {
-    const { title, avatar, isOpen, conversations, description, participant } =
-      this.props.group || {};
+    const {
+      id,
+      title,
+      avatar,
+      isOpen,
+      conversations,
+      description,
+      participant,
+      participants,
+      admins,
+      docs,
+      links,
+      media
+    } = this.props.group || {};
+
+    const conversationsCount = conversations && conversations.length;
+    const participantsCount = participants && participants.length;
+    const adminsCount = admins && admins.length;
+    const docsCount = (docs && docs.length) || 0;
+    const linksCount = (links && links.length) || 0;
+    const mediaCount = (media && media.length) || 0;
+    const materialsCount = docsCount + linksCount + mediaCount;
+
+    const conversationsHeader = (
+      <div className="group__header">
+        <div style={{ display: "flex" }}>
+          <div className="group__title">Обсуждения</div>
+          <div className="group__conversation-count">{conversationsCount}</div>
+        </div>
+        <Icon type="right" />
+      </div>
+    );
+
+    const participantsHeader = (
+      <div className="group__header">
+        <div style={{ display: "flex" }}>
+          <div className="group__title">Участники</div>
+          <div className="group__conversation-count">{participantsCount}</div>
+        </div>
+        <Icon type="right" />
+      </div>
+    );
+
+    const adminsHeader = (
+      <div className="group__header">
+        <div style={{ display: "flex" }}>
+          <div className="group__title">Администраторы</div>
+          <div className="group__conversation-count">{adminsCount}</div>
+        </div>
+        <Icon type="right" />
+      </div>
+    );
+
+    const materialsHeader = (
+      <div className="group__header">
+        <div style={{ display: "flex" }}>
+          <div className="group__title">Материалы</div>
+          <div className="group__conversation-count">{materialsCount}</div>
+        </div>
+        <Icon type="right" />
+      </div>
+    );
 
     return (
-      <Sider width="350">
+      <Sider width="400">
         <div className="group">
-          <div className="group__header">
-            <div className="group__title">Обсуждения</div>
+          <Collapse defaultActiveKey={["1"]} expandIcon={() => ""}>
+            <Panel header={conversationsHeader} key="1">
+              {this.renderConversations(conversations)}
+            </Panel>
+            <Panel header={participantsHeader} key="2">
+              {this.renderParticipants(participants)}
+            </Panel>
+            <Panel header={adminsHeader} key="3">
+              {this.renderAdmins(admins)}
+            </Panel>
+            <Panel header={materialsHeader} key="4">
+              {this.renderMaterials(links, docs, media)}
+            </Panel>
+          </Collapse>
+          <div style={{ marginTop: "24px" }}>
+            {participant ? this.renderLeaveButton() : this.renderJoinButton()}
           </div>
-
-          {this.renderConversations(conversations)}
-          {participant ? this.renderLeaveButton() : this.renderJoinButton()}
+          <div style={{ marginTop: "24px" }}>
+            <Button onClick={this.handleCreateConversation}>
+              Создать обсуждение
+            </Button>
+          </div>
         </div>
+        <ConversationModal
+          projectGroupId={id}
+          visible={this.state.isConversationModalVisible}
+          onCancel={this.handleCancel}
+          onOk={this.handleOk}
+        />
       </Sider>
     );
   }

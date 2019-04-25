@@ -75,7 +75,7 @@ class NewChannel extends Component {
                             borderRadius: "50%",
                             marginRight: "5px"
                           }}
-                          src={`/uploads/${channel.avatar}`}
+                          src={channel.avatar}
                         />
                         {channel.name}
                       </div>

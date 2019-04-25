@@ -171,19 +171,27 @@ Effect("sendChatMessage", payload => {
   // });
 });
 
-Effect("sendChatFile", payload => {
-  const socket = socketIOClient(location.host);
+Effect("sendChatFile", ({ payload, userId }) => {
+  const socket = socketIOClient(location.host, {
+    query: {
+      token: localStorage.getItem("token")
+    }
+  });
+
   Actions.setIsLoading(true);
   const config = { headers: { "Content-Type": "multipart/form-data" } };
-  api.post("upload", payload, config).then(response => {
+  api.post("api/chat/upload", payload, config).then(response => {
     const { data } = response;
     const { channelId, files } = data;
+    console.log(777, files);
 
     socket.emit(
       "channel-message",
       {
         channelId,
-        message: files.map(f => f.filename),
+        userId,
+        message: "",
+        files,
         type: "file"
       },
       () => {

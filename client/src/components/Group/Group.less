@@ -1,6 +1,35 @@
 .group {
   width: 100%;
   padding-left: 40px;
+  padding-right: 24px;
+
+  &__description {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 24px 32px 32px 64px;
+    margin-bottom: 24px;
+
+    &-title {
+      font-family: PTSans;
+      font-size: 16px;
+      color: #000000;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__feed {
+    &-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      margin-right: 16px;
+    }
+  }
 
   &__header {
     display: flex;
@@ -14,9 +43,10 @@
   }
 
   &__title {
-    font-family: PTSans;
-    font-size: 24px;
-    margin-bottom: 30px;
+    margin-right: 16px;
+    font-family: PTSansBold;
+    font-size: 20px;
+    color: #000000;
 
     &_small {
       font-weight: 900;
@@ -34,14 +64,28 @@
     align-items: center;
     margin-bottom: 18px;
 
+    &-count {
+      font-family: PTSans;
+      font-size: 20px;
+      color: #a2a2a2;
+    }
+
     &-header {
       display: flex;
+      width: 100%;
     }
 
     &-info {
       margin-left: 16px;
+      width: 100%;
       border-bottom: solid 1px silver;
       padding-bottom: 16px;
+    }
+
+    &:last-child .group__conversation-info {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: -16px;
     }
 
     &-title {
@@ -123,6 +167,7 @@
     &-form {
       width: 100%;
       display: flex;
+      align-items: baseline;
       &-container {
         input {
           margin-bottom: 16px;
@@ -240,6 +285,44 @@
       }
     }
   }
+
+  &__participants,
+  &__admins,
+  &__materials {
+    list-style-type: none;
+    padding-left: 0px;
+
+    li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+      div {
+        margin-right: 5px;
+      }
+    }
+  }
+
+  .ant-collapse {
+    background-color: #f4f6f9;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .ant-collapse-header {
+    padding-left: 0 !important;
+    .anticon {
+      // display: none !important;
+    }
+  }
+
+  .ant-collapse-content {
+    background-color: #f4f6f9;
+  }
+
+  .ant-collapse-content-box {
+    padding-left: 0px !important;
+  }
 }
 
 .group-sidebar {
@@ -256,21 +339,6 @@
     &-note {
       font-size: 12px;
       font-weight: 300;
-    }
-
-    &-container {
-      ul {
-        list-style-type: none;
-        padding-left: 20px;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-        div {
-          margin-right: 5px;
-        }
-      }
     }
   }
   &__avatar img {

@@ -31,6 +31,7 @@ export class ProjectGroup extends Component {
     return (
       <Button
         className="project-group__join-button"
+        style={{ marginLeft: "24px" }}
         onClick={this.handleSubscribe}
       >
         Присоединиться
@@ -42,6 +43,7 @@ export class ProjectGroup extends Component {
     return (
       <Button
         className="project-group__leave-button"
+        style={{ marginLeft: "24px" }}
         onClick={this.handleUnsubscribe}
       >
         Покинуть группу

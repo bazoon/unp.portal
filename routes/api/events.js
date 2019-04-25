@@ -24,7 +24,7 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
   } = ctx.request.body;
 
   const { file } = ctx.request.files;
-  const files = Array.isArray(file) ? file : [file];
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
   const result = await models.Event.create({

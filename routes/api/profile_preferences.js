@@ -84,7 +84,7 @@ router.post("/save", async ctx => {
 router.post("/save/avatar", koaBody({ multipart: true }), async ctx => {
   const { userId } = ctx.request.body;
   const { file } = ctx.request.files;
-  const files = Array.isArray(file) ? file : [file];
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
   const avatar = files[0] && files[0].name;
 

@@ -14,7 +14,7 @@ const uploadFiles = require("../../utils/uploadFiles");
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const { userId, groupTitle, isOpen, groupDescription } = ctx.request.body;
   const { file } = ctx.request.files;
-  const files = Array.isArray(file) ? file : [file];
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
   const result = await models.ProjectGroup.create({
@@ -109,7 +109,7 @@ router.get("/get", async (ctx, next) => {
   const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", 
               "ProjectGroups"."is_open", "ProjectGroups"."description" from
               "ProjectGroups" where "ProjectGroups"."id" = ${id}`;
-  const conversationsQuery = `select "Conversations"."id", title, count(*) from "Conversations"
+  const conversationsQuery = `select "Conversations"."id", title, count("Posts"."id"), min("Posts"."createdAt") as lastPostDate from "Conversations"
                               left join "Posts"
                               on "Conversations"."id" = "Posts"."ConversationId"
                               where "Conversations"."ProjectGroupId" = ${id}
@@ -300,7 +300,7 @@ router.get("/get/posts", async (ctx, next) => {
                 "Users"."avatar", "Users"."Position", "Posts"."createdAt"
                 from "Posts", "Users"
                 where ("GroupId"=${id}) and ("Posts"."UserId" = "Users"."id")
-                order by "Posts"."createdAt" desc`;
+                order by "Posts"."createdAt" asc`;
 
   const postsTree = await models.sequelize.query(query).then(function(posts) {
     const promises = posts[0].map(post => {
@@ -331,6 +331,7 @@ router.get("/get/posts", async (ctx, next) => {
       });
 
       const postsTree = posts.reduce((acc, post) => {
+        post.children = post.children || [];
         if (post.parentId) {
           const parentPost = postsLookup[post.parentId];
           parentPost.children = parentPost.children || [];
@@ -376,12 +377,27 @@ router.post("/post/post", koaBody({ multipart: true }), async ctx => {
           userName: user.name,
           position: user.Position,
           createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.name, size: f.size }))
+          files: files.map(f => ({ name: f.name, size: f.size })),
+          children: []
         };
       });
     });
   });
   ctx.body = result;
+});
+
+router.post("/conversation/create", async ctx => {
+  const { projectGroupId, title } = ctx.request.body;
+  const conversation = await models.Conversation.create({
+    title,
+    ProjectGroupId: projectGroupId
+  });
+  ctx.body = {
+    id: conversation.id,
+    title: conversation.title,
+    count: 0,
+    lastpostdate: null
+  };
 });
 
 module.exports = router;
