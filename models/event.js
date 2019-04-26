@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       toDate: DataTypes.DATE,
       place: DataTypes.STRING,
       description: DataTypes.TEXT,
-      userId: DataTypes.INTEGER,
+      UserId: DataTypes.INTEGER,
       allDay: DataTypes.BOOLEAN,
       remindBefore: DataTypes.INTEGER
     },
