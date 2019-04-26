@@ -92,13 +92,13 @@ async function getEvents(userId, from, to, fn) {
   if (from && to) {
     query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."UserId"
                 from "Events", "UserEvents"
-                where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."UserId" = ${userId}  and
+                where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}  and
                 "Events"."fromDate" BETWEEN '${from}' AND '${to}'
                 order by "Events"."fromDate" asc`;
   } else {
     query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."UserId"
             from "Events", "UserEvents"
-            where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."UserId" = ${userId}
+            where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}
             order by "Events"."fromDate" asc`;
   }
 
