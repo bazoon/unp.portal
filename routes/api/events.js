@@ -38,7 +38,7 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     remindBefore
   }).then(event => {
     return models.UserEvent.create({
-      userId,
+      UserId: userId,
       eventId: event.id
     }).then(() => {
       return models.EventFile.bulkCreate(
@@ -90,7 +90,7 @@ async function getEvents(userId, from, to, fn) {
   let query;
 
   if (from && to) {
-    query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."userId"
+    query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."UserId"
                 from "Events", "UserEvents"
                 where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}  and
                 "Events"."fromDate" BETWEEN '${from}' AND '${to}'
@@ -98,7 +98,7 @@ async function getEvents(userId, from, to, fn) {
   } else {
     query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."userId"
             from "Events", "UserEvents"
-            where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}
+            where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."UserId" = ${userId}
             order by "Events"."fromDate" asc`;
   }
 
@@ -111,7 +111,7 @@ async function getEvents(userId, from, to, fn) {
       }).then(files => {
         return {
           id: event.id,
-          userId: event.userId,
+          userId: event.UserId,
           title: event.title,
           fromDate: event.fromDate,
           toDate: event.toDate,
