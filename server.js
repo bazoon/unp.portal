@@ -43,6 +43,8 @@ const upload = multer({ storage });
 
 // console.log(apiRouter);
 
+app.use(koaBody());
+
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 const chat = new chatFactory(io);

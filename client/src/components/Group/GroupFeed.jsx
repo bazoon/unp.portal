@@ -52,7 +52,7 @@ class GroupFeed extends Component {
     return (
       <div className="group__feed">
         <div className="group__feed-title">
-          <img src={avatar} alt="avatar" />
+          <img className="group__feed-avatar" src={avatar} alt="avatar" />
           <div className="group__name">{title}</div>
         </div>
         <div className="group__description">

@@ -5,6 +5,7 @@ import { Input, Icon, Button } from "antd";
 import { HashLink } from "react-router-hash-link";
 import prettyBytes from "pretty-bytes";
 import getFileIcon from "../../utils/getFileIcon";
+import getFileName from "../../utils/getFileName";
 import cn from "classnames";
 
 class GroupPosts extends Component {
@@ -166,17 +167,9 @@ class GroupPosts extends Component {
 
   renderUploadFiles() {
     const { uploadFiles } = this.state;
-    const imageFiles = uploadFiles.filter(
-      f => f.endsWith("jpg") || f.endsWith("jpeg")
-    );
 
     return (
       <>
-        <div className="group__post-images">
-          {imageFiles.map(image => {
-            return <img src={image} />;
-          })}
-        </div>
         <div className="conversation__upload-files">
           {uploadFiles.map(file => {
             return <div key={file.name}>{file.name}</div>;
@@ -229,17 +222,34 @@ class GroupPosts extends Component {
     );
   };
 
+  renderPostImageFiles(post) {
+    const { files } = post;
+    const imageFiles = files.filter(
+      f =>
+        f.name.endsWith("jpg") ||
+        f.name.endsWith("jpeg" || f.name.endsWith("png"))
+    );
+    return (
+      <div className="group__post-image-files">
+        {imageFiles.map(imageFile => (
+          <div>
+            <img className="group__post-image-file" src={imageFile.name} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   renderPostFiles(post) {
     const { files } = post;
     return (
       <div className="group__post-files">
         {files &&
           files.map(f => {
-            const downloadUrl = `/uploads/${f.name}`;
             const fileSize = prettyBytes(f.size, { locale: "ru" });
             return (
               <div key={f.name} className="group__post-file">
-                <a download href={downloadUrl} style={{ display: "block" }}>
+                <a download href={f.name} style={{ display: "block" }}>
                   <Icon
                     type={getFileIcon(f.name)}
                     style={{ fontSize: "32px" }}
@@ -247,7 +257,9 @@ class GroupPosts extends Component {
                 </a>
 
                 <div className="group__post-file-details">
-                  <div className="group__post-file-name">{f.name}</div>
+                  <div className="group__post-file-name">
+                    {getFileName(f.name)}
+                  </div>
                   <div className="group__post-file-size">{fileSize}</div>
                 </div>
               </div>
@@ -289,6 +301,7 @@ class GroupPosts extends Component {
           <div className="group__post-body">
             <div className="group__post-text">{post.text}</div>
           </div>
+          {this.renderPostImageFiles(post)}
           {this.renderPostFiles(post)}
           <div className="group__post-footer">
             <div>

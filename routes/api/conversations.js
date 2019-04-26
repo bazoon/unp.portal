@@ -5,6 +5,7 @@ const models = require("../../models");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const koaBody = require("koa-body");
 const uploadFiles = require("../../utils/uploadFiles");
+const { createPost, getPosts } = require("./common/posts");
 
 const multer = require("koa-multer");
 
@@ -30,48 +31,7 @@ router.get("/get", async (ctx, next) => {
                 where ("ConversationId"=${id}) and ("Posts"."UserId" = "Users"."id")
                 order by "Posts"."createdAt" asc`;
 
-  const postsTree = await models.sequelize.query(query).then(function(posts) {
-    const promises = posts[0].map(post => {
-      return models.PostFile.findAll({ where: { PostId: post.id } }).then(
-        postFiles => {
-          return {
-            id: post.id,
-            parentId: post.ParentId,
-            text: post.text,
-            avatar: getUploadFilePath(post.avatar),
-            userName: post.name,
-            position: post.Position,
-            createdAt: post.createdAt,
-            files: postFiles.map(pf => ({
-              name: pf.file,
-              size: pf.size
-            }))
-          };
-        }
-      );
-    });
-
-    const postsLookup = {};
-
-    return Promise.all(promises).then(posts => {
-      posts.forEach(post => {
-        postsLookup[post.id] = post;
-      });
-
-      const postsTree = posts.reduce((acc, post) => {
-        post.children = post.children || [];
-        if (post.parentId) {
-          const parentPost = postsLookup[post.parentId];
-          parentPost.children = parentPost.children || [];
-          parentPost.children.push(post);
-          return acc;
-        }
-        return acc.concat([post]);
-      }, []);
-
-      return postsTree;
-    });
-  });
+  const postsTree = await getPosts(query);
 
   ctx.body = {
     title: conversation.title,
@@ -83,39 +43,14 @@ router.post("/post", koaBody({ multipart: true }), async ctx => {
   const { text, conversationId, userId, postId } = ctx.request.body;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
-  await uploadFiles(files);
 
-  const posts = await models.Post.create({
+  ctx.body = await createPost({
     text,
-    ConversationId: conversationId,
-    UserId: userId,
-    ParentId: postId
-  }).then(post => {
-    return models.PostFile.bulkCreate(
-      files.map(f => ({ PostId: post.id, file: f.name, size: f.size }))
-    ).then(() => {
-      const query = `select "Users"."name", "Users"."avatar", "Users"."Position"
-                from "Users"
-                where "Users"."id"=${userId}`;
-
-      return models.sequelize.query(query).then(function(users) {
-        const user = users[0][0];
-        return {
-          id: post.id,
-          parentId: post.ParentId,
-          text: post.text,
-          avatar: getUploadFilePath(user.avatar),
-          userName: user.name,
-          position: user.Position,
-          createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.name, size: f.size })),
-          children: []
-        };
-      });
-    });
+    conversationId,
+    userId,
+    postId,
+    files
   });
-
-  ctx.body = posts;
 });
 
 module.exports = router;

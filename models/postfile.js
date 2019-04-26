@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     "PostFile",
     {
       PostId: DataTypes.INTEGER,
-      file: DataTypes.STRING,
+      FileId: DataTypes.INTEGER,
       size: DataTypes.INTEGER
     },
     {}
