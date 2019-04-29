@@ -34,17 +34,17 @@ class Group extends Component {
   handleUnsubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
+    console.log("handleUnSubscribe");
     Actions.postUnsubscribeGroup({ groupId: id, userId }).then(() => {
-      Actions.getProjectGroup({ id, userId });
+      // Actions.getProjectGroup({ id, userId });
     });
   };
 
   handleSubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
-    Actions.postSubscribeGroup({ groupId: id, userId }).then(() => {
-      Actions.getProjectGroup({ id, userId });
-    });
+    console.log("handleSubscribe");
+    Actions.postSubscribeGroup({ groupId: id, userId }).then(() => {});
   };
 
   handleCreateConversation = () => {
@@ -188,6 +188,7 @@ class Group extends Component {
       links,
       media
     } = this.props.group || {};
+    console.log(participant, participants);
 
     const conversationsCount = conversations && conversations.length;
     const participantsCount = participants && participants.length;

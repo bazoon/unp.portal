@@ -91,6 +91,9 @@
   height: 48px;
   border-radius: 50%;
 }
+.project-group__avatar_default {
+  background: #f4f6f9;
+}
 .project-group__info-container {
   display: flex;
   align-items: center;

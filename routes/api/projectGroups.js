@@ -256,7 +256,7 @@ router.post("/media/remove", (req, res) => {
   });
 });
 
-router.post("/unsubscribe", ctx => {
+router.post("/unsubscribe", async ctx => {
   const { groupId, userId } = ctx.request.body;
 
   const participantPromise = models.Participant.destroy({
@@ -269,11 +269,11 @@ router.post("/unsubscribe", ctx => {
     where: { UserId: userId, SourceId: groupId }
   });
 
-  const result = [participantPromise, notificationPromise];
+  const result = await Promise.all([participantPromise, notificationPromise]);
   ctx.body = result;
 });
 
-router.post("/subscribe", ctx => {
+router.post("/subscribe", async ctx => {
   const { groupId, userId } = ctx.request.body;
 
   const participantPromise = models.Participant.create({
@@ -290,7 +290,7 @@ router.post("/subscribe", ctx => {
     email: false
   });
 
-  const result = Promise.all([participantPromise, notificationPromise]);
+  const result = await Promise.all([participantPromise, notificationPromise]);
   ctx.body = result;
 });
 
@@ -310,7 +310,6 @@ router.post("/post/post", koaBody({ multipart: true }), async ctx => {
   const { text, groupId, userId, postId } = ctx.request.body;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
-  console.log(text, groupId);
 
   ctx.body = await createPost({
     text,

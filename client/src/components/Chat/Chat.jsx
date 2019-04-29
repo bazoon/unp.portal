@@ -345,7 +345,9 @@ class Chat extends Component {
     const { dataset } = target;
     const { userId } = this.props;
     const [channelId, messageId, seen] = dataset.id.split("-");
+    console.log(dataset);
     if (e.isIntersecting && seen !== "true") {
+      console.log("chatMarkAsRead");
       Actions.chatMarkAsRead({
         messageId,
         userId
@@ -515,6 +517,7 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const { isSocketConnected } = this.state;
+    console.log(isSocketConnected);
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
     const chatIndicatorCls = cn("chat__indicator", {

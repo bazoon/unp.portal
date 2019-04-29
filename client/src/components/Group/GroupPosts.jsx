@@ -396,7 +396,7 @@ class GroupPosts extends Component {
 
     return (
       <div className="group__posts">
-        {this.renderConversationForm()}
+        {!this.props.hideForm && this.renderConversationForm()}
         {this.renderPosts(posts, 24, undefined, true)}
         {this.renderReplyFileForm()}
       </div>

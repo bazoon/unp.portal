@@ -1,7 +1,6 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 import findInTree from "../../utils/findPostInTree";
-import Conversation from "../Conversation/Conversation";
 
 const projectGroups = State({
   initial: { groups: [], group: {}, posts: [] },
@@ -10,18 +9,6 @@ const projectGroups = State({
   },
   setGroupPosts(state, payload) {
     return { ...state, posts: payload };
-  },
-  unsubscribeGroup(state) {
-    const { group } = state;
-    group.participant = false;
-    group.count -= 1;
-    return { ...state, group: { ...group } };
-  },
-  subscribeGroup(state) {
-    const { group } = state;
-    group.participant = true;
-    group.count += 1;
-    return { ...state, group: { ...group } };
   },
   addProjectGroupLink(state, payload) {
     const { group } = state;
@@ -133,7 +120,7 @@ Effect("postUnsubscribeGroup", ({ groupId, userId }) => {
       userId
     })
     .then(() => {
-      Actions.unsubscribeGroup();
+      Actions.getProjectGroup({ id: groupId, userId });
     });
 });
 
@@ -144,7 +131,7 @@ Effect("postSubscribeGroup", ({ groupId, userId }) => {
       userId
     })
     .then(() => {
-      Actions.subscribeGroup();
+      Actions.getProjectGroup({ id: groupId, userId });
     });
 });
 

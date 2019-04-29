@@ -58,7 +58,12 @@ export class ProjectGroup extends Component {
     return (
       <div className="project-group">
         <div className="project-group__info-container">
-          <img className="project-group__avatar" src={avatar} alt="avatar" />
+          {avatar ? (
+            <img className="project-group__avatar" src={avatar} alt="avatar" />
+          ) : (
+            <div className="project-group__avatar project-group__avatar_default" />
+          )}
+
           <div className="project-group__info">
             <div className="project-group__text">
               {isOpen ? "Открытая группа" : "Закрытая группа"}

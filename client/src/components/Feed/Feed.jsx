@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { Button, Input, Icon, Avatar, Upload, Select } from "antd";
 import api from "../../api/api";
 import "./Feed.less";
-import Posts from "../Conversation/Posts";
+import Posts from "../Group/GroupPosts";
 
 const { TextArea } = Input;
 const Option = Select.Option;
@@ -113,7 +113,7 @@ class Feed extends Component {
   handleSendMessage = () => {
     const { userId } = this.props;
     const { chosenRecipients, message } = this.state;
-    const { messageFiles } = this.state;
+    const messageFiles = this.state.messageFiles || [];
 
     const groupKeys = chosenRecipients.map(r => r.split(":")[0].split("-"));
     const config = {
@@ -274,6 +274,7 @@ class Feed extends Component {
           avatar={avatar}
           onSend={this.handleSend}
           onReplySend={this.handleReplySend}
+          hideForm
         />
       </div>
     );
