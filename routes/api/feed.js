@@ -9,18 +9,6 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 
-const multer = require("multer");
-var storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
-
-const upload = multer({ storage });
-
 router.get("/recipients", async (ctx, next) => {
   const { userId } = ctx.request.query;
   const query = `select "ProjectGroups"."title",  "ProjectGroups"."id", "ProjectGroups"."avatar", 

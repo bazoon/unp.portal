@@ -11,49 +11,6 @@ const koaBody = require("koa-body");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 
-const multer = require("multer");
-var storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
-
-const upload = multer({ storage });
-
-const users = [
-  {
-    name: "Петров Петр",
-    avatar: "https://randomuser.me/api/portraits/men/21.jpg"
-  },
-  {
-    name: "Иванов Семен",
-    avatar: "https://randomuser.me/api/portraits/men/79.jpg"
-  },
-  {
-    name: "Круглов Андрей",
-    avatar: "https://randomuser.me/api/portraits/men/20.jpg"
-  },
-  {
-    name: "Соколова Виктория",
-    avatar: "https://randomuser.me/api/portraits/women/40.jpg"
-  },
-  {
-    name: "Сидорова Анна",
-    avatar: "https://randomuser.me/api/portraits/women/0.jpg"
-  },
-  {
-    name: "Лукина Мария",
-    avatar: "https://randomuser.me/api/portraits/women/72.jpg"
-  }
-];
-
-function getRandomUser() {
-  return users[Math.floor(Math.random() * users.length)];
-}
-
 router.get("/channels/all", async (ctx, next) => {
   const response = await models.Channel.findAll({
     where: { private: { [Op.not]: true } }
@@ -253,28 +210,6 @@ router.get("/list", (req, res) => {
     .pipe(jsonStream.parse("*"))
     .pipe(jsonStream.stringify())
     .pipe(res);
-});
-
-router.get("/more", (req, res) => {
-  const { activeChannelId } = req.query;
-  const messages = [];
-
-  for (let i = 0; i < 10; i++) {
-    let user = getRandomUser();
-    messages.push({
-      id: i + Math.round(Math.random() * i * 100) + 119818,
-      type: "text",
-      date: "2019-03-20T03:48:14.482Z",
-      avatar: getUploadFilePath(user.avatar),
-      author: user.name,
-      content: faker.lorem.paragraphs(Math.round(Math.random() * 2) + 1)
-    });
-  }
-
-  res.json({
-    activeChannelId,
-    messages
-  });
 });
 
 router.post("/send", (req, res) => {

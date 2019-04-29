@@ -5,7 +5,6 @@ const fs = require("fs");
 const jsonStream = require("JSONStream");
 const fileName = __dirname + "/project_groups.json";
 const models = require("../../models");
-const multer = require("multer");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const getUploadFilePath = require("../../utils/getUploadFilePath");

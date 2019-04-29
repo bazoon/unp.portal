@@ -7,19 +7,6 @@ const koaBody = require("koa-body");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 
-const multer = require("koa-multer");
-
-var storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
-
-const upload = multer({ storage });
-
 router.get("/get", async (ctx, next) => {
   const { id } = ctx.request.query;
 
