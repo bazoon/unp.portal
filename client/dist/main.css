@@ -693,6 +693,9 @@
 .chat__chanels-item_active {
   background: #fff;
 }
+.chat__chanels-item:last-child {
+  margin-bottom: 0px;
+}
 .chat__chanels-avatar img {
   border-radius: 50%;
   margin-right: 5px;
@@ -20154,7 +20157,14 @@ span.ant-typography-ellipsis {
 .header-icons {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   min-width: 500px;
+}
+.header__logo {
+  height: 59px;
+}
+.header__mail {
+  display: flex;
 }
 .header__support {
   line-height: 20px;

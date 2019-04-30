@@ -66,13 +66,7 @@ class L extends Component {
           <ChatIcon onClick={this.handleChatClick} />
           <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           <Header className="header">
-            <Link to="/">
-              <img
-                className="header__logo"
-                src={`${logo.slice(1)}`}
-                alt="Logo"
-              />
-            </Link>
+            <img className="header__logo" src={`${logo.slice(1)}`} alt="Logo" />
 
             <div className="header-icons">
               <div className="header__support">
@@ -104,7 +98,7 @@ class L extends Component {
                   <Icon type="mail" className="icon__medium" />
                 </Badge>
               </div>
-              <Link to="/profile">
+              <Link to="/profile" style={{ display: "flex" }}>
                 {avatar ? (
                   <img
                     src={avatar}

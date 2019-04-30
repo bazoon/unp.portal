@@ -18,7 +18,6 @@ const projectGroups = State({
     const conversation = conversations[conversationId];
     const { postsTree } = conversation;
     let posts = [...postsTree];
-    debugger;
 
     if (!post.parentId) {
       posts = [...posts, post];
