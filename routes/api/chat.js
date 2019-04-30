@@ -77,7 +77,6 @@ router.get("/channels", async (ctx, next) => {
   });
 
   const channels = await channelsPromise;
-  console.log(77, channels);
   ctx.body = channels;
 });
 
