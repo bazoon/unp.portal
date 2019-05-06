@@ -1,6 +1,6 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
-import socketIOClient from "socket.io-client";
+import chatSocket from "./socket";
 
 const Chat = State({
   initial: {
@@ -41,11 +41,13 @@ const Chat = State({
 
     return { ...newState, channels };
   },
-  addNewMessage(state, { activeChannelId, message }) {
+  addNewMessage(state, { message }) {
     const newState = { ...state };
     const channels = state.channels.map(channel => channel);
-    const channel = channels.find(c => c.id === activeChannelId);
-    channel.messages = [...channel.messages, message];
+    const channel = channels.find(c => c.id == message.channelId);
+    if (channel) {
+      channel.messages = [...channel.messages, message];
+    }
     return { ...newState, channels };
   },
   setChat(state, payload) {
@@ -76,9 +78,14 @@ const Chat = State({
   }
 });
 
+function joinChannels(channels) {
+  chatSocket.emit("join", channels.map(channel => channel.id));
+}
+
 Effect("getChannels", userId => {
   api.get("api/chat/channels", { userId }).then(response => {
     Actions.setChatChannels(response.data);
+    joinChannels(response.data);
   });
 });
 
@@ -90,6 +97,13 @@ Effect("getAllChannels", userId => {
 
 Effect("postCreateChannel", payload => {
   return api.post("api/chat/channels/create", payload).then(response => {
+    joinChannels([response.data]);
+    return Actions.addChannel(response.data);
+  });
+});
+
+Effect("postJoinChannel", payload => {
+  return api.post("api/chat/channels/join", payload).then(response => {
     return Actions.addChannel(response.data);
   });
 });
@@ -136,24 +150,13 @@ Effect("getMoreMessages", ({ activeChannelId, currentPage, lastMessageId }) => {
 });
 
 Effect("chatMarkAsRead", payload => {
-  const socket = socketIOClient(location.host, {
-    query: {
-      token: localStorage.getItem("token"),
-      userName: localStorage.getItem("userName")
-    }
-  });
-  socket.emit("channel-message-mark", payload, () => {});
+  chatSocket.emit("channel-message-mark", payload, () => {});
 });
 
 Effect("sendChatMessage", payload => {
   Actions.setIsLoading(true);
-  const socket = socketIOClient(location.host, {
-    query: {
-      token: localStorage.getItem("token")
-    }
-  });
 
-  socket.on("error", error => {
+  chatSocket.on("error", error => {
     Actions.setError();
     Actions.setIsLoading(false);
     if (error === "jwt expired") {
@@ -161,7 +164,7 @@ Effect("sendChatMessage", payload => {
     }
   });
 
-  socket.emit("channel-message", payload, () => {
+  chatSocket.emit("channel-message", payload, () => {
     Actions.setIsLoading(false);
     // Actions.getChat();
   });
@@ -172,20 +175,13 @@ Effect("sendChatMessage", payload => {
 });
 
 Effect("sendChatFile", ({ payload, userId }) => {
-  const socket = socketIOClient(location.host, {
-    query: {
-      token: localStorage.getItem("token")
-    }
-  });
-
   Actions.setIsLoading(true);
   const config = { headers: { "Content-Type": "multipart/form-data" } };
   api.post("api/chat/upload", payload, config).then(response => {
     const { data } = response;
     const { channelId, files } = data;
-    console.log(777, files);
 
-    socket.emit(
+    chatSocket.emit(
       "channel-message",
       {
         channelId,

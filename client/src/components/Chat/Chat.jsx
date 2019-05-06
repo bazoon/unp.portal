@@ -5,7 +5,6 @@ import cn from "classnames";
 import moment from "moment";
 import { Drawer, Input, Button, Icon, Spin, Popover, Tooltip } from "antd";
 import PropTypes from "prop-types";
-import socketIOClient from "socket.io-client";
 import "intersection-observer";
 import Observer from "@researchgate/react-intersection-observer";
 import NewChannel from "./NewChannel";
@@ -19,12 +18,7 @@ import {
   CellMeasurerCache
 } from "react-virtualized";
 
-const socket = socketIOClient(location.host, {
-  query: {
-    token: localStorage.getItem("token"),
-    expiresIn: localStorage.getItem("expiresIn")
-  }
-});
+import chatSocket from "./socket";
 
 function hashCode(string) {
   if (!string) return "333";
@@ -86,29 +80,20 @@ class Chat extends Component {
     Actions.getChannels(this.props.userId);
     Actions.getAllChannels();
 
-    socket.on("connect", () => {
-      console.log("connect");
+    chatSocket.on("connect", () => {
       this.setState({
         isSocketConnected: true
       });
     });
 
-    socket.on("disconnect", () => {
-      console.log("disconnect");
+    chatSocket.on("disconnect", () => {
       this.setState({
         isSocketConnected: false
       });
     });
 
-    socket.on("channel-message", message => {
-      const { activeChannelId } = this.props;
-      // let me = this;
-
-      // const scrollTop = me.listRef.current.Grid._scrollingContainer.scrollTop;
-      Actions.addNewMessage({ activeChannelId, message });
-      // setTimeout(() => {
-      //   // me.listRef.current.scrollToPosition(this.scrollTop);
-      // }, 1000);
+    chatSocket.on("channel-message", message => {
+      Actions.addNewMessage({ message });
     });
   };
 
@@ -128,17 +113,6 @@ class Chat extends Component {
         currentMessage: ""
       });
     });
-
-    // const message = {
-    //   id: Math.random(),
-    //   message: this.state.currentMessage,
-    //   userName: "foo",
-    //   type: "text"
-    // };
-    // Actions.addNewMessage({
-    //   activeChannelId: this.props.activeChannelId,
-    //   message
-    // });
   };
 
   scrollChatTalk = () => {

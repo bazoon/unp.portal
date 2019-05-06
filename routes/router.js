@@ -13,10 +13,10 @@ const conversations = require("./api/conversations");
 const events = require("./api/events");
 
 // Middleware
+router.use("/api/user", user.routes());
 router.use(checkToken);
 
 // Api routes
-router.use("/api/user", user.routes());
 router.use("/api/users", users.routes());
 router.use("/api/projectGroups", projectGroups.routes());
 router.use("/api/news", news.routes());

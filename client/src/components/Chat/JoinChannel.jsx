@@ -57,7 +57,7 @@ class NewChannel extends Component {
       >
         <Form layout="vertical" onSubmit={this.handleSubmit}>
           <FlexRow>
-            {getFieldDecorator("selectedUserId")(
+            {getFieldDecorator("channelId")(
               <Select
                 showSearch={true}
                 filterOption={this.filterUsers}

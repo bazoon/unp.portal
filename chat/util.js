@@ -24,6 +24,7 @@ module.exports = {
           .then(() => {
             models.User.findByPk(userId).then(user => {
               resolve({
+                channelId,
                 id: message.id,
                 type: message.type,
                 message: message.message,

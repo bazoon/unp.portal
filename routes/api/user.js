@@ -31,7 +31,6 @@ async function login(userName, password) {
 }
 
 router.post("/login", async ctx => {
-  console.log(7777, ctx.request.body);
   const { userName, password } = ctx.request.body;
 
   if (!userName || !password) {

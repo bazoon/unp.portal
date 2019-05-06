@@ -23,34 +23,33 @@ class Chat {
   }
 
   onConnection(socket) {
-    // console.log("Connected", socket.decoded);
+    const s = socket;
     const { userName } = socket.decoded;
     socket.on("disconnect", this.onDisconnect.bind(this));
+
+    socket.on("join", rooms => {
+      socket.join(rooms);
+    });
+
     this.socket = socket;
     this.socket.on("channel-message", this.onChannelMessage.bind(this, {}));
-
     this.socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
-
-    this.socket.on("notify-upload", this.onNotifyUpload.bind(this, userName));
   }
 
   onDisconnect(socket) {
-    // console.log("disconnect");
+    console.log("Disconnect");
   }
 
   onChannelMessage(userName, m, fn) {
     const { channelId, message, type, userId, files } = m;
-    console.log(1111, m);
-
     util.writeMessage(channelId, message, type, userId, files).then(message => {
-      this.io.emit("channel-message", message);
+      this.io.to(channelId).emit("channel-message", message);
       fn();
     });
   }
 
   onMarkAsRead(m, fn) {
     const { userId, messageId } = m;
-    console.log(userId, messageId);
 
     models.Read.findOne({
       where: {
@@ -66,11 +65,6 @@ class Chat {
         });
       }
     });
-  }
-
-  onNotifyUpload() {
-    console.log("UUUUUU");
-    // this.io.emit("channel-reload");
   }
 }
 

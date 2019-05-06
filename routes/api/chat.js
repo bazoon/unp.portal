@@ -33,66 +33,59 @@ router.get("/channels", async (ctx, next) => {
   const query = `select distinct "Channels"."name", "Channels"."avatar", "Channels"."id",
                 "Channels"."firstUserId", "Channels"."secondUserId"
                 from "Channels", "UserChannels"
-                where ("UserChannels"."channelId" = "Channels"."id" and "UserChannels"."userId" = ${userId}) or 
+                where ("UserChannels"."ChannelId" = "Channels"."id" and "UserChannels"."UserId" = ${userId}) or 
  	              ("Channels"."firstUserId" = ${userId}) or ("Channels"."secondUserId" = ${userId})`;
 
-  const promise = models.sequelize.query(query).then(function(c) {
-    return c[0].map(channel => {
-      if (channel.firstUserId && channel.secondUserId) {
-        if (channel.firstUserId == userId) {
-          return models.User.findOne({
-            where: { id: channel.secondUserId }
-          }).then(user => {
-            return {
-              id: channel.id,
-              avatar: getUploadFilePath(user.avatar),
-              name: user.name
-            };
-          });
-        } else {
-          return models.User.findOne({
-            where: { id: channel.firstUserId }
-          }).then(user => {
-            return {
-              id: channel.id,
-              avatar: getUploadFilePath(user.avatar),
-              name: user.name
-            };
-          });
-        }
+  const [channels] = await models.sequelize.query(query);
+
+  const promises = channels.map(channel => {
+    if (channel.firstUserId && channel.secondUserId) {
+      if (channel.firstUserId == userId) {
+        return models.User.findOne({
+          where: { id: channel.secondUserId }
+        }).then(user => {
+          return {
+            id: channel.id,
+            avatar: getUploadFilePath(user.avatar),
+            name: user.name
+          };
+        });
+      } else {
+        return models.User.findOne({
+          where: { id: channel.firstUserId }
+        }).then(user => {
+          return {
+            id: channel.id,
+            avatar: getUploadFilePath(user.avatar),
+            name: user.name
+          };
+        });
       }
+    }
 
-      return Promise.resolve({
-        id: channel.id,
-        name: channel.name,
-        avatar: getUploadFilePath(channel.avatar)
-      });
+    return Promise.resolve({
+      id: channel.id,
+      name: channel.name,
+      avatar: getUploadFilePath(channel.avatar)
     });
   });
 
-  const channelsPromise = await promise.then(r => {
-    return Promise.all(r).then(channels => {
-      return channels;
-    });
-  });
-
-  const channels = await channelsPromise;
-  ctx.body = channels;
+  ctx.body = await Promise.all(promises);
 });
 
 router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
   const { channelTitle, userId } = ctx.request.body;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
-  const avatar = files[0].name;
+  const avatar = files[0] && files[0].name;
   await uploadFiles(files);
-  const result = await models.Channel.create({
+  ctx.body = await models.Channel.create({
     name: channelTitle,
     avatar: avatar
   }).then(channel => {
     return models.UserChannel.create({
-      channelId: channel.id,
-      userId
+      ChannelId: channel.id,
+      UserId: userId
     }).then(() => {
       return {
         id: channel.id,
@@ -101,7 +94,6 @@ router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
       };
     });
   });
-  ctx.body = result;
 });
 
 router.post("/channels/createPrivate", async ctx => {
@@ -119,12 +111,12 @@ router.post("/channels/createPrivate", async ctx => {
     }).then(channel => {
       return models.UserChannel.bulkCreate([
         {
-          channelId: channel.id,
-          userId
+          ChannelId: channel.id,
+          UserId: userId
         },
         {
-          channelId: channel.id,
-          selectedUserId
+          ChannelId: channel.id,
+          UserId: selectedUserId
         }
       ]).then(() => {
         return {
@@ -136,6 +128,29 @@ router.post("/channels/createPrivate", async ctx => {
     });
   });
   ctx.body = result;
+});
+
+router.post("/channels/join", async ctx => {
+  const { userId, channelId } = ctx.request.body;
+
+  try {
+    await models.UserChannel.findOrCreate({
+      where: {
+        ChannelId: channelId,
+        UserId: userId
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
+
+  const channel = await models.Channel.findByPk(channelId);
+
+  ctx.body = {
+    id: channel.id,
+    avatar: getUploadFilePath(channel.avatar),
+    name: channel.name
+  };
 });
 
 function getMessageFiles(message) {
