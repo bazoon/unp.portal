@@ -290,6 +290,7 @@ class Chat extends Component {
     const formData = new FormData();
     const files = Array.prototype.map.call(e.target.files, f => f);
     formData.append("channelId", activeChannelId);
+    formData.append("userId", userId);
     files.forEach(f => {
       formData.append("file", f);
     });

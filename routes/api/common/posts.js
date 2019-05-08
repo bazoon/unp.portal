@@ -28,19 +28,11 @@ const createPost = async function createPost({
   const createdFiles = await models.File.bulkCreate(
     files.map(file => ({
       file: file.name,
-      size: file.size
+      size: file.size,
+      type: "post",
+      entityId: post.id
     })),
     { returning: true }
-  );
-
-  const postFiles = await models.PostFile.bulkCreate(
-    createdFiles.map(file => ({
-      PostId: post.id,
-      FileId: file.id
-    })),
-    {
-      returning: true
-    }
   );
 
   const users = await models.sequelize.query(userQuery);
@@ -64,8 +56,8 @@ const getPosts = async function getPosts(query) {
 
   const postFilesPromises = posts.map(async post => {
     const filesQuery = `select "Files"."id", "Files"."file", "Files"."size"
-                        from "Files", "PostFiles"
-                        where ("Files"."id" = "PostFiles"."FileId") and "PostFiles"."PostId" = ${
+                        from "Files"
+                        where ("Files"."type" = 'post') and "Files"."entityId" = ${
                           post.id
                         }`;
     const files = await models.sequelize.query(filesQuery).then(f => f[0]);

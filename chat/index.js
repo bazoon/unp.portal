@@ -33,6 +33,10 @@ class Chat {
 
     this.socket = socket;
     this.socket.on("channel-message", this.onChannelMessage.bind(this, {}));
+    this.socket.on(
+      "channel-file-message",
+      this.onChannelFileMessage.bind(this, {})
+    );
     this.socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
   }
 
@@ -43,6 +47,14 @@ class Chat {
   onChannelMessage(userName, m, fn) {
     const { channelId, message, type, userId, files } = m;
     util.writeMessage(channelId, message, type, userId, files).then(message => {
+      this.io.to(channelId).emit("channel-message", message);
+      fn();
+    });
+  }
+
+  onChannelFileMessage(userName, m, fn) {
+    const { channelId, message, type, userId, files, id } = m;
+    util.combineFileMessage(channelId, userId, files, id).then(message => {
       this.io.to(channelId).emit("channel-message", message);
       fn();
     });

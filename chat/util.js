@@ -13,34 +13,40 @@ module.exports = {
         ChannelId: channelId,
         UserId: userId
       }).then(message => {
-        models.MessageFile.bulkCreate(
-          files.map(f => {
-            return {
-              MessageId: message.id,
-              FileId: f.id
-            };
-          })
-        )
-          .then(() => {
-            models.User.findByPk(userId).then(user => {
-              resolve({
-                channelId,
-                id: message.id,
-                type: message.type,
-                message: message.message,
-                userName: user.name,
-                avatar: getUploadFilePath(user.avatar),
-                files: files.map(f => ({
-                  id: f.id,
-                  file: getUploadFilePath(f.file),
-                  size: f.size
-                }))
-              });
-            });
-          })
-          .catch(err => {
-            reject(err);
+        models.User.findByPk(userId).then(user => {
+          resolve({
+            channelId,
+            id: message.id,
+            type: message.type,
+            message: message.message,
+            userName: user.name,
+            avatar: getUploadFilePath(user.avatar),
+            files: files.map(f => ({
+              id: f.id,
+              file: getUploadFilePath(f.file),
+              size: f.size
+            }))
           });
+        });
+      });
+    });
+  },
+  combineFileMessage(channelId, userId, files = [], id) {
+    return new Promise((resolve, reject) => {
+      models.User.findByPk(userId).then(user => {
+        resolve({
+          channelId,
+          id,
+          type: "file",
+          message: null,
+          userName: user.name,
+          avatar: getUploadFilePath(user.avatar),
+          files: files.map(f => ({
+            id: f.id,
+            file: getUploadFilePath(f.file),
+            size: f.size
+          }))
+        });
       });
     });
   }

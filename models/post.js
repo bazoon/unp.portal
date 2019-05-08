@@ -13,8 +13,6 @@ module.exports = (sequelize, DataTypes) => {
   );
   Post.associate = function(models) {
     // associations can be defined here
-    Post.hasMany(models.Comment, { as: "Comments" });
-    Post.hasMany(models.PostFile, { as: "Files" });
   };
   return Post;
 };

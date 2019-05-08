@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
   const Read = sequelize.define(
     "Read",
     {
-      message_id: DataTypes.INTEGER,
-      user_id: DataTypes.INTEGER,
+      MessageId: DataTypes.INTEGER,
+      UserId: DataTypes.INTEGER,
       seen: DataTypes.BOOLEAN
     },
     {}

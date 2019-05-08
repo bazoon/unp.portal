@@ -156,8 +156,8 @@ router.post("/channels/join", async ctx => {
 function getMessageFiles(message) {
   if (message.type !== "file") return Promise.resolve([]);
   const filesQuery = `select "Files"."id", "Files"."file", "Files"."size"
-                      from "Files", "MessageFiles"
-                      where ("Files"."id" = "MessageFiles"."FileId") and "MessageFiles"."MessageId" = ${
+                      from "Files"
+                      where ("Files"."type" = 'message') and "Files"."entityId" = ${
                         message.id
                       }`;
   return models.sequelize.query(filesQuery).then(function(messageFiles) {
@@ -234,22 +234,32 @@ router.post("/send", (req, res) => {
 
 // Uploads
 router.post("/upload", koaBody({ multipart: true }), async ctx => {
-  const { channelId } = ctx.request.body;
+  const { channelId, userId } = ctx.request.body;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
+
+  const message = await models.Message.create({
+    message: null,
+    type: "file",
+    ChannelId: channelId,
+    UserId: userId
+  });
 
   const createdFiles = await models.File.bulkCreate(
     files.map(f => {
       return {
         file: f.name,
-        size: f.size
+        size: f.size,
+        type: "message",
+        entityId: message.id
       };
     }),
     { returning: true }
   );
 
   ctx.body = {
+    id: message.id,
     channelId,
     files: createdFiles
   };

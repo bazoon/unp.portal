@@ -112,6 +112,7 @@ class L extends Component {
               <div className="header__user">
                 <div>
                   <Popover
+                    placement="bottom"
                     content={
                       <div
                         style={{ cursor: "pointer" }}

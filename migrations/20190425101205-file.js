@@ -8,7 +8,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      entityId: {
+        type: Sequelize.INTEGER
+      },
       file: {
+        type: Sequelize.STRING
+      },
+      type: {
         type: Sequelize.STRING
       },
       size: {

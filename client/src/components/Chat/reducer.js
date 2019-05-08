@@ -179,16 +179,17 @@ Effect("sendChatFile", ({ payload, userId }) => {
   const config = { headers: { "Content-Type": "multipart/form-data" } };
   api.post("api/chat/upload", payload, config).then(response => {
     const { data } = response;
-    const { channelId, files } = data;
+    const { channelId, files, id } = data;
 
     chatSocket.emit(
-      "channel-message",
+      "channel-file-message",
       {
         channelId,
         userId,
         message: "",
         files,
-        type: "file"
+        type: "file",
+        id
       },
       () => {
         Actions.setIsLoading(false);
