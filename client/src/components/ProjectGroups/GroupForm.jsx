@@ -53,7 +53,7 @@ class GroupForm extends Component {
     return (
       <Form layout="vertical" onSubmit={this.handleSubmit}>
         <FlexRow>
-          {getFieldDecorator("groupTitle", {
+          {getFieldDecorator("title", {
             rules: [{ required: true, message: "Название группы" }]
           })(<Input placeholder="Название группы" />)}
         </FlexRow>
@@ -68,7 +68,7 @@ class GroupForm extends Component {
         </FlexRow>
 
         <FlexRow>
-          {getFieldDecorator("groupDescription")(
+          {getFieldDecorator("description")(
             <TextArea placeholder="Описание группы" />
           )}
         </FlexRow>

@@ -14,7 +14,7 @@ class GroupCreateModal extends Component {
     const form = this.formRef.current;
     const { userId } = this.props;
     const { onOk } = this.props;
-    const formData = new FormData();
+    const payload = {};
 
     form.validateFields((err, fields) => {
       let files = [];
@@ -23,18 +23,16 @@ class GroupCreateModal extends Component {
         delete fields.files;
       }
 
+      payload.file = files && files[0];
+
       const keys = Object.keys(fields);
       keys.forEach(key => {
         if (fields[key]) {
-          formData.append(key, fields[key]);
+          payload[key] = fields[key];
         }
       });
-      formData.append("userId", userId);
 
-      files.forEach(f => {
-        formData.append("file", f);
-      });
-      Actions.postCreateGroup({ payload: formData, userId });
+      Actions.postCreateGroup({ payload, userId });
     });
     this.onFormSubmit();
     onOk();

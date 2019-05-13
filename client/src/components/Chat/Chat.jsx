@@ -492,7 +492,7 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const { isSocketConnected } = this.state;
-    console.log(isSocketConnected);
+
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
     const chatIndicatorCls = cn("chat__indicator", {

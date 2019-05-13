@@ -14,6 +14,7 @@ const { createPost, getPosts } = require("./common/posts");
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const { userId, groupTitle, isOpen, groupDescription } = ctx.request.body;
   const { file } = ctx.request.files;
+  console.log(userId, groupTitle, isOpen);
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 

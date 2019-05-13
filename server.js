@@ -1,5 +1,9 @@
 require("dotenv").config();
+const path = require("path");
+const fs = require("fs");
 const Koa = require("koa");
+const koaJwt = require("koa-jwt");
+const jwt = require("jsonwebtoken");
 const serve = require("koa-static");
 const send = require("koa-send");
 const Router = require("koa-router");
@@ -8,29 +12,51 @@ const router = new Router();
 const koaBody = require("koa-body");
 const uploadFiles = require("./utils/uploadFiles");
 
-const app = new Koa();
-
-const path = require("path");
-const apiRouter = require("./routes/router");
-
-const eventsRouter = require("./routes/api/events");
-
-var http = require("http").Server(app.callback());
-
-var io = require("socket.io")(http);
 const models = require("./models");
+const { ApolloServer, gql } = require("apollo-server-koa");
+
+const resolvers = require("./resolvers/resolvers");
+const typeDefs = fs.readFileSync("./schema.graphql", { encoding: "utf-8" });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ ctx }) => {
+    // get the user token from the headers
+    const token = ctx.request.headers.authorization || "";
+    const tokenOnly = token.split(" ")[1];
+    const user = jwt.verify(tokenOnly, process.env.API_TOKEN);
+    if (!user) throw new AuthorizationError("you must be logged in");
+    return { user };
+  }
+});
+
+const app = new Koa();
+const http = require("http").Server(app.callback());
+const io = require("socket.io")(http);
+const apiRouter = require("./routes/router");
+const authRouter = require("./routes/authRouter");
+const eventsRouter = require("./routes/api/events");
 
 const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
 const chat = new chatFactory(io);
 
 app.use(koaBody());
-app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
+
 app.use(serve("client/dist"));
 app.use(mount("/uploads", serve("uploads")));
 
-app.use(async ctx => {
+app.use(async (ctx, next) => {
+  const requestPath = ctx.request.path;
+  if (requestPath.indexOf("api") > 0 || requestPath.indexOf("graphql") > 0) {
+    return await next();
+  }
   await send(ctx, path.resolve("/client/dist", "index.html"));
 });
+
+app.use(authRouter.routes()).use(authRouter.allowedMethods());
+app.use(koaJwt({ secret: process.env.API_TOKEN }));
+server.applyMiddleware({ app });
+app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 http.listen(port, () => console.log(`Server is running on ${port}`));

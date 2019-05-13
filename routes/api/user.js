@@ -5,13 +5,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const models = require("../../models");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
-const secret = "Some secret key";
 const fileName = __dirname + "/users.json";
 const expiresIn = 60 * 60 * 24;
 
 async function login(userName, password) {
-  const token = jwt.sign({ userName }, secret, { expiresIn: expiresIn });
   const user = await models.User.findOne({ where: { name: userName } });
+  const token = jwt.sign({ userName, id: user.id }, process.env.API_TOKEN, {
+    expiresIn: expiresIn
+  });
   const hashedPassword = bcrypt.hashSync(password, 8);
   const isCorrect = bcrypt.compare(password, user.password);
 
@@ -47,7 +48,6 @@ router.post("/signup", async ctx => {
   if (!userName || !password) {
     ctx.body = "enter password and username!";
   }
-  const token = jwt.sign({ userName }, secret, { expiresIn: expiresIn });
 
   const result = await models.User.findOrCreate({
     where: { name: userName }
@@ -57,6 +57,9 @@ router.post("/signup", async ctx => {
     const avatar = `http://i.pravatar.cc/150?img=${avatarId}`;
 
     user.update({ name: userName, password: hashedPassword, avatar });
+    const token = jwt.sign({ userName, id: user.id }, process.env.API_TOKEN, {
+      expiresIn: expiresIn
+    });
     return {
       userId: user.id,
       token,
@@ -64,6 +67,7 @@ router.post("/signup", async ctx => {
       avatar: getUploadFilePath(avatar)
     };
   });
+
   ctx.body = result;
 });
 

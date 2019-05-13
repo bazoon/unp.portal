@@ -1,10 +1,21 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
+import client from "../client";
+import {
+  GroupsQuery,
+  SubscribeMutation,
+  UnsubscribeMutation,
+  CreateGroupMutation
+} from "./queries";
 
 const projectGroups = State({
   initial: { groups: [] },
   setProjectGroups(state, payload) {
     return { ...state, groups: payload };
+  },
+  addProjectGroup(state, { createGroup }) {
+    const { groups } = state;
+    return { ...state, groups: [...groups, createGroup] };
   },
   unsubscribeProjectGroup(state, { groupId }) {
     const { groups } = state;
@@ -23,42 +34,44 @@ const projectGroups = State({
 });
 
 Effect("getProjectGroups", ({ type, userId }) => {
-  console.log(777, type, userId);
-  const urls = {
-    my: "api/projectGroups/list/my",
-    created: "api/projectGroups/list/created",
-    all: "api/projectGroups/list"
-  };
-
-  api.get(urls[type], { userId }).then(response => {
-    Actions.setProjectGroups(response.data);
-  });
+  client
+    .query({
+      query: GroupsQuery
+    })
+    .then(({ data }) => {
+      Actions.setProjectGroups(data.projectGroups);
+    });
 });
 
 Effect("postCreateGroup", ({ payload, userId }) => {
-  api.post("api/ProjectGroups/create", payload).then(response => {
-    Actions.getProjectGroups({ type: "all", userId });
-  });
+  client
+    .mutate({
+      mutation: CreateGroupMutation,
+      variables: { input: payload }
+    })
+    .then(({ data }) => {
+      Actions.addProjectGroup(data);
+    });
 });
 
 Effect("postUnsubscribeProjectGroup", ({ groupId, userId }) => {
-  api
-    .post("api/ProjectGroups/unsubscribe", {
-      groupId,
-      userId
+  client
+    .mutate({
+      mutation: UnsubscribeMutation,
+      variables: { groupId }
     })
-    .then(() => {
+    .then(({ data }) => {
       Actions.unsubscribeProjectGroup({ groupId });
     });
 });
 
 Effect("postSubscribeProjectGroup", ({ groupId, userId }) => {
-  api
-    .post("api/ProjectGroups/subscribe", {
-      groupId,
-      userId
+  client
+    .mutate({
+      mutation: SubscribeMutation,
+      variables: { groupId }
     })
-    .then(() => {
+    .then(({ data }) => {
       Actions.subscribeProjectGroup({ groupId });
     });
 });
