@@ -298,9 +298,9 @@ router.get("/get/posts", async (ctx, next) => {
   const { id } = ctx.request.query;
 
   const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
-                "Users"."avatar", "Users"."Position", "Posts"."createdAt"
-                from "Posts", "Users"
-                where ("GroupId"=${id}) and ("Posts"."UserId" = "Users"."id")
+                "Users"."avatar", "Users"."PositionId","Positions"."name" as "Position", "Posts"."createdAt"
+                from "Posts", "Users", "Positions"
+                where ("GroupId"=${id}) and ("Posts"."UserId" = "Users"."id") and ("Users"."PositionId" = "Positions"."id")
                 order by "Posts"."createdAt" asc`;
 
   ctx.body = await getPosts({ query });
