@@ -13,9 +13,9 @@ router.get("/get", async (ctx, next) => {
   const conversation = await models.Conversation.findOne({ where: { id: id } });
 
   const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
-                "Users"."avatar", "Users"."Position", "Posts"."createdAt"
-                from "Posts", "Users"
-                where ("ConversationId"=${id}) and ("Posts"."UserId" = "Users"."id")
+                "Users"."avatar", "Users"."PositionId", "Posts"."createdAt", "Positions"."name" as "Position"
+                from "Posts", "Users", "Positions"
+                where ("ConversationId"=${id}) and ("Posts"."UserId" = "Users"."id") and ("Users"."PositionId" = "Positions"."id")
                 order by "Posts"."createdAt" asc`;
 
   const postsTree = await getPosts(query);

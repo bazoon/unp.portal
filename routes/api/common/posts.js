@@ -11,8 +11,8 @@ const createPost = async function createPost({
   conversationId,
   files
 }) {
-  const userQuery = `select "Users"."name", "Users"."avatar", "Users"."Position"
-                    from "Users"
+  const userQuery = `select "Users"."name", "Users"."avatar", "Users"."PositionId", "Positions"."name" as "Position"
+                    from "Users", "Positions"
                     where "Users"."id"=${userId}`;
 
   await uploadFiles(files);
