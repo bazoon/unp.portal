@@ -6,8 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       name: DataTypes.STRING,
       avatar: DataTypes.STRING,
       private: DataTypes.BOOLEAN,
-      firstUserId: DataTypes.STRING,
-      secondUserId: DataTypes.STRING
+      firstUserId: DataTypes.INTEGER,
+      secondUserId: DataTypes.INTEGER
     },
     {}
   );

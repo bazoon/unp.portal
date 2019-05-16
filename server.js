@@ -59,4 +59,6 @@ app.use(koaJwt({ secret: process.env.API_TOKEN }));
 server.applyMiddleware({ app });
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
-http.listen(port, () => console.log(`Server is running on ${port}`));
+models.sequelize.sync().then(function() {
+  http.listen(port, () => console.log(`Server is running on ${port}`));
+});

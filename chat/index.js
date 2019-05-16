@@ -1,5 +1,4 @@
 const util = require("./util");
-const secret = "Some secret key";
 const jwt = require("jsonwebtoken");
 const models = require("../models");
 
@@ -11,8 +10,11 @@ class Chat {
   }
 
   verifyToken(socket, next) {
-    if (socket.handshake.query && socket.handshake.query.token) {
-      jwt.verify(socket.handshake.query.token, secret, function(err, decoded) {
+    const token = socket.handshake.query && socket.handshake.query.token;
+    const tokenOnly = token && token.split(" ")[1];
+
+    if (tokenOnly) {
+      jwt.verify(tokenOnly, process.env.API_TOKEN, function(err, decoded) {
         if (err) return next(err);
         socket.decoded = decoded;
         next();
@@ -28,6 +30,7 @@ class Chat {
     socket.on("disconnect", this.onDisconnect.bind(this));
 
     socket.on("join", rooms => {
+      console.log("Joining", rooms);
       socket.join(rooms);
     });
 
@@ -55,6 +58,7 @@ class Chat {
   onChannelFileMessage(userName, m, fn) {
     const { channelId, message, type, userId, files, id } = m;
     util.combineFileMessage(channelId, userId, files, id).then(message => {
+      console.log("Emit", message, channelId);
       this.io.to(channelId).emit("channel-message", message);
       fn();
     });

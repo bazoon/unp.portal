@@ -10,9 +10,13 @@ const expiresIn = 60 * 60 * 24;
 
 async function login(userName, password) {
   const user = await models.User.findOne({ where: { name: userName } });
-  const token = jwt.sign({ userName, id: user.id }, process.env.API_TOKEN, {
-    expiresIn: expiresIn
-  });
+  const token = jwt.sign(
+    { userName, id: user.id, isAdmin: user.isAdmin },
+    process.env.API_TOKEN,
+    {
+      expiresIn: expiresIn
+    }
+  );
   const hashedPassword = bcrypt.hashSync(password, 8);
   const isCorrect = bcrypt.compare(password, user.password);
 
@@ -20,6 +24,7 @@ async function login(userName, password) {
     return {
       userId: user.id,
       token,
+      isAdmin: user.isAdmin,
       userName,
       avatar: getUploadFilePath(user.avatar)
     };
@@ -53,18 +58,23 @@ router.post("/signup", async ctx => {
     where: { name: userName }
   }).then(([user, created]) => {
     const hashedPassword = bcrypt.hashSync(password, 8);
-    const avatarId = getRandomArbitrary(0, 70);
-    const avatar = `http://i.pravatar.cc/150?img=${avatarId}`;
+
+    const avatar = "";
 
     user.update({ name: userName, password: hashedPassword, avatar });
-    const token = jwt.sign({ userName, id: user.id }, process.env.API_TOKEN, {
-      expiresIn: expiresIn
-    });
+    const token = jwt.sign(
+      { userName, id: user.id, isAdmin: user.isAdmin },
+      process.env.API_TOKEN,
+      {
+        expiresIn: expiresIn
+      }
+    );
     return {
       userId: user.id,
+      isAdmin: user.isAdmin,
       token,
       userName,
-      avatar: getUploadFilePath(avatar)
+      avatar
     };
   });
 

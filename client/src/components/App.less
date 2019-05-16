@@ -109,11 +109,15 @@
 }
 
 // Main menu
-.main-menu {
+.main-menu,
+.admin-menu {
   font-family: PTSans;
 
   .ant-menu-inline .ant-menu-item {
     font-size: 22px;
+    &:after {
+      display: none;
+    }
   }
 
   .ant-menu-inline .ant-menu-item:not(:last-child) {
@@ -164,4 +168,31 @@
 @font-face {
   font-family: "OpenSans";
   src: url("/fonts/opensans.woff2");
+}
+
+// Overrides
+
+.ant-form-item {
+  margin-bottom: 0px;
+}
+
+// end Overrides
+
+// Common styles
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  margin-bottom: 16px;
+  margin-right: 16px;
+}
+
+.section-title {
+  font-family: PTSans, sans-serif;
+
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 30px;
 }

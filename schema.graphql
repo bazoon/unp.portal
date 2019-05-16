@@ -1,12 +1,18 @@
 type Query {
   users: [User]
+  getUser(id: Int): User
   projectGroups: [ProjectGroupInfo]
+  organizations: [Organization]
+  positions: [Position]
 }
 
 type Mutation {
   subscribeToGroup(groupId: Int): GroupSubscription
   unsubscribeFromGroup(groupId: Int): GroupSubscription
   createGroup(input: CreateProjectInput): ProjectGroupInfo
+  createUser(input: CreateUserInput): User
+  editUser(input: EditUserInput): User
+  deleteUser(id: Int): Int
 }
 
 type GroupSubscription {
@@ -16,9 +22,31 @@ type GroupSubscription {
 
 type User {
   id: Int
+  isAdmin: Boolean
   name: String
-  position: String
+  login: String
   avatar: String
+  role: Role
+  position: Position
+  organization: Organization
+}
+
+type Position {
+  id: Int
+  name: String
+}
+
+type Role {
+  id: Int
+  name: String
+}
+
+type Organization {
+  id: Int
+  name: String
+  fullName: String
+  inn: String
+  address: String
 }
 
 type ProjectGroup {
@@ -46,4 +74,25 @@ input CreateProjectInput {
   description: String
   isOpen: Boolean
   file: Upload
+}
+
+input CreateUserInput {
+  name: String!
+  isAdmin: Boolean
+  login: String!
+  avatar: String
+  password: String!
+  positionId: Int
+  organizationId: Int
+}
+
+input EditUserInput {
+  id: Int!
+  name: String
+  isAdmin: Boolean
+  login: String
+  avatar: String
+  password: String
+  positionId: Int
+  organizationId: Int
 }

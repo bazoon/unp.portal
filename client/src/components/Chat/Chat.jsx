@@ -78,11 +78,18 @@ class Chat extends Component {
 
   componentDidMount = () => {
     Actions.getChannels(this.props.userId);
-    Actions.getAllChannels();
 
     chatSocket.on("connect", () => {
       this.setState({
         isSocketConnected: true
+      });
+
+      // Actions.getAllChannels();
+      Actions.getChannels(this.props.userId).then(() => {
+        const activeChannel = this.findActiveChannel();
+        if (activeChannel) {
+          this.loadMessages(activeChannel.id);
+        }
       });
     });
 
@@ -93,6 +100,7 @@ class Chat extends Component {
     });
 
     chatSocket.on("channel-message", message => {
+      console.log("Recieved", message);
       Actions.addNewMessage({ message });
     });
   };
@@ -206,6 +214,7 @@ class Chat extends Component {
 
     return (
       activeChannel &&
+      activeChannel.messages &&
       activeChannel.messages.map(m => (
         <React.Fragment key={m.id}>
           <Observer {...options}>{this.renderMessage(m)}</Observer>
@@ -320,9 +329,8 @@ class Chat extends Component {
     const { dataset } = target;
     const { userId } = this.props;
     const [channelId, messageId, seen] = dataset.id.split("-");
-    console.log(dataset);
+
     if (e.isIntersecting && seen !== "true") {
-      console.log("chatMarkAsRead");
       Actions.chatMarkAsRead({
         messageId,
         userId
