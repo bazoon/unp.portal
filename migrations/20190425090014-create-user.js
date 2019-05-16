@@ -11,14 +11,26 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
+      login: {
+        type: Sequelize.STRING
+      },
       avatar: {
         type: Sequelize.STRING
       },
       password: {
         type: Sequelize.STRING
       },
-      Position: {
-        type: Sequelize.STRING
+      PositionId: {
+        type: Sequelize.INTEGER
+      },
+      OrganizationId: {
+        type: Sequelize.INTEGER
+      },
+      RoleId: {
+        type: Sequelize.INTEGER
+      },
+      isAdmin: {
+        type: Sequelize.BOOLEAN
       },
       createdAt: {
         allowNull: false,

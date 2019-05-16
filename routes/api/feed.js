@@ -26,7 +26,7 @@ router.get("/group_posts", async (ctx, next) => {
   const { userId } = ctx.request.query;
   const query = `select "ProjectGroups"."title","Posts"."id", 
               "Posts"."text", "Posts"."createdAt", "Posts"."ParentId",
-              "Users"."avatar", "Users"."name" as "userName", "Users"."Position" as "position",
+              "Users"."avatar", "Users"."name" as "userName", "Users"."PositionId" as "position",
               "Conversations"."id" as "cid", "Conversations"."title" as "conversationTitle"
               from "ProjectGroups", "Participants", "Conversations", "Posts", "Users"
               where "ProjectGroups"."id" = "Participants"."ProjectGroupId" and

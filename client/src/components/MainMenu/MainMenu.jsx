@@ -1,13 +1,16 @@
 import React, { Component } from "react";
 import { Menu } from "antd";
 import { NavLink } from "react-router-dom";
+import { connect } from "react-redux";
 
 const { SubMenu } = Menu;
 
-export class MainMenu extends Component {
+class MainMenu extends Component {
   render() {
     const { location } = this.props;
     const { pathname } = location;
+    const { isAdmin } = this.props.login;
+
     return (
       <Menu
         activeKey={pathname}
@@ -31,9 +34,22 @@ export class MainMenu extends Component {
             <span>Мои обсуждения</span>
           </NavLink>
         </Menu.Item>
+        {isAdmin && (
+          <Menu.Item key="/admin">
+            <NavLink to="/admin/users">
+              <span>Админ</span>
+            </NavLink>
+          </Menu.Item>
+        )}
       </Menu>
     );
   }
 }
 
-export default MainMenu;
+const mapStateToProps = state => {
+  return {
+    login: state.Login
+  };
+};
+
+export default connect(mapStateToProps)(MainMenu);

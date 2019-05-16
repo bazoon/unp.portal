@@ -22,6 +22,9 @@ import Conversation from "./Conversation/Conversation";
 import EventList from "./Events/EventList";
 import GroupFeed from "./Group/GroupFeed";
 import { Actions } from "jumpstate";
+import AdminMenu from "./Admin/Menu";
+import UserLayout from "./UserLayout";
+import AdminLayout from "./AdminLayout";
 
 const { Header, Sider, Content } = Layout;
 
@@ -60,6 +63,7 @@ class L extends Component {
   render() {
     const { isChatOpen } = this.state;
     const { userId, userName, avatar } = this.props.profile;
+    const { isAdmin } = this.props.login;
     return (
       <BrowserRouter>
         <Layout>
@@ -129,57 +133,10 @@ class L extends Component {
               </div>
             </div>
           </Header>
-          <Layout>
-            <Sider>
-              <div className="main-menu">
-                <Route path="/" component={MainMenu} />
-              </div>
-            </Sider>
-            <Content>
-              <Switch>
-                <Route
-                  exact
-                  path="/groups"
-                  component={() => <ProjectGroups type="all" />}
-                />
-                <Route path="/profile" component={() => <UserProfile />} />
-                <Route
-                  exact
-                  path="/groups/:id/conversation/:conversationId"
-                  component={props => (
-                    <>
-                      <Conversation {...props} />
-                    </>
-                  )}
-                />
-                <Route
-                  path="/groups/:id"
-                  component={props => <GroupFeed {...props} />}
-                />
-
-                <Route path="/laws" component={() => <Laws />} />
-                <Route path="/events/my" component={EventList} />
-                <Route path="/" component={Feed} />
-              </Switch>
-            </Content>
-            <Switch>
-              <Route
-                exact
-                path="/groups/:id"
-                component={props => (
-                  <>
-                    <Group {...props} />
-                  </>
-                )}
-              />
-              <Route path="/groups" component={null} />
-              <Route
-                exact
-                path="/"
-                component={props => <RightMenu {...props} />}
-              />
-            </Switch>
-          </Layout>
+          <Switch>
+            <Route path="/admin" component={AdminLayout} />
+            <Route path="/" component={UserLayout} />
+          </Switch>
         </Layout>
       </BrowserRouter>
     );

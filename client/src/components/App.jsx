@@ -5,6 +5,7 @@ import Layout from "./Layout";
 import LoginForm from "./LoginForm/LoginForm";
 import utils from "../utils";
 import { Actions } from "jumpstate";
+import client from "./client";
 
 class App extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class App extends Component {
 
   render() {
     const isLoggedIn = this.props.login.token != undefined;
+
     return (
       <HashRouter>
         {isLoggedIn ? (

@@ -1,20 +1,19 @@
 import axios from "axios";
 
+const token = `Bearer ${localStorage.getItem("token")}`;
+
 const api = {
   get: (url, params = {}) => {
-    const token = localStorage.getItem("token");
-
     const config = {
-      headers: { token },
+      headers: { authorization: token },
       params
     };
 
     return axios.get("/" + url, config);
   },
   post: (url, data) => {
-    const token = localStorage.getItem("token");
     const config = {
-      headers: { token }
+      headers: { authorization: token }
     };
 
     return axios.post("/" + url, data, config);
