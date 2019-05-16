@@ -13,7 +13,8 @@ const createPost = async function createPost({
 }) {
   const userQuery = `select "Users"."name", "Users"."avatar", "Users"."PositionId", "Positions"."name" as "Position"
                     from "Users", "Positions"
-                    where "Users"."id"=${userId}`;
+                    where "Users"."id"=${userId} and "Users"."PositionId" = "Positions"."id"
+                    `;
 
   await uploadFiles(files);
 
