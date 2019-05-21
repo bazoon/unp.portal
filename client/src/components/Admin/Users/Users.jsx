@@ -93,7 +93,7 @@ class Users extends Component {
 }
 const mapStateToProps = state => {
   return {
-    users: state.AdminUsers.users
+    users: state.Admin.users
   };
 };
 export default connect(mapStateToProps)(Users);

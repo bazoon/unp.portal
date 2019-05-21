@@ -1,0 +1,22 @@
+type Query {
+  positions: [Position]
+}
+
+type Mutation {
+  createPosition(input: CreatePositionInput): Position
+  editPosition(input: EditPositionInput): Position
+}
+
+type Position {
+  id: Int
+  name: String
+}
+
+input CreatePositionInput {
+  name: String
+}
+
+input EditPositionInput {
+  id: Int!
+  name: String
+}

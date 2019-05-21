@@ -26,6 +26,7 @@
     "graphql": "^14.3.0",
     "jsonwebtoken": "^8.5.0",
     "koa-jwt": "^3.5.1",
+    "merge-graphql-schemas": "^1.5.8",
     "moment-timezone": "^0.5.23",
     "pg": "^7.9.0",
     "pg-hstore": "^2.3.2",

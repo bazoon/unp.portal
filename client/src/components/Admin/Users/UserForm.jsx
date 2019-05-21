@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { Actions } from "jumpstate";
+import moment from "moment";
 import {
   Calendar,
   Modal,
@@ -15,8 +17,10 @@ import {
   Avatar,
   Select
 } from "antd";
+import PositionForm from "../Positions/PositionsForm";
+import OrganizationForm from "../Organizations/OrganizationForm";
 
-import moment from "moment";
+import EditWindow from "../../EditWindow/EditWindow";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -24,17 +28,154 @@ const { TextArea } = Input;
 class GroupForm extends Component {
   constructor(props) {
     super(props);
+    this.organizationColumns = [
+      {
+        title: "Наименование",
+        dataIndex: "name",
+        key: "name"
+      },
+      {
+        title: "",
+        dataIndex: "edit",
+        key: "edit",
+        render: (text, record) => {
+          return (
+            <Icon
+              type="edit"
+              onClick={this.handleEditOrganization.bind(this, record)}
+            />
+          );
+        }
+      }
+    ];
+
+    this.positionColumns = [
+      {
+        title: "Наименование",
+        dataIndex: "name",
+        key: "name"
+      },
+      {
+        title: "",
+        dataIndex: "edit",
+        key: "edit",
+        render: (text, record) => {
+          return (
+            <Icon
+              type="edit"
+              onClick={this.handleEditPosition.bind(this, record)}
+            />
+          );
+        }
+      }
+    ];
+
     this.state = {
-      files: []
+      files: [],
+      isEditingOrganization: false,
+      organizationEditRecord: undefined,
+      organizationId: undefined,
+      isEditingPosition: false,
+      positionId: undefined,
+      positionEditRecord: undefined
     };
   }
+
+  // Organization select
+  handleAddOrganization = () => {
+    this.setState({
+      isEditingOrganization: true,
+      organizationEditRecord: undefined
+    });
+  };
+
+  handleEditOrganization = record => {
+    this.setState({
+      isEditingOrganization: true,
+      organizationEditRecord: record
+    });
+  };
+
+  handleCancelAddOrganization = () => {
+    this.setState({
+      isEditingOrganization: false
+    });
+  };
+
+  handleSaveOrganization = fields => {
+    if (fields.id) {
+      Actions.editOrganization(fields);
+    } else {
+      Actions.createOrganization(fields);
+    }
+
+    this.setState({
+      isEditingOrganization: false
+    });
+  };
+
+  handleSelectOrganization = id => {
+    this.setState({
+      organizationId: id
+    });
+  };
+
+  // Position select
+  handleAddPosition = () => {
+    this.setState({
+      isEditingPosition: true,
+      positionEditRecord: undefined
+    });
+  };
+
+  handleEditPosition = record => {
+    this.setState({
+      isEditingPosition: true,
+      positionEditRecord: record
+    });
+  };
+
+  handleCancelAddPosition = () => {
+    this.setState({
+      isEditingPosition: false
+    });
+  };
+
+  handleSavePosition = fields => {
+    if (fields.id) {
+      Actions.editPosition(fields);
+    } else {
+      Actions.createPosition(fields);
+    }
+
+    this.setState({
+      isEditingPosition: false
+    });
+  };
+
+  handleSelectPosition = id => {
+    this.setState({
+      positionId: id
+    });
+  };
 
   render() {
     const { getFieldDecorator } = this.props.form;
     const { name, login, avatar, isAdmin } = this.props.user || {};
-    const positionId = this.props.user && this.props.user.position.id;
-    const organizationId = this.props.user && this.props.user.organization.id;
+    const positionId =
+      this.state.positionId || (this.props.user && this.props.user.position.id);
+
     const { isPaswordRequired } = this.props;
+    const { organizations, positions } = this.props;
+    const {
+      isEditingOrganization,
+      organizationEditRecord,
+      isEditingPosition,
+      positionEditRecord
+    } = this.state;
+    const organizationId =
+      this.state.organizationId ||
+      (this.props.user && this.props.user.organization.id);
 
     return (
       <Form layout="vertical">
@@ -75,15 +216,23 @@ class GroupForm extends Component {
                     initialValue: organizationId,
                     valuePropName: "value"
                   })(
-                    <Select>
-                      {this.props.organizations.map(o => {
-                        return (
-                          <Option key={o.id} value={o.id}>
-                            {o.name}
-                          </Option>
-                        );
-                      })}
-                    </Select>
+                    <EditWindow
+                      title="Организации"
+                      onSelect={this.handleSelectOrganization}
+                      columns={this.organizationColumns}
+                      dataSource={organizations}
+                      onAdd={this.handleAddOrganization}
+                      onEdit={this.handleEditOrganization}
+                      isInEditMode={isEditingOrganization}
+                      editForm={
+                        <OrganizationForm
+                          onOk={this.handleSaveOrganization}
+                          onCancel={this.handleCancelAddOrganization}
+                          visible={isEditingOrganization}
+                          editRecord={organizationEditRecord}
+                        />
+                      }
+                    />
                   )}
                 </Form.Item>
               </Col>
@@ -93,15 +242,23 @@ class GroupForm extends Component {
                     rules: [{ required: true, message: "Должность" }],
                     initialValue: positionId
                   })(
-                    <Select>
-                      {this.props.positions.map(p => {
-                        return (
-                          <Option key={p.id} value={p.id}>
-                            {p.name}
-                          </Option>
-                        );
-                      })}
-                    </Select>
+                    <EditWindow
+                      title="Должности"
+                      onSelect={this.handleSelectPosition}
+                      columns={this.positionColumns}
+                      dataSource={positions}
+                      onAdd={this.handleAddPosition}
+                      onEdit={this.handleEditPosition}
+                      isInEditMode={isEditingPosition}
+                      editForm={
+                        <PositionForm
+                          onOk={this.handleSavePosition}
+                          onCancel={this.handleCancelAddPosition}
+                          visible={isEditingPosition}
+                          editRecord={positionEditRecord}
+                        />
+                      }
+                    />
                   )}
                 </Form.Item>
               </Col>

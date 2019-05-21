@@ -11,12 +11,20 @@ const mount = require("koa-mount");
 const router = new Router();
 const koaBody = require("koa-body");
 const uploadFiles = require("./utils/uploadFiles");
-
 const models = require("./models");
 const { ApolloServer, gql } = require("apollo-server-koa");
+const {
+  fileLoader,
+  mergeTypes,
+  mergeResolvers
+} = require("merge-graphql-schemas");
 
-const resolvers = require("./resolvers/resolvers");
-const typeDefs = fs.readFileSync("./schema.graphql", { encoding: "utf-8" });
+const typeDefs = mergeTypes(
+  fileLoader(path.join(__dirname, "./graphql/schema"))
+);
+
+const resolvers = fileLoader(path.join(__dirname, "./graphql/resolvers"));
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,

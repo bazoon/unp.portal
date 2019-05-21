@@ -27,6 +27,7 @@ export const OrganizationsQuery = gql`
     organizations {
       id
       name
+      inn
     }
   }
 `;
@@ -102,6 +103,44 @@ export const GetUserQuery = gql`
         id
         name
       }
+    }
+  }
+`;
+
+export const CreateOrganizationMutation = gql`
+  mutation CreateOrganization($input: CreateOrganizationInput) {
+    createOrganization(input: $input) {
+      id
+      name
+      inn
+    }
+  }
+`;
+
+export const EditOrganizationMutation = gql`
+  mutation EditOrganization($input: EditOrganizationInput) {
+    editOrganization(input: $input) {
+      id
+      name
+      inn
+    }
+  }
+`;
+
+export const CreatePositionMutation = gql`
+  mutation CreatePosition($input: CreatePositionInput) {
+    createPosition(input: $input) {
+      id
+      name
+    }
+  }
+`;
+
+export const EditPositionMutation = gql`
+  mutation EditPosition($input: EditPositionInput) {
+    editPosition(input: $input) {
+      id
+      name
     }
   }
 `;

@@ -49,8 +49,8 @@ class CreateCard extends Component {
 const mapStateToProps = state => {
   return {
     avatar: state.Login.avatar,
-    organizations: state.AdminUsers.organizations,
-    positions: state.AdminUsers.positions
+    organizations: state.Admin.organizations,
+    positions: state.Admin.positions
   };
 };
 
