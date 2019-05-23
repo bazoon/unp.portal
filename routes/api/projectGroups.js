@@ -64,12 +64,12 @@ function getGroups(userId, query, countQuery) {
 router.get("/list", async (ctx, next) => {
   const { userId } = ctx.request.query;
 
-  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", is_open from
-              "ProjectGroups"`;
+  const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
+              project_groups`;
 
-  const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
-                    where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
-                    group by "ProjectGroups"."id"`;
+  const countQuery = `select project_groups.id, count(*) from project_groups, participants
+                    where (project_groups.id = participants.project_group_id)
+                    group by project_groups.id`;
   const groups = await getGroups(userId, query, countQuery);
   ctx.body = groups;
 });
@@ -77,14 +77,14 @@ router.get("/list", async (ctx, next) => {
 router.get("/list/my", async (ctx, next) => {
   const { userId } = ctx.request.query;
 
-  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id",is_open from
-              "ProjectGroups", "Users", "Participants" where ("ProjectGroups"."id" = "Participants"."ProjectGroupId") and
-              ("Participants"."UserId"="Users".id) and
-              ("Participants"."UserId"=${userId})`;
+  const query = `select project_groups.title, project_groups.avatar, project_groups.id,is_open from
+              project_groups, users, participants where (project_groups.id = participants.project_groupId) and
+              (participants.user_id=users.id) and
+              (participants.user_id=${userId})`;
 
-  const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
-                    where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
-                    group by "ProjectGroups"."id"`;
+  const countQuery = `select project_groups.id, count(*) from project_groups, participants
+                    where (project_groups.id = participants.project_group_id)
+                    group by project_groups.id`;
   const groups = await getGroups(userId, query, countQuery);
   ctx.body = groups;
 });
@@ -92,13 +92,13 @@ router.get("/list/my", async (ctx, next) => {
 router.get("/list/created", async (ctx, next) => {
   const { userId } = ctx.request.query;
 
-  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", is_open from
-              "ProjectGroups" where 
-              ("ProjectGroups"."UserId"=${userId})`;
+  const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
+                project_groups where 
+                (project_groups.user_id=${userId})`;
 
-  const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
-                    where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
-                    group by "ProjectGroups"."id"`;
+  const countQuery = `select project_groups.id, count(*) from project_groups, participants
+                    where (project_groups.id = participants.project_group_id)
+                    group by project_groups.id`;
 
   const groups = await getGroups(userId, query, countQuery);
   ctx.body = groups;
@@ -107,14 +107,14 @@ router.get("/list/created", async (ctx, next) => {
 router.get("/get", async (ctx, next) => {
   const { id, userId } = ctx.request.query;
 
-  const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", 
-              "ProjectGroups"."is_open", "ProjectGroups"."description" from
-              "ProjectGroups" where "ProjectGroups"."id" = ${id}`;
-  const conversationsQuery = `select "Conversations"."id", title, count("Posts"."id"), min("Posts"."createdAt") as lastPostDate from "Conversations"
-                              left join "Posts"
-                              on "Conversations"."id" = "Posts"."ConversationId"
-                              where "Conversations"."ProjectGroupId" = ${id}
-                              group by "Conversations"."id"
+  const query = `select project_groups.title, project_groups.avatar, project_groups.id, 
+              project_groups.is_open, project_groups.description from
+              project_groups where project_groups.id = ${id}`;
+  const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as lastPostDate from conversations
+                              left join posts
+                              on conversations.id = posts.conversation_id
+                              where conversations.project_group_id = ${id}
+                              group by conversations.id
                               `;
 
   const promises = models.sequelize.query(query).then(function(groups) {
@@ -258,15 +258,14 @@ router.post("/media/remove", (req, res) => {
 
 router.post("/unsubscribe", async ctx => {
   const { groupId, userId } = ctx.request.body;
-
   const participantPromise = models.Participant.destroy({
     where: {
-      [Op.and]: [{ UserId: userId }, { ProjectGroupId: groupId }]
+      [Op.and]: [{ user_id: userId }, { project_group_id: groupId }]
     }
   });
 
   const notificationPromise = models.NotificationPreference.destroy({
-    where: { UserId: userId, SourceId: groupId }
+    where: { user_id: userId, source_id: groupId }
   });
 
   const result = await Promise.all([participantPromise, notificationPromise]);
@@ -297,11 +296,11 @@ router.post("/subscribe", async ctx => {
 router.get("/get/posts", async (ctx, next) => {
   const { id } = ctx.request.query;
 
-  const query = `select "Posts"."id", "Posts"."ParentId", text, "Users"."name", 
-                "Users"."avatar", "Users"."PositionId","Positions"."name" as "Position", "Posts"."createdAt"
-                from "Posts", "Users", "Positions"
-                where ("GroupId"=${id}) and ("Posts"."UserId" = "Users"."id") and ("Users"."PositionId" = "Positions"."id")
-                order by "Posts"."createdAt" asc`;
+  const query = `select posts.id, posts.parent_id, text, users.name, 
+                users.avatar, users.position_id, positions.name as position, posts.created_at
+                from posts, users, positions
+                where (group_id=${id}) and (posts.user_id = users.id) and (users.position_id = positions.id)
+                order by posts.created_at asc`;
 
   ctx.body = await getPosts({ query });
 });

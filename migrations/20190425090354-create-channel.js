@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("Channels", {
+    return queryInterface.createTable("channels", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -17,23 +17,23 @@ module.exports = {
       private: {
         type: Sequelize.BOOLEAN
       },
-      firstUserId: {
+      first_user_id: {
         type: Sequelize.INTEGER
       },
-      secondUserId: {
+      second_user_id: {
         type: Sequelize.INTEGER
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("Channels");
+    return queryInterface.dropTable("channels");
   }
 };

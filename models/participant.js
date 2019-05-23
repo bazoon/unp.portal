@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
   const Participant = sequelize.define(
     "Participant",
     {
-      ProjectGroupId: DataTypes.INTEGER,
-      UserId: DataTypes.INTEGER
+      projectGroupId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER
     },
     {}
   );

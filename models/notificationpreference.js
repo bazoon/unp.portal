@@ -4,11 +4,11 @@ module.exports = (sequelize, DataTypes) => {
     "NotificationPreference",
     {
       type: DataTypes.STRING,
-      SourceId: DataTypes.INTEGER,
+      sourceId: DataTypes.INTEGER,
       sms: DataTypes.BOOLEAN,
       push: DataTypes.BOOLEAN,
       email: DataTypes.BOOLEAN,
-      UserId: DataTypes.INTEGER
+      userId: DataTypes.INTEGER
     },
     {}
   );

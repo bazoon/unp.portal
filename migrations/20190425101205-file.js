@@ -1,36 +1,42 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("Files", {
+    return queryInterface.createTable("files", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      entityId: {
+      user_id: {
+        type: Sequelize.INTEGER
+      },
+      post_id: {
+        type: Sequelize.INTEGER
+      },
+      group_id: {
+        type: Sequelize.INTEGER
+      },
+      message_id: {
         type: Sequelize.INTEGER
       },
       file: {
         type: Sequelize.STRING
       },
-      type: {
-        type: Sequelize.STRING
-      },
       size: {
         type: Sequelize.INTEGER
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("Files");
+    return queryInterface.dropTable("files");
   }
 };

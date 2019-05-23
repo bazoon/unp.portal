@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const ProjectGroupDoc = sequelize.define(
     "ProjectGroupDoc",
     {
-      ProjectGroupId: DataTypes.INTEGER,
+      projectGroupId: DataTypes.INTEGER,
       file: DataTypes.STRING,
       size: DataTypes.INTEGER
     },

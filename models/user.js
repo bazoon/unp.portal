@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
       login: DataTypes.STRING,
       password: DataTypes.STRING,
       avatar: DataTypes.STRING,
-      PositionId: DataTypes.INTEGER,
-      OrganizationId: DataTypes.INTEGER,
-      RoleId: DataTypes.INTEGER,
+      positionId: DataTypes.INTEGER,
+      organizationId: DataTypes.INTEGER,
+      roleId: DataTypes.INTEGER,
       isAdmin: DataTypes.BOOLEAN
     },
     {}

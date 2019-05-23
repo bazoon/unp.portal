@@ -5,16 +5,17 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const uploadStreams = require("../../utils/uploadStreams");
 const bcrypt = require("bcryptjs");
+const { getGroups } = require("../../utils/db");
 
 module.exports = {
   Query: {
     projectGroups: async (root, input, { user }) => {
-      const query = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id", is_open from
-              "ProjectGroups"`;
+      const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
+              project_groups`;
 
-      const countQuery = `select "ProjectGroups"."id", count(*) from "ProjectGroups", "Participants"
-                    where ("ProjectGroups"."id" = "Participants"."ProjectGroupId")
-                    group by "ProjectGroups"."id"`;
+      const countQuery = `select project_groups.id, count(*) from project_groups, participants
+                    where (project_groups.id = participants.project_group_id)
+                    group by project_groups.id`;
       return await getGroups(user.id, query, countQuery);
     }
   },
@@ -43,21 +44,29 @@ module.exports = {
     unsubscribeFromGroup: async (root, { groupId }, { user }) => {
       const participantPromise = models.Participant.destroy({
         where: {
-          [Op.and]: [{ UserId: user.id }, { ProjectGroupId: groupId }]
+          [Op.and]: [
+            {
+              user_id: user.id
+            },
+            {
+              project_group_id: groupId
+            }
+          ]
         }
       });
 
       const notificationPromise = models.NotificationPreference.destroy({
-        where: { UserId: user.id, SourceId: groupId }
+        where: { user_id: user.id, source_id: groupId }
       });
 
       const result = await Promise.all([
         participantPromise,
         notificationPromise
       ]);
+
       return {
         id: groupId,
-        title: "Fpp"
+        title: ""
       };
     },
     createGroup: async (root, { input }, { user }) => {

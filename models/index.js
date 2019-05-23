@@ -12,7 +12,10 @@ const db_config = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB,
   host: process.env.HOSY,
-  dialect: "postgres"
+  dialect: "postgres",
+  define: {
+    underscored: true
+  }
 };
 
 let sequelize = new Sequelize(

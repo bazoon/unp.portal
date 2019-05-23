@@ -30,11 +30,11 @@ router.get("/channels/all", async (ctx, next) => {
 router.get("/channels", async (ctx, next) => {
   const { userId } = ctx.request.query;
 
-  const query = `select distinct "Channels"."name", "Channels"."avatar", "Channels"."id",
-                "Channels"."firstUserId", "Channels"."secondUserId"
-                from "Channels", "UserChannels"
-                where ("UserChannels"."ChannelId" = "Channels"."id" and "UserChannels"."UserId" = ${userId}) or 
- 	              ("Channels"."firstUserId" = ${userId}) or ("Channels"."secondUserId" = ${userId})`;
+  const query = `select distinct channels.name, channels.avatar, channels.id,
+                channels.first_user_id, channels.second_user_id
+                from channels, user_channels
+                where (user_channels.channel_id = channels.id and user_channels.user_id = ${userId}) or 
+ 	              (channels.first_user_id = ${userId}) or (channels.second_user_id = ${userId})`;
 
   const [channels] = await models.sequelize.query(query);
 
@@ -155,9 +155,9 @@ router.post("/channels/join", async ctx => {
 
 function getMessageFiles(message) {
   if (message.type !== "file") return Promise.resolve([]);
-  const filesQuery = `select "Files"."id", "Files"."file", "Files"."size"
-                      from "Files"
-                      where ("Files"."type" = 'message') and "Files"."entityId" = ${
+  const filesQuery = `select files.id, files.file, files.size
+                      from files
+                      where (files.type = 'message') and files.entity_id = ${
                         message.id
                       }`;
   return models.sequelize.query(filesQuery).then(function(messageFiles) {
@@ -177,20 +177,20 @@ router.get("/messages", async ctx => {
   // такая ситуация может возникнуть если загрузили первые сообщения, ввели новое сообщение
   // и потом снова подгрузили
   if (lastMessageId) {
-    query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
-            "avatar", "Messages"."createdAt", seen from "Messages" 
-            join "Users" on ("Messages"."UserId" = "Users"."id")
-            left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
-            where ("Messages"."ChannelId" = ${channelId}) and ("Messages"."id" < ${lastMessageId})
-            order by "Messages"."createdAt" desc
+    query = `select distinct messages.id, message, type, messages.user_id, name,
+            avatar, messages.created_at, seen from messages 
+            join users on (messages.user_id = users.id)
+            left join reads on (reads.message_id = messages.id) 
+            where (messages.channel_id = ${channelId}) and (messages.id < ${lastMessageId})
+            order by messages.created_at desc
             limit ${limit} offset ${offset}`;
   } else {
-    query = `select distinct "Messages"."id", message, type, "Messages"."UserId", "name",
-            "avatar", "Messages"."createdAt", seen from "Messages" 
-            join "Users" on ("Messages"."UserId" = "Users"."id")
-            left join "Reads" on ("Reads"."MessageId" = "Messages"."id") 
-            where ("Messages"."ChannelId" = ${channelId})
-            order by "Messages"."createdAt" desc
+    query = `select distinct messages.id, message, type, messages.user_id, name,
+            avatar, messages.created_at, seen from messages 
+            join users on (messages.user_id = users.id)
+            left join reads on (reads.message_id = messages.id) 
+            where (messages.channel_id = ${channelId})
+            order by messages.created_at desc
             limit ${limit} offset ${offset}`;
   }
 

@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const ProjectGroupLink = sequelize.define(
     "ProjectGroupLink",
     {
-      ProjectGroupId: DataTypes.INTEGER,
+      projectGroupId: DataTypes.INTEGER,
       link: DataTypes.STRING,
       title: DataTypes.STRING
     },

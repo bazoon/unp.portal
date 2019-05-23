@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     "Conversation",
     {
       title: DataTypes.STRING,
-      ProjectGroupId: DataTypes.INTEGER
+      projectGroupId: DataTypes.INTEGER
     },
     {}
   );

@@ -4,9 +4,11 @@ module.exports = (sequelize, DataTypes) => {
     "File",
     {
       file: DataTypes.STRING,
-      entityId: DataTypes.INTEGER,
-      size: DataTypes.INTEGER,
-      type: DataTypes.STRING
+      userId: DataTypes.INTEGER,
+      postId: DataTypes.INTEGER,
+      groupId: DataTypes.INTEGER,
+      messageId: DataTypes.INTEGER,
+      size: DataTypes.INTEGER
     },
     {}
   );

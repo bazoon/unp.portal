@@ -1,14 +1,14 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("ProjectGroupDocs", {
+    return queryInterface.createTable("project_group_docs", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      ProjectGroupId: {
+      project_group_Id: {
         type: Sequelize.INTEGER
       },
       file: {
@@ -17,17 +17,17 @@ module.exports = {
       size: {
         type: Sequelize.INTEGER
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("ProjectGroupDocs");
+    return queryInterface.dropTable("project_group_docs");
   }
 };

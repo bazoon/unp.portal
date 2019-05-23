@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
   const UserChannel = sequelize.define(
     "UserChannel",
     {
-      ChannelId: DataTypes.INTEGER,
-      UserId: DataTypes.INTEGER
+      channelId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER
     },
     {}
   );

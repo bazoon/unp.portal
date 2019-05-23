@@ -1,17 +1,17 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("Messages", {
+    return queryInterface.createTable("messages", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      ChannelId: {
+      channel_id: {
         type: Sequelize.INTEGER
       },
-      UserId: {
+      user_id: {
         type: Sequelize.INTEGER
       },
       message: {
@@ -20,17 +20,17 @@ module.exports = {
       type: {
         type: Sequelize.STRING
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("Messages");
+    return queryInterface.dropTable("messages");
   }
 };

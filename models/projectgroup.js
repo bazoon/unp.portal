@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       avatar: DataTypes.STRING,
-      is_open: DataTypes.BOOLEAN,
+      isOpen: DataTypes.BOOLEAN,
       description: DataTypes.TEXT
     },
     {}

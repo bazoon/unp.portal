@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 module.exports = {
   Query: {
     users: async (root, input, { user }) => {
-      if (!user.isAdmin) throw Error("Unauthorized!");
+      // if (!user.isAdmin) throw Error("Unauthorized!");
       const users = await models.User.findAll();
 
       return users.map(u => {

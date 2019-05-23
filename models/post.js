@@ -4,10 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     "Post",
     {
       text: DataTypes.STRING,
-      ConversationId: DataTypes.INTEGER,
-      UserId: DataTypes.INTEGER,
-      ParentId: DataTypes.INTEGER,
-      GroupId: DataTypes.INTEGER
+      conversationId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
+      parentId: DataTypes.INTEGER,
+      groupId: DataTypes.INTEGER
     },
     {}
   );

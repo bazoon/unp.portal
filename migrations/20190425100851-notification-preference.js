@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("NotificationPreferences", {
+    return queryInterface.createTable("notification_preferences", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,10 +11,10 @@ module.exports = {
       type: {
         type: Sequelize.STRING
       },
-      SourceId: {
+      source_id: {
         type: Sequelize.INTEGER
       },
-      UserId: {
+      user_id: {
         type: Sequelize.INTEGER
       },
       sms: {
@@ -26,17 +26,17 @@ module.exports = {
       email: {
         type: Sequelize.BOOLEAN
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("NotificationPreferences");
+    return queryInterface.dropTable("notification_preferences");
   }
 };

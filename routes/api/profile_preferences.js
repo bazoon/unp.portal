@@ -11,15 +11,15 @@ const uploadFiles = require("../../utils/uploadFiles");
 router.get("/get", async ctx => {
   const { userId } = ctx.request.query;
 
-  const groupsQuery = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id" from
-       "ProjectGroups", "Participants" 
-       where "ProjectGroups"."id" = "Participants"."ProjectGroupId" and
-       "Participants"."UserId" = ${userId}`;
+  const groupsQuery = `select project_groups.title, project_groups.avatar, project_groups.id from
+       project_groups, participants 
+       where project_groups.id = participants.project_group_id and
+       participants.user_id = ${userId}`;
 
-  const adminsQuery = `select "ProjectGroups"."title", "ProjectGroups"."avatar", "ProjectGroups"."id" from
-                      "ProjectGroups", "ProjectGroupAdmins" 
-                      where "ProjectGroups"."id" = "ProjectGroupAdmins"."ProjectGroupId" and
-                      "ProjectGroupAdmins"."UserId" = ${userId}`;
+  const adminsQuery = `select project_groups.title, project_groups.avatar, project_groups.id from
+                      project_groups, project_group_admins 
+                      where project_groups.id = project_group_admins.project_group_id and
+                      project_group_admins.user_id = ${userId}`;
 
   const result = await models.User.findOne({ where: { id: userId } }).then(
     user => {
@@ -43,10 +43,10 @@ router.get("/get", async ctx => {
 router.get("/notifications", async ctx => {
   const { userId } = ctx.request.query;
 
-  const query = `select "ProjectGroups"."title", type, sms, push, email, "NotificationPreferences"."id" from
-       "ProjectGroups", "NotificationPreferences" 
-       where "ProjectGroups"."id" = "NotificationPreferences"."SourceId" and
-       "NotificationPreferences"."UserId" = ${userId}
+  const query = `select project_groups.title, type, sms, push, email, notification_preferences.id from
+       project_groups, notification_preferences 
+       where project_groups.id = notification_preferences.source_id and
+       notification_preferences.user_id = ${userId}
        order by id`;
 
   const result = await models.sequelize.query(query).then(preferences => {

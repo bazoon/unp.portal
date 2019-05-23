@@ -15,6 +15,7 @@ import "./App.less";
 import Conversation from "./Conversation/Conversation";
 import EventList from "./Events/EventList";
 import GroupFeed from "./Group/GroupFeed";
+import Temp from "./temp/Temp";
 
 const { Sider, Content } = Layout;
 
@@ -34,6 +35,7 @@ class UserLayout extends Component {
               path="/groups"
               component={() => <ProjectGroups type="all" />}
             />
+            <Route path="/temp" component={Temp} />
             <Route path="/profile" component={() => <UserProfile />} />
             <Route
               exact

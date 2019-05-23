@@ -1,0 +1,26 @@
+type File {
+  id: Int!
+  userId: Int
+  postId: Int
+  groupId: Int
+  messageId: Int
+  file: String
+  size: Int
+}
+
+input FileUploadInput {
+  userIds: [Int]
+  postId: Int
+  groupId: Int
+  messageId: Int
+  files: [Upload]
+  fileSizes: [Int]
+}
+
+type Query {
+  getOwnFiles: [File]
+}
+
+type Mutation {
+  uploadFiles(input: FileUploadInput): [File]
+}

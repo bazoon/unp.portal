@@ -34,7 +34,6 @@ class Group extends Component {
   handleUnsubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
-    console.log("handleUnSubscribe");
     Actions.postUnsubscribeGroup({ groupId: id, userId }).then(() => {
       // Actions.getProjectGroup({ id, userId });
     });
@@ -43,7 +42,6 @@ class Group extends Component {
   handleSubscribe = () => {
     const { userId } = this.props;
     const { id } = this.props.group;
-    console.log("handleSubscribe");
     Actions.postSubscribeGroup({ groupId: id, userId }).then(() => {});
   };
 

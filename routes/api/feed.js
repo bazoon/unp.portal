@@ -11,12 +11,12 @@ const { createPost, getPosts } = require("./common/posts");
 
 router.get("/recipients", async (ctx, next) => {
   const { userId } = ctx.request.query;
-  const query = `select "ProjectGroups"."title",  "ProjectGroups"."id", "ProjectGroups"."avatar", 
-				       "Conversations"."title" as ctitle, "Conversations"."id" as cid
-                from "ProjectGroups", "Participants", "Conversations"
-                where "ProjectGroups"."id" = "Participants"."ProjectGroupId" and
-                "Participants"."UserId" = ${userId} and
-                "Conversations"."ProjectGroupId" = "ProjectGroups"."id"`;
+  const query = `select project_groups.title,  project_groups.id, project_groups.avatar, 
+				        conversations.title as ctitle, conversations.id as cid
+                from project_groups, participants, conversations
+                where project_groups.id = participants.project_group_id and
+                participants.user_id = ${userId} and
+                conversations.project_group_id = project_groups.id`;
 
   const groups = await models.sequelize.query(query);
   ctx.body = groups[0];
@@ -24,17 +24,17 @@ router.get("/recipients", async (ctx, next) => {
 
 router.get("/group_posts", async (ctx, next) => {
   const { userId } = ctx.request.query;
-  const query = `select "ProjectGroups"."title","Posts"."id", 
-              "Posts"."text", "Posts"."createdAt", "Posts"."ParentId",
-              "Users"."avatar", "Users"."name" as "userName", "Users"."PositionId" as "position",
-              "Conversations"."id" as "cid", "Conversations"."title" as "conversationTitle"
-              from "ProjectGroups", "Participants", "Conversations", "Posts", "Users"
-              where "ProjectGroups"."id" = "Participants"."ProjectGroupId" and
-              "Participants"."UserId" = ${userId} and
-              "Conversations"."ProjectGroupId" = "ProjectGroups"."id" and
-              "Posts"."ConversationId" = "Conversations"."id" and
-              "Posts"."UserId"="Users"."id" 
-              order by "Posts"."createdAt" desc`;
+  const query = `select project_groups.title, posts.id, 
+              posts.text, posts.created_at, posts.parent_id,
+              users.avatar, users.name as userName, users.position_id as position,
+              conversations.id as cid, conversations.title as conversationTitle
+              from project_groups, participants, conversations, posts, users
+              where project_groups.id = participants.project_group_id and
+              participants.user_id = ${userId} and
+              conversations.project_group_id = project_groups.id and
+              posts.conversation_id = conversations.id and
+              posts.user_id=users.id 
+              order by posts.created_at desc`;
 
   ctx.body = await getPosts({ query });
   return;
@@ -127,36 +127,44 @@ router.post("/postReplyToFeed", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
 
-  ctx.body = createPost({ text, userId, postId, conversationId, files });
-  return;
-  models.Post.create({
-    text,
-    ConversationId: conversationId,
-    UserId: userId,
-    ParentId: postId
-  }).then(post => {
-    models.PostFile.bulkCreate(
-      files.map(f => ({ PostId: post.id, file: f.filename, size: f.size }))
-    ).then(() => {
-      const query = `select "Users"."name", "Users"."avatar", "Users"."Position"
-                from "Users"
-                where "Users"."id"=${userId}`;
+  console.log(1, file);
 
-      models.sequelize.query(query).then(function(users) {
-        const user = users[0][0];
-        res.json({
-          id: post.id,
-          parentId: post.ParentId,
-          text: post.text,
-          avatar: getUploadFilePath(user.avatar),
-          userName: user.name,
-          position: user.Position,
-          createdAt: post.createdAt,
-          files: files.map(f => ({ name: f.filename, size: f.size }))
-        });
-      });
-    });
+  if (postId) {
+    parentPost = await models.Post.findOne({ where: { id: postId } });
+  }
+
+  const post = await models.Post.create({
+    text,
+    conversationId: parentPost.conversationId,
+    userId: userId,
+    parentId: postId
   });
+
+  const readyFiles = await models.File.bulkCreate(
+    files.map(f => ({ postId: post.id, file: f.name, size: f.size }))
+  );
+
+  console.log(2, readyFiles);
+
+  const query = `select users.name, users.avatar, positions.name as position
+                from users, positions
+                where users.id=${userId} and users.position_id=positions.id`;
+
+  const readyPost = await models.sequelize.query(query).then(function(users) {
+    const user = users[0][0];
+    return {
+      id: post.id,
+      parentId: post.ParentId,
+      text: post.text,
+      avatar: getUploadFilePath(user.avatar),
+      userName: user.name,
+      position: user.Position,
+      createdAt: post.createdAt,
+      files: readyFiles.map(f => ({ name: f.filename, size: f.size }))
+    };
+  });
+
+  ctx.body = readyPost;
 });
 
 router.post("/comment", (req, res) => {

@@ -90,16 +90,16 @@ async function getEvents(userId, from, to, fn) {
   let query;
 
   if (from && to) {
-    query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."UserId"
-                from "Events", "UserEvents"
-                where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}  and
-                "Events"."fromDate" BETWEEN '${from}' AND '${to}'
-                order by "Events"."fromDate" asc`;
+    query = `select events.id, events.title, events.description, events.from_date, events.to_date, events.place, events.user_id
+                from events, user_events
+                where events.id = user_events.event_id and user_events.user_id = ${userId}  and
+                events.from_date BETWEEN '${from}' AND '${to}'
+                order by events.from_date asc`;
   } else {
-    query = `select "Events"."id" ,"Events"."title", "Events"."description", "Events"."fromDate", "Events"."toDate", "Events"."place", "Events"."UserId"
-            from "Events", "UserEvents"
-            where "Events"."id" = "UserEvents"."eventId" and "UserEvents"."userId" = ${userId}
-            order by "Events"."fromDate" asc`;
+    query = `select events.id, events.title, events.description, events.from_date, events.to_date, events.place, events.user_id
+            from events, user_events
+            where events.id = user_events.event_id and user_events.user_id = ${userId}
+            order by events.from_date asc`;
   }
 
   const promise = models.sequelize.query(query).then(function(e) {

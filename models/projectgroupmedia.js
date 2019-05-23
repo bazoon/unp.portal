@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const ProjectGroupMedia = sequelize.define(
     "ProjectGroupMedia",
     {
-      ProjectGroupId: DataTypes.INTEGER,
+      projectGroupId: DataTypes.INTEGER,
       file: DataTypes.STRING,
       size: DataTypes.INTEGER
     },

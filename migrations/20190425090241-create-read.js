@@ -1,33 +1,33 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("Reads", {
+    return queryInterface.createTable("reads", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      MessageId: {
+      message_id: {
         type: Sequelize.INTEGER
       },
-      UserId: {
+      user_id: {
         type: Sequelize.INTEGER
       },
       seen: {
         type: Sequelize.BOOLEAN
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("Reads");
+    return queryInterface.dropTable("reads");
   }
 };
