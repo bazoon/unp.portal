@@ -32,7 +32,7 @@ class CreateCard extends Component {
     form.validateFields((err, fields) => {
       const payload = { ...fields, id: +id };
       if (!err) {
-        Actions.editUser(payload).then(() => {
+        Actions.updateUser(payload).then(() => {
           this.props.history.push("/admin/users");
         });
       }

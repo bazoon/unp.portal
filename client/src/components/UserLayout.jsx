@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
-import { Layout, Icon, Input, Badge, Popover } from "antd";
+import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
 import MainMenu from "./MainMenu/MainMenu";
 import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
@@ -22,54 +22,56 @@ const { Sider, Content } = Layout;
 class UserLayout extends Component {
   render() {
     return (
-      <Layout>
-        <Sider>
-          <div className="main-menu">
-            <Route path="/" component={MainMenu} />
-          </div>
-        </Sider>
-        <Content>
-          <Switch>
-            <Route
-              exact
-              path="/groups"
-              component={() => <ProjectGroups type="all" />}
-            />
-            <Route path="/temp" component={Temp} />
-            <Route path="/profile" component={() => <UserProfile />} />
-            <Route
-              exact
-              path="/groups/:id/conversation/:conversationId"
-              component={props => (
-                <>
-                  <Conversation {...props} />
-                </>
-              )}
-            />
-            <Route
-              path="/groups/:id"
-              component={props => <GroupFeed {...props} />}
-            />
+      <div className="container">
+        <Row gutter={27}>
+          <Col span={24}>
+            <Switch>
+              <Route
+                exact
+                path="/groups"
+                component={() => <ProjectGroups type="all" />}
+              />
 
-            <Route path="/laws" component={() => <Laws />} />
-            <Route path="/events/my" component={EventList} />
-            <Route path="/" component={Feed} />
-          </Switch>
-        </Content>
-        <Switch>
-          <Route
-            exact
-            path="/groups/:id"
-            component={props => (
-              <>
-                <Group {...props} />
-              </>
-            )}
-          />
-          <Route path="/groups" component={null} />
-          <Route exact path="/" component={props => <RightMenu {...props} />} />
-        </Switch>
-      </Layout>
+              <Route path="/profile" component={() => <UserProfile />} />
+              <Route
+                exact
+                path="/groups/:id/conversation/:conversationId"
+                component={props => (
+                  <>
+                    <Conversation {...props} />
+                  </>
+                )}
+              />
+              <Route
+                path="/groups/:id"
+                component={props => <GroupFeed {...props} />}
+              />
+
+              <Route path="/events/my" component={EventList} />
+              <Route path="/" component={Feed} />
+            </Switch>
+          </Col>
+          {/* <Col span={8}>
+            <Switch>
+              <Route
+                exact
+                path="/groups/:id"
+                component={props => (
+                  <>
+                    <Group {...props} />
+                  </>
+                )}
+              />
+              <Route path="/groups" component={null} />
+              <Route
+                exact
+                path="/"
+                component={props => <RightMenu {...props} />}
+              />
+            </Switch>
+          </Col> */}
+        </Row>
+      </div>
     );
   }
 }

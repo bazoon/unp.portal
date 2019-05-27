@@ -1,12 +1,5 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
-import client from "../client";
-import {
-  GroupsQuery,
-  SubscribeMutation,
-  UnsubscribeMutation,
-  CreateGroupMutation
-} from "./queries";
 
 const projectGroups = State({
   initial: { groups: [] },
@@ -34,44 +27,49 @@ const projectGroups = State({
 });
 
 Effect("getProjectGroups", ({ type, userId }) => {
-  client
-    .query({
-      query: GroupsQuery
-    })
-    .then(({ data }) => {
-      Actions.setProjectGroups(data.projectGroups);
-    });
+  const urls = {
+    my: "api/projectGroups/list/my",
+    created: "api/projectGroups/list/created",
+    all: "api/projectGroups/list"
+  };
+
+  api.get(urls[type], { userId }).then(response => {
+    Actions.setProjectGroups(response.data);
+  });
 });
 
 Effect("postCreateGroup", ({ payload, userId }) => {
-  client
-    .mutate({
-      mutation: CreateGroupMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.addProjectGroup(data);
-    });
+  api.post("api/ProjectGroups/create", payload).then(response => {
+    Actions.getProjectGroups({ type: "all", userId });
+  });
+  // client
+  //   .mutate({
+  //     mutation: CreateGroupMutation,
+  //     variables: { input: payload }
+  //   })
+  //   .then(({ data }) => {
+  //     Actions.addProjectGroup(data);
+  //   });
 });
 
 Effect("postUnsubscribeProjectGroup", ({ groupId, userId }) => {
-  client
-    .mutate({
-      mutation: UnsubscribeMutation,
-      variables: { groupId }
+  api
+    .post("api/ProjectGroups/unsubscribe", {
+      groupId,
+      userId
     })
-    .then(({ data }) => {
+    .then(() => {
       Actions.unsubscribeProjectGroup({ groupId });
     });
 });
 
 Effect("postSubscribeProjectGroup", ({ groupId, userId }) => {
-  client
-    .mutate({
-      mutation: SubscribeMutation,
-      variables: { groupId }
+  api
+    .post("api/ProjectGroups/subscribe", {
+      groupId,
+      userId
     })
-    .then(({ data }) => {
+    .then(() => {
       Actions.subscribeProjectGroup({ groupId });
     });
 });

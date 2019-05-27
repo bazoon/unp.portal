@@ -10,16 +10,15 @@ class MainMenu extends Component {
     const { location } = this.props;
     const { pathname } = location;
     const { isAdmin } = this.props.login;
-
+    console.log(pathname);
     return (
       <Menu
         activeKey={pathname}
         selectedKeys={[pathname]}
         theme="white"
-        mode="inline"
-        defaultOpenKeys={["sub1", "sub2"]}
+        mode="horizontal"
       >
-        <Menu.Item>
+        <Menu.Item key="/groups">
           <NavLink to="/groups" activeClassName="active">
             <span>Группы</span>
           </NavLink>
@@ -35,7 +34,7 @@ class MainMenu extends Component {
           </NavLink>
         </Menu.Item>
         {isAdmin && (
-          <Menu.Item key="/admin">
+          <Menu.Item key="/admin/users">
             <NavLink to="/admin/users">
               <span>Админ</span>
             </NavLink>

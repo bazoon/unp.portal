@@ -1,11 +1,25 @@
+body {
+  font-family: OpenSans;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.outer-container {
+  background: #efece7;
+  min-height: 100vh;
+}
+
 .header {
   padding: 0;
   display: flex;
   padding: 10px;
   height: 80px;
-  border-bottom: solid 1px black;
   justify-content: space-between;
-  margin-bottom: 56px;
+  margin-bottom: 16px;
+  align-items: center;
 
   &__search {
     &-container {
@@ -24,11 +38,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-width: 500px;
   }
 
   &__logo {
     height: 59px;
+    width: 300px;
   }
 
   &__mail {
@@ -111,7 +125,7 @@
 // Main menu
 .main-menu,
 .admin-menu {
-  font-family: PTSans;
+  font-family: OpenSans;
 
   .ant-menu-inline .ant-menu-item {
     font-size: 22px;
@@ -128,36 +142,20 @@
     &:after {
       display: none;
     }
-    span {
-      border-bottom: solid 2px black;
-      padding-bottom: 4px;
-    }
   }
   .ant-menu-inline {
     border: none;
+  }
+  .ant-menu {
+    background-color: #fff;
   }
 }
 
 // Fonts
 
 @font-face {
-  font-family: "PTSans";
+  font-family: "OpenSans";
   src: url("/fonts/ptsans.woff2");
-}
-
-@font-face {
-  font-family: "PTSansBold";
-  src: url("/fonts/ptsansbold.woff2");
-}
-
-@font-face {
-  font-family: "FiraSans";
-  src: url("/fonts/Firasansregular.woff2");
-}
-
-@font-face {
-  font-family: "FiraSansBold";
-  src: url("/fonts/Firasansbold.woff2");
 }
 
 @font-face {
@@ -170,15 +168,29 @@
   src: url("/fonts/opensans.woff2");
 }
 
+@font-face {
+  font-family: "OpenSansBold";
+  src: url("/fonts/opensansbold.woff2");
+}
+
 // Overrides
 
 .ant-form-item {
   margin-bottom: 0px;
 }
 
+.ant-breadcrumb {
+  margin-bottom: 12px;
+}
+
 // end Overrides
 
 // Common styles
+
+.svg-icon {
+  width: 16px;
+  height: 16px;
+}
 
 .section-header {
   display: flex;
@@ -190,7 +202,7 @@
 }
 
 .section-title {
-  font-family: PTSans, sans-serif;
+  font-family: OpenSans, sans-serif;
 
   font-size: 22px;
   font-weight: 900;

@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import moment from "moment";
-import { Input, Tooltip, Icon, Button } from "antd";
+import { Input, Tooltip, Icon, Button, Breadcrumb, Row, Col } from "antd";
 import { HashLink } from "react-router-hash-link";
 
 import Posts from "../Group/GroupPosts";
 import "./Conversation.less";
+import { Link } from "react-router-dom";
 
 const { TextArea } = Input;
 
@@ -54,6 +55,7 @@ class Conversation extends Component {
 
   render() {
     const { conversationId } = this.props.match.params;
+    const { id, title } = this.props.group;
 
     const conversation =
       (this.props.conversations &&
@@ -61,18 +63,38 @@ class Conversation extends Component {
         this.props.conversations[conversationId]) ||
       {};
     const postsTree = (conversation && conversation.postsTree) || [];
-    const title = conversation && conversation.title;
+    const conversationTitle = conversation && conversation.title;
     return (
-      <div className="conversation__container">
-        <div className="conversation__title">{title}</div>
-        <Posts
-          posts={postsTree}
-          avatar={this.props.avatar}
-          onSend={this.handleSend}
-          onReplySend={this.handleReplySend}
-          showConversationForm
-        />
-      </div>
+      <>
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link to="/">Главная</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link to="/groups">Группы</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link to={`/groups/${id}`}>{title}</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>{conversationTitle}</Breadcrumb.Item>
+        </Breadcrumb>
+
+        <Row>
+          <Col span={16}>
+            <div className="conversation__container">
+              <div className="conversation__title">{conversationTitle}</div>
+              <Posts
+                posts={postsTree}
+                avatar={this.props.avatar}
+                onSend={this.handleSend}
+                onReplySend={this.handleReplySend}
+                showConversationForm
+              />
+            </div>
+          </Col>
+          <Col span={8}>dkkjjwd</Col>
+        </Row>
+      </>
     );
   }
 }
@@ -82,7 +104,8 @@ const mapStateToProps = state => {
     conversations: state.Conversation.conversations,
     avatar: state.Login.avatar,
     userId: state.Login.userId,
-    postComments: state.Conversation.posts
+    postComments: state.Conversation.posts,
+    group: state.ProjectGroup.group
   };
 };
 

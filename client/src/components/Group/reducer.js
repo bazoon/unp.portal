@@ -3,7 +3,11 @@ import api from "../../api/api";
 import findInTree from "../../utils/findPostInTree";
 
 const projectGroups = State({
-  initial: { groups: [], group: {}, posts: [] },
+  initial: {
+    groups: [],
+    group: { participants: [], conversations: [] },
+    posts: []
+  },
   setProjectGroup(state, payload) {
     return { ...state, group: payload };
   },
@@ -69,8 +73,8 @@ const projectGroups = State({
   }
 });
 
-Effect("getProjectGroup", ({ id, userId }) => {
-  return api.get("api/projectGroups/get", { id, userId }).then(response => {
+Effect("getProjectGroup", ({ id }) => {
+  return api.get("api/projectGroups/get", { id }).then(response => {
     return Actions.setProjectGroup(response.data);
   });
 });

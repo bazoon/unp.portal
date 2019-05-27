@@ -8,6 +8,9 @@ import getFileIcon from "../../utils/getFileIcon";
 import getFileName from "../../utils/getFileName";
 import cn from "classnames";
 
+import SendIcon from "../../../images/send.svg";
+import UploadIcon from "../../../images/upload.svg";
+
 class GroupPosts extends Component {
   static propTypes = {
     posts: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -212,7 +215,7 @@ class GroupPosts extends Component {
           />
           <Input
             value={reply}
-            placeholder="Введите текст"
+            placeholder="Написать комментарий"
             onKeyPress={e => this.handleReplyKeyPress(e, post)}
             onChange={e => this.handleReplyChange(e, post.id)}
           />
@@ -293,10 +296,9 @@ class GroupPosts extends Component {
               </div>
               <div style={{ marginLeft: "10px" }}>
                 <div className="group__post-user">{post.userName}</div>
-                <div className="group__post-position">{post.position}</div>
+                <div className="group__post-position">{date}</div>
               </div>
             </div>
-            <div className="group__post_date">{date}</div>
           </div>
           <div className="group__post-body">
             <div className="group__post-text">{post.text}</div>
@@ -305,26 +307,19 @@ class GroupPosts extends Component {
           {this.renderPostFiles(post)}
           <div className="group__post-footer">
             <div>
-              <Icon type="message" style={{ marginRight: "8px" }} />
-              <span>{postChildrenCount}</span>
-              {parentPost && (
+              {
                 <span
                   className="group__post-reply"
                   onClick={() => this.handlePostReply(post.id)}
                 >
                   Ответить
                 </span>
-              )}
-            </div>
-            <div>
-              <Icon type="heart" style={{ marginRight: "24px" }} />
-              <Icon type="eye" />
+              }
             </div>
           </div>
-          {(!parentPost || postRepliesVisible[post.id]) && (
+          {postRepliesVisible[post.id] && (
             <div>{this.renderPostReply(post)}</div>
           )}
-          <div className="group__post-footer-line" />
           {post.children && this.renderPosts(post.children, level, post)}
           {hasMorePosts && (
             <div
@@ -347,23 +342,18 @@ class GroupPosts extends Component {
     return (
       <div className="group__post-form-container">
         <div className="group__post-form">
-          <Icon
-            type="paper-clip"
-            style={{
-              fontSize: "16px",
-              color: "#00ccff",
-              marginRight: "5px",
-              cursor: "pointer"
-            }}
-            onClick={this.handleFileUpload}
-          />
           <Input
             value={currentPost}
-            placeholder="Введите текст"
+            placeholder="Написать комментарий"
             onKeyPress={this.handleKeyPress}
             onChange={this.handlePostChange}
+            suffix={
+              <>
+                <Icon type="folder-add" onClick={this.handleFileUpload} />
+                <Icon type="right" />
+              </>
+            }
           />
-
           {this.renderFileForm()}
         </div>
         {this.renderUploadFiles()}
@@ -397,7 +387,7 @@ class GroupPosts extends Component {
     return (
       <div className="group__posts">
         {!this.props.hideForm && this.renderConversationForm()}
-        {this.renderPosts(posts, 24, undefined, true)}
+        {this.renderPosts(posts, 0, undefined, true)}
         {this.renderReplyFileForm()}
       </div>
     );

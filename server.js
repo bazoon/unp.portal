@@ -64,6 +64,24 @@ app.use(async (ctx, next) => {
 
 app.use(authRouter.routes()).use(authRouter.allowedMethods());
 app.use(koaJwt({ secret: process.env.API_TOKEN }));
+
+app.use(async (ctx, next) => {
+  const token = ctx.request.header.authorization || "";
+  const tokenOnly = token.split(" ")[1];
+  if (tokenOnly) {
+    const user = jwt.verify(tokenOnly, process.env.API_TOKEN);
+    const isAdminUrl = ctx.request.url.indexOf("admin/api") > 0;
+
+    if (isAdminUrl && !user.isAdmin) {
+      ctx.status = 403;
+      ctx.body = "Not authorized!";
+    } else {
+      ctx.user = user;
+      await next();
+    }
+  }
+});
+
 server.applyMiddleware({ app });
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 

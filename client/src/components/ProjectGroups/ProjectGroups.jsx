@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Button, Tabs, Input, Icon } from "antd";
+import { Link } from "react-router-dom";
+import { Button, Tabs, Input, Icon, Breadcrumb } from "antd";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import { ProjectGroup } from "./ProjectGroup";
@@ -74,6 +75,12 @@ class ProjectGroups extends Component {
   render() {
     return (
       <>
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link to="/">Главная</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>Группы</Breadcrumb.Item>
+        </Breadcrumb>
         <div className="project-groups__header">
           <div style={{ display: "flex", alignItems: "center" }}>
             <Icon type="left" />

@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 const { Search } = Input;
 
 function handleDelete(id) {
-  Actions.deleteUser(id);
+  Actions.deleteUser({ id });
 }
 
 const columns = [

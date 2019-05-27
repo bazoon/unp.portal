@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     "Participant",
     {
       projectGroupId: DataTypes.INTEGER,
-      userId: DataTypes.INTEGER
+      userId: DataTypes.INTEGER,
+      participantRoleId: DataTypes.INTEGER
     },
     {}
   );
@@ -12,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
     Participant.belongsTo(models.ProjectGroup);
     Participant.belongsTo(models.User);
+    Participant.belongsTo(models.ParticipantRole);
   };
   return Participant;
 };

@@ -186,7 +186,6 @@ class Group extends Component {
       links,
       media
     } = this.props.group || {};
-    console.log(participant, participants);
 
     const conversationsCount = conversations && conversations.length;
     const participantsCount = participants && participants.length;
@@ -237,7 +236,7 @@ class Group extends Component {
     );
 
     return (
-      <Sider width="400">
+      <>
         <div className="group">
           <Collapse defaultActiveKey={["1"]} expandIcon={() => ""}>
             <Panel header={conversationsHeader} key="1">
@@ -268,7 +267,7 @@ class Group extends Component {
           onCancel={this.handleCancel}
           onOk={this.handleOk}
         />
-      </Sider>
+      </>
     );
   }
 }

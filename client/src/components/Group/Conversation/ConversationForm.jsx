@@ -43,8 +43,13 @@ class GroupForm extends Component {
       <Form layout="vertical" onSubmit={this.handleSubmit}>
         <FlexRow>
           {getFieldDecorator("title", {
-            rules: [{ required: true, message: "Обсуждение" }]
-          })(<Input placeholder="Обсуждение" />)}
+            rules: [{ required: true, message: "Наименование" }]
+          })(<Input placeholder="Наименование" />)}
+        </FlexRow>
+        <FlexRow>
+          {getFieldDecorator("description", {
+            rules: [{ required: true, message: "Описание" }]
+          })(<Input.TextArea rows={5} placeholder="Описание" />)}
         </FlexRow>
       </Form>
     );

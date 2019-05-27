@@ -5,7 +5,10 @@ import Layout from "./Layout";
 import LoginForm from "./LoginForm/LoginForm";
 import utils from "../utils";
 import { Actions } from "jumpstate";
-import client from "./client";
+
+import "../../fonts/opensans/opensans.woff2";
+import "../../fonts/opensans/opensansbold.woff2";
+import "../../fonts/opensans/opensanssemibold.woff2";
 
 class App extends Component {
   constructor(props) {

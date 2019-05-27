@@ -1,0 +1,8 @@
+type ConversationInfo {
+  title: String
+  postsTree: [PostInfo]
+}
+
+type Query {
+  conversation(id: Int): ConversationInfo
+}

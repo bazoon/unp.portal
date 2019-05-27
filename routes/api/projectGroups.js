@@ -12,17 +12,17 @@ const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
-  const { userId, groupTitle, isOpen, groupDescription } = ctx.request.body;
+  const { userId, title, isOpen, description } = ctx.request.body;
   const { file } = ctx.request.files;
-  console.log(userId, groupTitle, isOpen);
+
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
   const result = await models.ProjectGroup.create({
-    title: groupTitle,
+    title: title,
     avatar: files && files[0] && files[0].name,
     is_open: isOpen,
-    description: groupDescription
+    description: description
   }).then(group => {
     return models.Participant.create({
       ProjectGroupId: group.id,
@@ -105,95 +105,58 @@ router.get("/list/created", async (ctx, next) => {
 });
 
 router.get("/get", async (ctx, next) => {
-  const { id, userId } = ctx.request.query;
+  const { id } = ctx.request.query;
+  const userId = ctx.user.id;
 
   const query = `select project_groups.title, project_groups.avatar, project_groups.id, 
               project_groups.is_open, project_groups.description from
               project_groups where project_groups.id = ${id}`;
-  const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as lastPostDate from conversations
+
+  const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
                               left join posts
                               on conversations.id = posts.conversation_id
-                              where conversations.project_group_id = ${id}
-                              group by conversations.id
+                              left join users 
+                              on conversations."user_id" = users.id
+                              where conversations.project_group_id = 1
+                              group by conversations.id, users."name"
                               `;
+  const participantsQuery = `select users."name", users."id" as user_id, participant_roles."name" as role_name, level, positions."name" as position, users."avatar"
+                            from users, participants, participant_roles, positions where
+                            (participants.project_group_id = ${id}) and (participants.participant_role_id = participant_roles.id) and 
+                            (users.position_id = positions.id) and (participants.user_id = users.id)
+                            order by level`;
 
-  const promises = models.sequelize.query(query).then(function(groups) {
-    return models.sequelize
-      .query(conversationsQuery)
-      .then(function(conversations) {
-        const group = groups[0][0];
+  const groupResult = await models.sequelize.query(query);
+  const group = groupResult[0][0];
+  const conversationResult = await models.sequelize.query(conversationsQuery);
+  const conversations = conversationResult[0];
+  const participantsResult = await models.sequelize.query(participantsQuery);
+  const participants = participantsResult[0];
 
-        const linksPromise = models.ProjectGroupLink.findAll({
-          where: { ProjectGroupId: group.id }
-        });
-        const docsPromise = models.ProjectGroupDoc.findAll({
-          where: { ProjectGroupId: group.id }
-        });
-        const mediaPromise = models.ProjectGroupMedia.findAll({
-          where: { ProjectGroupId: group.id }
-        });
-        const participantsPromise = models.Participant.findAll({
-          where: { ProjectGroupId: group.id }
-        });
-        const adminsPromise = models.ProjectGroupAdmin.findAll({
-          where: { ProjectGroupId: group.id }
-        });
+  ctx.body = {
+    id: group.id,
+    isOpen: group.is_open,
+    title: group.title,
+    description: group.description,
+    avatar: getUploadFilePath(group.avatar),
+    isOpen: group.is_open,
+    conversations: conversations,
 
-        return Promise.all([
-          linksPromise,
-          docsPromise,
-          mediaPromise,
-          participantsPromise,
-          adminsPromise
-        ]).then(results => {
-          const participants = results[3];
-          const admins = results[4];
-
-          const usersPromise = models.User.findAll({
-            where: { id: { [Op.in]: participants.map(p => p.UserId) } }
-          });
-
-          const adminsPromise = models.User.findAll({
-            where: { id: { [Op.in]: admins.map(p => p.id) } }
-          });
-
-          return Promise.all([usersPromise, adminsPromise]).then(
-            ([users, a]) => {
-              return {
-                id: group.id,
-                isOpen: group.is_open,
-                title: group.title,
-                description: group.description,
-                avatar: getUploadFilePath(group.avatar),
-                isOpen: group.is_open,
-                conversations: conversations[0],
-                links: results[0],
-                docs: results[1],
-                media: results[2],
-                participants: users.map(u => {
-                  return {
-                    id: u.id,
-                    name: u.name,
-                    avatar: getUploadFilePath(u.avatar)
-                  };
-                }),
-                participant: !!users.find(user => user.id == userId),
-                admins: a.map(u => {
-                  return {
-                    id: u.id,
-                    name: u.name,
-                    avatar: getUploadFilePath(u.avatar)
-                  };
-                })
-              };
-            }
-          );
-        });
-      });
-  });
-
-  const group = await promises;
-  ctx.body = group;
+    participants: participants.map(participant => {
+      return {
+        id: participant.id,
+        userId: participant.userId,
+        name: participant.name,
+        position: participant.position,
+        roleName: participant.role_name,
+        level: participant.level,
+        avatar: getUploadFilePath(participant.avatar)
+      };
+    }),
+    participant: !!participants.find(
+      participant => participant.user_id == userId
+    )
+  };
 });
 
 router.post("/links/post", (req, res) => {
@@ -320,14 +283,19 @@ router.post("/post/post", koaBody({ multipart: true }), async ctx => {
 });
 
 router.post("/conversation/create", async ctx => {
-  const { projectGroupId, title } = ctx.request.body;
+  const { projectGroupId, title, description } = ctx.request.body;
+  const userId = ctx.user.id;
   const conversation = await models.Conversation.create({
     title,
-    ProjectGroupId: projectGroupId
+    ProjectGroupId: projectGroupId,
+    description,
+    userId
   });
   ctx.body = {
     id: conversation.id,
     title: conversation.title,
+    description: conversation.description,
+    userId: conversation.userId,
     count: 0,
     lastpostdate: null
   };

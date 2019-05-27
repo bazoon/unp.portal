@@ -163,7 +163,10 @@ class GroupForm extends Component {
     const { getFieldDecorator } = this.props.form;
     const { name, login, avatar, isAdmin } = this.props.user || {};
     const positionId =
-      this.state.positionId || (this.props.user && this.props.user.position.id);
+      this.state.positionId ||
+      (this.props.user &&
+        this.props.user.position &&
+        this.props.user.position.id);
 
     const { isPaswordRequired } = this.props;
     const { organizations, positions } = this.props;
@@ -175,7 +178,9 @@ class GroupForm extends Component {
     } = this.state;
     const organizationId =
       this.state.organizationId ||
-      (this.props.user && this.props.user.organization.id);
+      (this.props.user &&
+        this.props.user.organization &&
+        this.props.user.organization.id);
 
     return (
       <Form layout="vertical">

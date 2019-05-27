@@ -50,7 +50,7 @@ module.exports = {
               modifyVars: {
                 "layout-header-background": "#fff",
                 "layout-body-background": "#f4f6f9",
-                "font-family": "PTSans",
+                "font-family": "OpenSans",
                 "body-background": "#f4f6f9",
                 "menu-bg": "#f4f6f9",
                 "menu-item-active-bg": "#f4f6f9",
@@ -62,6 +62,24 @@ module.exports = {
           }
         ]
       },
+      // {
+      //   test: /\.svg$/,
+      //   use: [
+      //     {
+      //       loader: "babel-loader"
+      //     },
+      //     {
+      //       loader: "react-svg-loader",
+      //       options: {
+      //         jsx: true // true outputs JSX tags
+      //       }
+      //     }
+      //   ]
+      // },
+      // {
+      //   test: /\.svg$/,
+      //   loader: "svg-inline-loader"
+      // },
       {
         test: /\.svg$/,
         exclude: /node_modules/,
@@ -84,6 +102,19 @@ module.exports = {
             options: {
               name: "[name].[ext]",
               outputPath: "/images/"
+            }
+          }
+        ]
+      },
+      {
+        test: /\.woff2$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              name: "[name].[ext]",
+              outputPath: "/fonts/"
             }
           }
         ]

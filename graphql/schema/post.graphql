@@ -1,0 +1,15 @@
+type PostInfo {
+  id: Int
+  avatar: String
+  children: [PostInfo]
+  files: [PostFile]
+  parentId: Int
+  position: String
+  text: String
+  userName: String
+}
+
+type PostFile {
+  name: String
+  size: Int
+}

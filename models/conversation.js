@@ -4,7 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     "Conversation",
     {
       title: DataTypes.STRING,
-      projectGroupId: DataTypes.INTEGER
+      projectGroupId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
+      description: DataTypes.TEXT,
+      is_commentable: DataTypes.BOOLEAN
     },
     {}
   );

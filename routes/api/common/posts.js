@@ -17,7 +17,6 @@ const createPost = async function createPost({
                     `;
 
   await uploadFiles(files);
-  console.log(postId, 818818);
 
   const post = await models.Post.create({
     text,
@@ -68,7 +67,7 @@ const getPosts = async function getPosts(query) {
       avatar: getUploadFilePath(post.avatar),
       userName: post.name,
       position: post.position,
-      createdAt: post.createdAt,
+      createdAt: post.created_at,
       files: files.map(pf => ({
         name: getUploadFilePath(pf.file),
         size: pf.size

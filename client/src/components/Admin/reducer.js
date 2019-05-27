@@ -1,18 +1,5 @@
 import { State, Effect, Actions } from "jumpstate";
-import client from "../client";
-import {
-  UsersQuery,
-  OrganizationsQuery,
-  PositionsQuery,
-  CreateUserMutation,
-  DeleteUserMutation,
-  GetUserQuery,
-  EditUserMutation,
-  CreateOrganizationMutation,
-  EditOrganizationMutation,
-  CreatePositionMutation,
-  EditPositionMutation
-} from "./queries";
+import api from "../../api/api";
 
 const Chat = State({
   initial: {
@@ -61,119 +48,81 @@ const Chat = State({
 });
 
 Effect("getAdminUsers", () => {
-  client
-    .query({
-      query: UsersQuery
-    })
-    .then(({ data }) => {
-      Actions.setAdminUsers(data.users);
-    });
+  api.get("admin/api/users").then(({ data }) => {
+    Actions.setAdminUsers(data);
+  });
 });
 
 Effect("getOrganizations", () => {
-  client
-    .query({
-      query: OrganizationsQuery
-    })
-    .then(({ data }) => {
-      Actions.setAdminOrganizations(data.organizations);
-    });
+  api.get("admin/api/organizations").then(({ data }) => {
+    Actions.setAdminOrganizations(data);
+  });
 });
 
 Effect("getPositions", () => {
-  client
-    .query({
-      query: PositionsQuery
-    })
-    .then(({ data }) => {
-      Actions.setAdminPositions(data.positions);
-    });
+  api.get("admin/api/positions").then(({ data }) => {
+    Actions.setAdminPositions(data);
+  });
 });
 
-Effect("getUser", payload => {
-  client
-    .query({
-      query: GetUserQuery,
-      variables: { id: payload }
-    })
-    .then(({ data }) => {
-      Actions.setEditedUser(data.getUser);
-    });
-});
+// Effect("getUser", payload => {
+//   client
+//     .query({
+//       query: GetUserQuery,
+//       variables: { id: payload }
+//     })
+//     .then(({ data }) => {
+//       Actions.setEditedUser(data.getUser);
+//     });
+// });
 
 Effect("createUser", payload => {
-  client
-    .mutate({
-      mutation: CreateUserMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.addUser(data.createUser);
-    });
+  api.post("admin/api/users/create", payload).then(({ data }) => {
+    Actions.addUser(data);
+  });
+
+  // client
+  //   .mutate({
+  //     mutation: CreateUserMutation,
+  //     variables: { input: payload }
+  //   })
+  //   .then(({ data }) => {
+  //     Actions.addUser(data.createUser);
+  //   });
 });
 
-Effect("editUser", payload => {
-  client
-    .mutate({
-      mutation: EditUserMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {});
+Effect("updateUser", payload => {
+  return api.post("admin/api/users/update", payload).then(() => {});
 });
 
 Effect("deleteUser", payload => {
-  client
-    .mutate({
-      mutation: DeleteUserMutation,
-      variables: { id: payload }
-    })
-    .then(({ data }) => {
-      Actions.setDeleteUser(data.deleteUser);
-    });
+  api.post("admin/api/users/delete", payload).then(({ data }) => {
+    Actions.setDeleteUser(data);
+  });
 });
 
 Effect("createOrganization", payload => {
-  client
-    .mutate({
-      mutation: CreateOrganizationMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.addOrganization(data.createOrganization);
-    });
+  api.post("admin/api/organizations/create", payload).then(({ data }) => {
+    Actions.addOrganization(data);
+  });
 });
 
 Effect("editOrganization", payload => {
-  client
-    .mutate({
-      mutation: EditOrganizationMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.setEditOrganization(data.editOrganization);
-    });
+  api.post("admin/api/organizations/create", payload).then(({ data }) => {
+    Actions.setEditOrganization(data);
+  });
 });
 
 Effect("createPosition", payload => {
-  client
-    .mutate({
-      mutation: CreatePositionMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.addPosition(data.createPosition);
-    });
+  api.post("admin/api/positions/create", payload).then(({ data }) => {
+    Actions.addPosition(data);
+  });
 });
 
 Effect("editPosition", payload => {
-  client
-    .mutate({
-      mutation: EditPositionMutation,
-      variables: { input: payload }
-    })
-    .then(({ data }) => {
-      Actions.setEditPosition(data.editPosition);
-    });
+  api.post("admin/api/positions/update", payload).then(({ data }) => {
+    Actions.setEditPosition(data);
+  });
 });
 
 export default Chat;

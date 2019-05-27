@@ -11,8 +11,17 @@ module.exports = {
       title: {
         type: Sequelize.STRING
       },
+      description: {
+        type: Sequelize.TEXT
+      },
       project_group_id: {
         type: Sequelize.INTEGER
+      },
+      user_id: {
+        type: Sequelize.INTEGER
+      },
+      is_commentable: {
+        type: Sequelize.BOOLEAN
       },
       created_at: {
         allowNull: false,
