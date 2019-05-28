@@ -7,6 +7,9 @@ import { HashLink } from "react-router-hash-link";
 import Posts from "../Group/GroupPosts";
 import "./Conversation.less";
 import { Link } from "react-router-dom";
+import Participants from "../Group/Participants";
+import JoinButton from "../ProjectGroups/JoinButton";
+import LeaveButton from "../ProjectGroups/LeaveButton";
 
 const { TextArea } = Input;
 
@@ -52,9 +55,19 @@ class Conversation extends Component {
     return Actions.sendConversationPost({ conversationId, formData });
   };
 
+  handleSubscribe = () => {
+    const { id } = this.props.group;
+    Actions.postSubscribeGroup({ groupId: id });
+  };
+
+  handleUnsubscribe = () => {
+    const { id } = this.props.group;
+    Actions.postUnsubscribeGroup({ groupId: id });
+  };
+
   render() {
     const { conversationId } = this.props.match.params;
-    const { id, title } = this.props.group;
+    const { id, title, avatar, participants, participant } = this.props.group;
 
     const conversation =
       (this.props.conversations &&
@@ -78,7 +91,7 @@ class Conversation extends Component {
           <Breadcrumb.Item>{conversationTitle}</Breadcrumb.Item>
         </Breadcrumb>
 
-        <Row>
+        <Row gutter={27}>
           <Col span={16}>
             <div className="conversation__container">
               <div className="conversation__title">{conversationTitle}</div>
@@ -91,7 +104,32 @@ class Conversation extends Component {
               />
             </div>
           </Col>
-          <Col span={8}>dkkjjwd</Col>
+          <Col span={8}>
+            <div
+              className="conversation__group-header"
+              style={{
+                backgroundImage: `url(${avatar})`
+              }}
+            >
+              {title}
+            </div>
+            <div className="group__add-info">
+              <Participants participants={participants} />
+              {participant ? (
+                <LeaveButton
+                  style={{ width: "100%" }}
+                  groupId={id}
+                  onClick={this.handleUnsubscribe}
+                />
+              ) : (
+                <JoinButton
+                  style={{ width: "100%" }}
+                  groupId={id}
+                  onClick={this.handleSubscribe}
+                />
+              )}
+            </div>
+          </Col>
         </Row>
       </>
     );

@@ -11,6 +11,9 @@ import ConversationModal from "./Conversation/ConversationModal";
 import ChatWaitIcon from "../../../images/chat_wait";
 import RightIcon from "../../../images/arrow_right";
 import UpIcon from "../../../images/arrow_up";
+import JoinButton from "../ProjectGroups/JoinButton";
+import LeaveButton from "../ProjectGroups/LeaveButton";
+import Participants from "./Participants";
 
 const maxDescriptionLength = 600;
 
@@ -86,6 +89,16 @@ class GroupFeed extends Component {
     });
   };
 
+  handleSubscribe = () => {
+    const { id } = this.props.group;
+    Actions.postSubscribeGroup({ groupId: id });
+  };
+
+  handleUnsubscribe = () => {
+    const { id } = this.props.group;
+    Actions.postUnsubscribeGroup({ groupId: id });
+  };
+
   renderAddRegion() {
     return (
       <div
@@ -93,49 +106,6 @@ class GroupFeed extends Component {
         onClick={this.handleCreateConversation}
       >
         Добавить запись в группе
-      </div>
-    );
-  }
-
-  renderParticipants() {
-    const { participants } = this.props.group;
-    const firstThree = participants.slice(0, 3);
-    const restFive = participants.slice(3, 8);
-    const rest = participants.slice(8);
-    return (
-      <div className="group__participants-wrap">
-        <div className="group__participants-main">
-          {firstThree.map(participant => {
-            return (
-              <div key={participant.id} className="group__participant-info">
-                <div className="group__participant-avatar">
-                  <img src={participant.avatar} alt="avatar" />
-                </div>
-                <div className="group__participant-description">
-                  <div className="group__participant-role">
-                    {participant.roleName}
-                  </div>
-                  <div className="group__participant-name">
-                    {participant.name}
-                  </div>
-                  <div className="group__participant-position">
-                    {participant.position}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          <div className="group__participants-rest">
-            {restFive.map(participant => {
-              return (
-                <div className="group__participant-avatar group__participant-avatar_row">
-                  <img src={participant.avatar} alt="avatar" />
-                </div>
-              );
-            })}
-            <div className="group__participants-more">И еще {rest.length}</div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -194,7 +164,14 @@ class GroupFeed extends Component {
   }
 
   render() {
-    const { id, title, avatar, description } = this.props.group;
+    const {
+      id,
+      title,
+      avatar,
+      description,
+      participant,
+      participants
+    } = this.props.group;
     const { isShortMode } = this.state;
     const shortDescription =
       description && description.slice(0, maxDescriptionLength);
@@ -215,7 +192,12 @@ class GroupFeed extends Component {
 
         <Row type="flex">
           <Col span={16}>
-            <div className="group__feed">
+            <div
+              className="group__feed"
+              style={{
+                backgroundImage: `url(${avatar})`
+              }}
+            >
               <div className="group__feed-header">
                 <div className="group__feed-title">{title}</div>
                 <div className="group__feed-description">
@@ -247,10 +229,21 @@ class GroupFeed extends Component {
           </Col>
           <Col span={8}>
             <div className="group__add-info">
-              {this.renderParticipants()}
-              <Button type="primary" size="large" style={{ width: "100%" }}>
-                Вступить в группу
-              </Button>
+              <Participants participants={participants} />
+
+              {participant ? (
+                <LeaveButton
+                  style={{ width: "100%" }}
+                  groupId={id}
+                  onClick={this.handleUnsubscribe}
+                />
+              ) : (
+                <JoinButton
+                  style={{ width: "100%" }}
+                  groupId={id}
+                  onClick={this.handleSubscribe}
+                />
+              )}
             </div>
           </Col>
         </Row>
@@ -269,7 +262,7 @@ class GroupFeed extends Component {
           <Col span={8}>{!isShortMode && this.renderFiles()}</Col>
         </Row>
         <ConversationModal
-          projectGroupId={id}
+          proectGroupId={id}
           visible={this.state.isConversationModalVisible}
           onCancel={this.handleCancel}
           onOk={this.handleOk}

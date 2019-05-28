@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Button, Tabs, Input, Icon, Breadcrumb } from "antd";
+import { Button, Tabs, Input, Icon, Breadcrumb, Row, Col } from "antd";
 import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import { ProjectGroup } from "./ProjectGroup";
@@ -86,18 +86,40 @@ class ProjectGroups extends Component {
             <Icon type="left" />
             <div className="project-groups__title">Группы</div>
           </div>
-          <Search placeholder="Поиск по группам" style={{ width: "30%" }} />
         </div>
-        <div className="project-groups-admin">
-          <Button onClick={this.handleAddGroup}>Создать группу</Button>
-        </div>
+
         <GroupCreateModal
           visible={this.state.isCreateModalVisible}
           onCancel={this.handleCancel}
           onOk={this.handleOk}
           userId={this.props.userId}
         />
-        <div className="project-groups">{this.renderGroups()}</div>
+        <Row gutter={27}>
+          <Col span={16}>
+            <div className="project-groups__search">
+              <Search placeholder="Поиск по группам" />
+            </div>
+            <div className="project-groups">{this.renderGroups()}</div>
+          </Col>
+          <Col span={8}>
+            <div className="project-groups__side-wrap">
+              <div className="project-groups__side-title">
+                Группы обсуждений
+              </div>
+              <div className="project-groups__side-text">
+                Все обсуждения сгруппированы по темам, если вы не нашли группу с
+                интересующим вас обсуждением – можете создать новую группу.
+              </div>
+              <Button
+                type="primary"
+                style={{ width: "100%" }}
+                onClick={this.handleAddGroup}
+              >
+                Создать новую группу
+              </Button>
+            </div>
+          </Col>
+        </Row>
       </>
     );
   }

@@ -1,5 +1,33 @@
 .project-groups {
-  padding: 16px;
+  background: #fff;
+
+  &__side {
+    &-wrap {
+      padding: 30px 19px 24px 24px;
+      background: #fff;
+    }
+
+    &-title {
+      font-family: OpenSans-Bold;
+      font-size: 20px;
+      color: #000000;
+      line-height: 30px;
+    }
+
+    &-text {
+      font-size: 16px;
+      color: #000000;
+      letter-spacing: 0;
+      text-align: left;
+      line-height: 24px;
+      margin-bottom: 12px;
+    }
+
+    &-footer {
+      font-size: 14px;
+      color: #909090;
+    }
+  }
 
   &__header {
     display: flex;
@@ -25,7 +53,9 @@
   }
 
   &__search {
-    padding: 10px;
+    padding: 24px;
+    background-color: #fff;
+    margin-bottom: 20px;
   }
 
   &-admin {
@@ -35,14 +65,15 @@
 
 .project-group {
   display: flex;
-  padding-left: 16px;
-  padding-right: 16px;
-  height: 80px;
+  padding: 24px;
+  min-height: 80px;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 10px;
   background-color: #fff;
   color: #000;
   border-radius: 8px;
+  border-bottom: solid 1px #d8d8d8;
 
   &__avatar {
     width: 48px;
@@ -71,6 +102,15 @@
     a {
       color: #000;
     }
+
+    margin-bottom: 8px;
+  }
+
+  &__footer {
+    font-size: 14px;
+    color: #909090;
+    letter-spacing: 0;
+    text-align: left;
   }
 
   &__text {
@@ -84,13 +124,6 @@
     font-size: 22px;
     color: #000000;
     margin-left: 16px;
-  }
-
-  &__operations {
-    display: flex;
-    align-items: center;
-    width: 300px;
-    justify-content: space-between;
   }
 
   &__more-button {
@@ -109,22 +142,33 @@
   }
 
   &__leave-button {
-    font-family: OpenSans !important;
-    font-size: 14px !important;
-    color: #d8d8d8 !important;
-    background: #f1f1f1;
     border-radius: 6px;
     font-family: OpenSans;
-    width: 150px;
+    width: 180px;
+    background: #ffffff !important;
+    border: 1px solid #979797 !important;
+    box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #595959 !important;
+    letter-spacing: 0;
+    text-align: left;
+    flex-shrink: 0;
   }
 
   &__join-button {
-    border-radius: 6px;
-    border: 1px solid #0042d7 !important;
     color: #fff !important;
     font-size: 14px;
     font-family: OpenSans;
-    background: #0042d7 !important;
-    width: 150px;
+    width: 180px;
+
+    background-image: linear-gradient(
+      180deg,
+      #35c3ff 0%,
+      #1890ff 100%
+    ) !important;
+    box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px;
+    flex-shrink: 0;
   }
 }

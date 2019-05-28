@@ -26,7 +26,8 @@ class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      files: []
+      files: [],
+      docs: []
     };
   }
 
@@ -44,6 +45,12 @@ class GroupForm extends Component {
   handleFilesChanged = info => {
     this.setState({
       files: info.fileList
+    });
+  };
+
+  handleDocsChanged = info => {
+    this.setState({
+      docs: info.fileList
     });
   };
 
@@ -83,6 +90,21 @@ class GroupForm extends Component {
               <Button>
                 <Icon type="upload" />
                 Лого
+              </Button>
+            </Upload>
+          )}
+        </FlexRow>
+        <FlexRow>
+          {getFieldDecorator("docs", {})(
+            <Upload
+              onChange={this.handleDocsChanged}
+              fileList={this.state.docs}
+              beforeUpload={() => false}
+              multiple
+            >
+              <Button>
+                <Icon type="upload" />
+                Файлы
               </Button>
             </Upload>
           )}

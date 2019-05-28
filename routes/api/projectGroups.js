@@ -12,18 +12,32 @@ const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
-  const { userId, title, isOpen, description } = ctx.request.body;
-  const { file } = ctx.request.files;
+  const userId = ctx.user.id;
+  const { title, isOpen, description } = ctx.request.body;
+  const { file, doc } = ctx.request.files;
 
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  const docs = doc ? (Array.isArray(doc) ? doc : [doc]) : [];
+
   await uploadFiles(files);
+  await uploadFiles(docs);
 
   const result = await models.ProjectGroup.create({
     title: title,
     avatar: files && files[0] && files[0].name,
     is_open: isOpen,
     description: description
-  }).then(group => {
+  }).then(async group => {
+    await models.File.bulkCreate(
+      docs.map(doc => {
+        return {
+          userId,
+          file: doc.name,
+          groupId: group.id
+        };
+      })
+    );
+
     return models.Participant.create({
       ProjectGroupId: group.id,
       UserId: userId
@@ -62,7 +76,7 @@ function getGroups(userId, query, countQuery) {
 }
 
 router.get("/list", async (ctx, next) => {
-  const { userId } = ctx.request.query;
+  const userId = ctx.user.id;
 
   const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
               project_groups`;
@@ -70,8 +84,44 @@ router.get("/list", async (ctx, next) => {
   const countQuery = `select project_groups.id, count(*) from project_groups, participants
                     where (project_groups.id = participants.project_group_id)
                     group by project_groups.id`;
-  const groups = await getGroups(userId, query, countQuery);
-  ctx.body = groups;
+
+  // const groups = await getGroups(userId, query, countQuery);
+
+  const groupsResult = await models.sequelize.query(query);
+
+  const groups = groupsResult[0].map(async group => {
+    const participantsQuery = `select count(*) from participants where project_group_id=${
+      group.id
+    }`;
+
+    const conversationsQuery = `select count(*) from conversations where project_group_id=${
+      group.id
+    }`;
+
+    const participant = await models.Participant.findOne({
+      where: {
+        [Op.and]: [{ UserId: userId }, { ProjectGroupId: group.id }]
+      }
+    });
+
+    const participantsResult = await models.sequelize.query(participantsQuery);
+    const conversationsResult = await models.sequelize.query(
+      conversationsQuery
+    );
+
+    return {
+      id: group.id,
+      isOpen: group.is_open,
+      title: group.title,
+      avatar: getUploadFilePath(group.avatar),
+      isOpen: group.is_open,
+      participantsCount: participantsResult[0][0].count,
+      conversationsCount: conversationsResult[0][0].count,
+      participant: participant !== null
+    };
+  });
+
+  ctx.body = await Promise.all(groups);
 });
 
 router.get("/list/my", async (ctx, next) => {
@@ -220,7 +270,8 @@ router.post("/media/remove", (req, res) => {
 });
 
 router.post("/unsubscribe", async ctx => {
-  const { groupId, userId } = ctx.request.body;
+  const userId = ctx.user.id;
+  const { groupId } = ctx.request.body;
   const participantPromise = models.Participant.destroy({
     where: {
       [Op.and]: [{ user_id: userId }, { project_group_id: groupId }]
@@ -236,14 +287,18 @@ router.post("/unsubscribe", async ctx => {
 });
 
 router.post("/subscribe", async ctx => {
-  const { groupId, userId } = ctx.request.body;
+  const { groupId } = ctx.request.body;
+  const userId = ctx.user.id;
 
-  const participantPromise = models.Participant.create({
+  console.log(groupId, userId);
+
+  const participant = await models.Participant.create({
     ProjectGroupId: groupId,
-    UserId: userId
+    UserId: userId,
+    participantRoleId: 4
   });
 
-  const notificationPromise = models.NotificationPreference.create({
+  const notification = await models.NotificationPreference.create({
     type: "Группа",
     SourceId: groupId,
     UserId: userId,
@@ -252,7 +307,7 @@ router.post("/subscribe", async ctx => {
     email: false
   });
 
-  const result = await Promise.all([participantPromise, notificationPromise]);
+  const result = await Promise.all([participant, notification]);
   ctx.body = result;
 });
 

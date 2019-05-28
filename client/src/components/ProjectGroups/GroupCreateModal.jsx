@@ -18,9 +18,15 @@ class GroupCreateModal extends Component {
 
     form.validateFields((err, fields) => {
       let files = [];
+      let docs = [];
       if (fields.files) {
         files = fields.files.fileList.map(f => f.originFileObj);
         delete fields.files;
+      }
+
+      if (fields.docs) {
+        docs = fields.docs.fileList.map(f => f.originFileObj);
+        delete fields.docs;
       }
 
       const keys = Object.keys(fields);
@@ -34,6 +40,10 @@ class GroupCreateModal extends Component {
 
       files.forEach(f => {
         formData.append("file", f);
+      });
+
+      docs.forEach(d => {
+        formData.append("doc", d);
       });
 
       Actions.postCreateGroup({ payload: formData, userId });
