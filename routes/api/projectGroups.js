@@ -169,7 +169,7 @@ router.get("/get", async (ctx, next) => {
                               on conversations.id = posts.conversation_id
                               left join users 
                               on conversations."user_id" = users.id
-                              where conversations.project_group_id = 1
+                              where conversations.project_group_id = ${id}
                               group by conversations.id, users."name"
                               `;
   const participantsQuery = `select users."name", users."id" as user_id, participant_roles."name" as role_name, level, positions."name" as position, users."avatar"
