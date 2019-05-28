@@ -119,7 +119,7 @@ class L extends Component {
             </Row>
 
             <Switch>
-              {/* <Route path="/admin" component={AdminLayout} /> */}
+              <Route path="/admin" component={AdminLayout} />
               <Route path="/" component={UserLayout} />
             </Switch>
           </div>
