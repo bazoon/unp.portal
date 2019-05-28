@@ -292,7 +292,7 @@ router.post("/subscribe", async ctx => {
   const { groupId } = ctx.request.body;
   const userId = ctx.user.id;
 
-  const role = models.ParticipantRole.findOne();
+  const role = await models.ParticipantRole.findOne();
 
   const participant = await models.Participant.create({
     ProjectGroupId: groupId,
