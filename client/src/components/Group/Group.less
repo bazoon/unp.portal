@@ -3,9 +3,23 @@
   padding-left: 40px;
   padding-right: 24px;
 
+  &__files {
+    &-title {
+      font-family: OpenSans-Bold;
+      font-size: 16px;
+      color: #595959;
+      margin-bottom: 28px;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0px;
+    }
+  }
+
   &__add-region {
     display: flex;
     justify-content: center;
+    cursor: pointer;
     align-items: center;
     border: dotted 1px #979797;
     height: 52px;
@@ -34,6 +48,8 @@
       background-color: #423319;
       color: white;
       height: 100%;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
     }
 
     &-title {
@@ -48,6 +64,26 @@
     &-description {
       font-family: OpenSans, serif;
       font-size: 18px;
+      margin-bottom: 21px;
+    }
+
+    &-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    &-show-link {
+      cursor: pointer;
+    }
+
+    &-rest-description {
+      padding: 24px 32px;
+      background: #fff;
+      margin-bottom: 45px;
+      font-size: 18px;
+      color: #000000;
+      line-height: 27px;
     }
   }
 

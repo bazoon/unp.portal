@@ -8,8 +8,10 @@ import getFileIcon from "../../utils/getFileIcon";
 import getFileName from "../../utils/getFileName";
 import cn from "classnames";
 
-import SendIcon from "../../../images/send.svg";
-import UploadIcon from "../../../images/upload.svg";
+import SendIcon from "../../../images/send";
+import UploadIcon from "../../../images/upload";
+
+const LEVEL_PADDING = 24;
 
 class GroupPosts extends Component {
   static propTypes = {
@@ -203,7 +205,7 @@ class GroupPosts extends Component {
     return (
       <div className="group__post-form-container">
         <div className="group__post-form">
-          <Icon
+          {/* <Icon
             type="paper-clip"
             style={{
               fontSize: "16px",
@@ -218,6 +220,22 @@ class GroupPosts extends Component {
             placeholder="Написать комментарий"
             onKeyPress={e => this.handleReplyKeyPress(e, post)}
             onChange={e => this.handleReplyChange(e, post.id)}
+          /> */}
+          <Input
+            style={{ marginBottom: "8px" }}
+            value={reply}
+            placeholder="Написать комментарий"
+            onKeyPress={e => this.handleReplyKeyPress(e, post)}
+            onChange={e => this.handleReplyChange(e, post.id)}
+            suffix={
+              <>
+                <UploadIcon
+                  onClick={() => this.handleReplyFileUpload(post.id)}
+                  style={{ marginRight: "12px" }}
+                />
+                <SendIcon />
+              </>
+            }
           />
         </div>
         {this.renderReplyUploadFiles(post.id)}
@@ -273,6 +291,7 @@ class GroupPosts extends Component {
   }
 
   renderPost(post, level, parentPost, isFirstLevel) {
+    console.log(level);
     const { currentPost, postRepliesVisible } = this.state;
     const date = moment(post.createdAt).fromNow();
     const postId = `post_${post.id}`;
@@ -320,7 +339,8 @@ class GroupPosts extends Component {
           {postRepliesVisible[post.id] && (
             <div>{this.renderPostReply(post)}</div>
           )}
-          {post.children && this.renderPosts(post.children, level, post)}
+          {post.children &&
+            this.renderPosts(post.children, level + LEVEL_PADDING, post)}
           {hasMorePosts && (
             <div
               className="group__post-show-more"
@@ -349,8 +369,11 @@ class GroupPosts extends Component {
             onChange={this.handlePostChange}
             suffix={
               <>
-                <Icon type="folder-add" onClick={this.handleFileUpload} />
-                <Icon type="right" />
+                <UploadIcon
+                  onClick={this.handleFileUpload}
+                  style={{ marginRight: "12px" }}
+                />
+                <SendIcon />
               </>
             }
           />

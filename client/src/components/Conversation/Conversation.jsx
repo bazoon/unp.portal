@@ -4,7 +4,6 @@ import { Actions } from "jumpstate";
 import moment from "moment";
 import { Input, Tooltip, Icon, Button, Breadcrumb, Row, Col } from "antd";
 import { HashLink } from "react-router-hash-link";
-
 import Posts from "../Group/GroupPosts";
 import "./Conversation.less";
 import { Link } from "react-router-dom";

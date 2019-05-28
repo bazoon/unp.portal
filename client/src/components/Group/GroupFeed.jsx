@@ -8,17 +8,18 @@ import Posts from "./GroupPosts";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import ConversationModal from "./Conversation/ConversationModal";
-import chatWaitSvg from "../../../images/chat_wait.svg";
+import ChatWaitIcon from "../../../images/chat_wait";
+import RightIcon from "../../../images/arrow_right";
+import UpIcon from "../../../images/arrow_up";
 
-// const ChatIcon = props => <Icon component={chatWaitSvg} {...props} />;
-
-const { Sider } = Layout;
+const maxDescriptionLength = 600;
 
 class GroupFeed extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isConversationModalVisible: false
+      isConversationModalVisible: false,
+      isShortMode: true
     };
   }
 
@@ -27,6 +28,7 @@ class GroupFeed extends Component {
     Actions.getProjectGroup({ id });
     Actions.getOwnGroupPosts(id);
   }
+
   handleCreateConversation = () => {
     this.setState({
       isConversationModalVisible: true
@@ -76,6 +78,12 @@ class GroupFeed extends Component {
     });
 
     return Actions.sendGroupPost({ id, formData });
+  };
+
+  handleToggleMore = () => {
+    this.setState({
+      isShortMode: !this.state.isShortMode
+    });
   };
 
   renderAddRegion() {
@@ -155,11 +163,11 @@ class GroupFeed extends Component {
                 {conversation.description}
               </div>
               <div className="group__conversation-footer">
-                <img
+                <ChatWaitIcon
                   style={{ marginRight: "8px" }}
-                  src={chatWaitSvg.slice(1)}
                   className="svg-icon"
                 />
+
                 <Link to={link}>{pluralizeComments(conversation.count)}</Link>
               </div>
             </div>
@@ -169,8 +177,29 @@ class GroupFeed extends Component {
     );
   }
 
+  renderRestDescription(description) {
+    return <div className="group__feed-rest-description">{description}</div>;
+  }
+
+  renderFiles() {
+    return (
+      <div className="group__files">
+        <div className="group__files-title">Прикрепленные файлы</div>
+        <ul>
+          <li>Паспорт проекта.pdf</li>
+          <li>Паспорт проекта.pdf</li>
+        </ul>
+      </div>
+    );
+  }
+
   render() {
     const { id, title, avatar, description } = this.props.group;
+    const { isShortMode } = this.state;
+    const shortDescription =
+      description && description.slice(0, maxDescriptionLength);
+    const restDescription =
+      description && description.slice(maxDescriptionLength);
 
     return (
       <>
@@ -184,12 +213,35 @@ class GroupFeed extends Component {
           <Breadcrumb.Item>{title}</Breadcrumb.Item>
         </Breadcrumb>
 
-        <Row type="flex" gutter={37}>
+        <Row type="flex">
           <Col span={16}>
             <div className="group__feed">
               <div className="group__feed-header">
                 <div className="group__feed-title">{title}</div>
-                <div className="group__feed-description">{description}</div>
+                <div className="group__feed-description">
+                  {shortDescription}
+                </div>
+                <div className="group__feed-footer">
+                  <div
+                    className="group__feed-show-link"
+                    onClick={this.handleToggleMore}
+                  >
+                    {isShortMode ? (
+                      <span>
+                        <RightIcon style={{ marginRight: "4px" }} />
+                        Показать больше информации
+                      </span>
+                    ) : (
+                      <span>
+                        <UpIcon style={{ marginRight: "4px" }} />
+                        Показать меньше информации
+                      </span>
+                    )}
+                  </div>
+                  <div className="group__feed-files-info">
+                    3 прикрепленных файла
+                  </div>
+                </div>
               </div>
             </div>
           </Col>
@@ -205,6 +257,7 @@ class GroupFeed extends Component {
         <div style={{ marginBottom: "40px" }} />
         <Row gutter={37}>
           <Col span={16}>
+            {!isShortMode && this.renderRestDescription(restDescription)}
             {this.renderAddRegion()}
             {this.renderConversations()}
             <Posts
@@ -213,6 +266,7 @@ class GroupFeed extends Component {
               onSend={this.handleSend}
             />
           </Col>
+          <Col span={8}>{!isShortMode && this.renderFiles()}</Col>
         </Row>
         <ConversationModal
           projectGroupId={id}
