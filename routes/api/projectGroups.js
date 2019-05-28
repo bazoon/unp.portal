@@ -38,9 +38,11 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
       })
     );
 
+    const role = await models.ParticipantRole.findOne();
     return models.Participant.create({
       ProjectGroupId: group.id,
-      UserId: userId
+      UserId: userId,
+      participantRoleId: role.id
     });
   });
   ctx.body = result;
@@ -290,12 +292,12 @@ router.post("/subscribe", async ctx => {
   const { groupId } = ctx.request.body;
   const userId = ctx.user.id;
 
-  console.log(groupId, userId);
+  const role = models.ParticipantRole.findOne();
 
   const participant = await models.Participant.create({
     ProjectGroupId: groupId,
     UserId: userId,
-    participantRoleId: 4
+    participantRoleId: role.id
   });
 
   const notification = await models.NotificationPreference.create({
