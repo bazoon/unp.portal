@@ -13,6 +13,7 @@ import RightIcon from "../../../images/arrow_right";
 import UpIcon from "../../../images/arrow_up";
 import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
+import RequestButton from "../ProjectGroups/RequestButton";
 import Participants from "./Participants";
 import FileIcon from "../../../images/file";
 import { pluralizeFiles } from "../../utils/pluralize";
@@ -191,6 +192,36 @@ class GroupFeed extends Component {
     );
   }
 
+  renderLeaveButton(id) {
+    return (
+      <LeaveButton
+        style={{ width: "100%" }}
+        groupId={id}
+        onClick={this.handleUnsubscribe}
+      />
+    );
+  }
+
+  renderJoinButton(id) {
+    return (
+      <JoinButton
+        style={{ width: "100%" }}
+        groupId={id}
+        onClick={this.handleSubscribe}
+      />
+    );
+  }
+
+  renderRequestButton(id) {
+    return (
+      <RequestButton
+        style={{ width: "100%" }}
+        groupId={id}
+        onClick={this.handleSubscribe}
+      />
+    );
+  }
+
   render() {
     const {
       id,
@@ -199,7 +230,9 @@ class GroupFeed extends Component {
       description,
       participant,
       participants,
-      files
+      files,
+      isOpen,
+      isAdmin
     } = this.props.group;
 
     const { isShortMode } = this.state;
@@ -278,19 +311,16 @@ class GroupFeed extends Component {
             <div className="group__add-info">
               <Participants participants={participants} />
 
-              {participant ? (
-                <LeaveButton
-                  style={{ width: "100%" }}
-                  groupId={id}
-                  onClick={this.handleUnsubscribe}
-                />
-              ) : (
-                <JoinButton
-                  style={{ width: "100%" }}
-                  groupId={id}
-                  onClick={this.handleSubscribe}
-                />
-              )}
+              {(isOpen || isAdmin) &&
+                (participant
+                  ? this.renderLeaveButton(id)
+                  : this.renderJoinButton(id))}
+
+              {!isOpen &&
+                !isAdmin &&
+                (participant
+                  ? this.renderLeaveButton(id)
+                  : this.renderRequestButton(id))}
             </div>
           </Col>
         </Row>

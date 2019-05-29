@@ -3,6 +3,9 @@ import { Button, Popover, Icon, Breadcrumb } from "antd";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { pluralize } from "../../utils/pluralize";
+import JoinButton from "./JoinButton";
+import LeaveButton from "./LeaveButton";
+import RequestButton from "./RequestButton";
 
 export class ProjectGroup extends Component {
   static propTypes = {
@@ -27,42 +30,17 @@ export class ProjectGroup extends Component {
     onSubscribe(group.id);
   };
 
-  renderJoinButton = () => {
-    return (
-      <Button
-        className="project-group__join-button"
-        style={{ marginLeft: "24px" }}
-        onClick={this.handleSubscribe}
-      >
-        Присоединиться
-      </Button>
-    );
-  };
+  renderLeaveButton(id) {
+    return <LeaveButton groupId={id} onClick={this.handleUnsubscribe} />;
+  }
 
-  renderRequestButton = () => {
-    return (
-      <Button
-        className="project-group__join-button"
-        style={{ marginLeft: "24px" }}
-        onClick={this.handleSubscribe}
-      >
-        Подать заявку
-      </Button>
-    );
-  };
+  renderJoinButton(id) {
+    return <JoinButton groupId={id} onClick={this.handleSubscribe} />;
+  }
 
-  renderOnReviewButton = () => {
-    return (
-      <Button
-        disabled
-        className="project-group__leave-button"
-        style={{ marginLeft: "24px" }}
-        onClick={this.handleSubscribe}
-      >
-        На рассмотрении
-      </Button>
-    );
-  };
+  renderRequestButton(id) {
+    return <RequestButton groupId={id} onClick={this.handleSubscribe} />;
+  }
 
   renderLeaveButton = () => {
     return (
@@ -110,13 +88,15 @@ export class ProjectGroup extends Component {
           </div>
 
           {(isOpen || isAdmin) &&
-            (participant ? this.renderLeaveButton() : this.renderJoinButton())}
+            (participant
+              ? this.renderLeaveButton(id)
+              : this.renderJoinButton(id))}
 
           {!isOpen &&
             !isAdmin &&
             (participant
-              ? this.renderLeaveButton()
-              : this.renderRequestButton())}
+              ? this.renderLeaveButton(id)
+              : this.renderRequestButton(id))}
         </div>
       </>
     );
