@@ -15,6 +15,7 @@ import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
 import Participants from "./Participants";
 import FileIcon from "../../../images/file";
+import cn from "classnames";
 
 const maxDescriptionSentences = 10;
 
@@ -23,7 +24,8 @@ class GroupFeed extends Component {
     super(props);
     this.state = {
       isConversationModalVisible: false,
-      isShortMode: true
+      isShortMode: true,
+      isTitleOver: false
     };
   }
 
@@ -98,6 +100,18 @@ class GroupFeed extends Component {
   handleUnsubscribe = () => {
     const { id } = this.props.group;
     Actions.postUnsubscribeGroup({ groupId: id });
+  };
+
+  handleTitleOver = () => {
+    this.setState({
+      isTitleOver: true
+    });
+  };
+
+  handleTitleOut = () => {
+    this.setState({
+      isTitleOver: false
+    });
   };
 
   renderAddRegion() {
@@ -190,6 +204,10 @@ class GroupFeed extends Component {
     const restDescription =
       sentences && `${sentences.slice(maxDescriptionSentences).join(".")}.`;
 
+    const titleCls = cn("group__feed-title", {
+      "group__feed-title_over": this.state.isTitleOver
+    });
+
     return (
       <>
         <Breadcrumb>
@@ -211,7 +229,13 @@ class GroupFeed extends Component {
               }}
             >
               <div className="group__feed-header">
-                <div className="group__feed-title">{title}</div>
+                <div
+                  onMouseEnter={this.handleTitleOver}
+                  onMouseLeave={this.handleTitleOut}
+                  className={titleCls}
+                >
+                  {title}
+                </div>
                 <div className="group__feed-description">
                   {shortDescription}
                 </div>
