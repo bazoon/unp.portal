@@ -15,6 +15,7 @@ import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
 import Participants from "./Participants";
 import FileIcon from "../../../images/file";
+import { pluralizeFiles } from "../../utils/pluralize";
 import cn from "classnames";
 
 const maxDescriptionSentences = 10;
@@ -194,7 +195,8 @@ class GroupFeed extends Component {
       avatar,
       description,
       participant,
-      participants
+      participants,
+      files
     } = this.props.group;
 
     const { isShortMode } = this.state;
@@ -257,7 +259,7 @@ class GroupFeed extends Component {
                     )}
                   </div>
                   <div className="group__feed-files-info">
-                    3 прикрепленных файла
+                    {pluralizeFiles(files.length)}
                   </div>
                 </div>
               </div>

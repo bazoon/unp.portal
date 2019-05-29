@@ -5,7 +5,7 @@ import findInTree from "../../utils/findPostInTree";
 const projectGroups = State({
   initial: {
     groups: [],
-    group: { participants: [], conversations: [] },
+    group: { participants: [], conversations: [], files: [] },
     posts: []
   },
   setProjectGroup(state, payload) {
