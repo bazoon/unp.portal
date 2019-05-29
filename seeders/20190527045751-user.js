@@ -263,6 +263,45 @@ module.exports = {
           avatar: "5.jpg",
           created_at: "2019-05-23 17:15:29.054+05",
           updated_at: "2019-05-23 17:15:29.054+05"
+        },
+        {
+          id: 16,
+          name: "Зарина",
+          login: "zarina",
+          password:
+            "$2a$08$Ntx5JmtxPpGSCIMilS7yOetJ0BJBIFy1lkFsxWdFGRRXJ5YCaYEqq",
+          is_admin: true,
+          position_id: 5,
+          organization_id: 1,
+          avatar: "5.jpg",
+          created_at: "2019-05-23 17:15:29.054+05",
+          updated_at: "2019-05-23 17:15:29.054+05"
+        },
+        {
+          id: 17,
+          name: "Ахмад",
+          login: "sveta",
+          password:
+            "$2a$08$5SiljwcEEbB6j4Sm6hDWMuwKlsAyq7fRN2biYcrW1muV4FZgqnvyC",
+          is_admin: true,
+          position_id: 5,
+          organization_id: 1,
+          avatar: "5.jpg",
+          created_at: "2019-05-23 17:15:29.054+05",
+          updated_at: "2019-05-23 17:15:29.054+05"
+        },
+        {
+          id: 18,
+          name: "1",
+          login: "1",
+          password:
+            "$2a$08$wtaPpWYO3DvQRms2gVrmAu5HL0O5/4NFu.8uD8sVIOTxBVxSAshr6",
+          is_admin: true,
+          position_id: 5,
+          organization_id: 1,
+          avatar: "5.jpg",
+          created_at: "2019-05-23 17:15:29.054+05",
+          updated_at: "2019-05-23 17:15:29.054+05"
         }
       ],
       {}
