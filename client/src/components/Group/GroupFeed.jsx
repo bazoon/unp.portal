@@ -169,6 +169,9 @@ class GroupFeed extends Component {
 
   renderFiles() {
     const { files } = this.props.group;
+    if (files.length === 0) {
+      return null;
+    }
     return (
       <div className="group__files">
         <div className="group__files-title">Прикрепленные файлы</div>
@@ -203,8 +206,14 @@ class GroupFeed extends Component {
     const sentences = description && description.split(".");
     const shortDescription =
       sentences && `${sentences.slice(0, maxDescriptionSentences).join(".")}.`;
-    const restDescription =
-      sentences && `${sentences.slice(maxDescriptionSentences).join(".")}.`;
+    let restDescription =
+      sentences && `${sentences.slice(maxDescriptionSentences).join(".")}`;
+    if (
+      restDescription &&
+      restDescription[restDescription.length - 1] !== "."
+    ) {
+      restDescription = `${restDescription}.`;
+    }
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -286,7 +295,7 @@ class GroupFeed extends Component {
           </Col>
         </Row>
 
-        {!isShortMode && (
+        {!isShortMode && (restDescription || files.length > 0) && (
           <Row type="flex">
             <Col span={16}>{this.renderRestDescription(restDescription)}</Col>
             <Col span={8}>{this.renderFiles()}</Col>

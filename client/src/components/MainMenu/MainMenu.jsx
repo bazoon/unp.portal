@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import { Menu } from "antd";
 import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
+import GroupsIcon from "../../../images/card_view";
+import MessagesIcon from "../../../images/chat_wait";
+import DocIcon from "../../../images/document";
 
 const { SubMenu } = Menu;
 
@@ -10,7 +13,7 @@ class MainMenu extends Component {
     const { location } = this.props;
     const { pathname } = location;
     const { isAdmin } = this.props.login;
-    console.log(pathname);
+
     return (
       <Menu
         activeKey={pathname}
@@ -20,7 +23,26 @@ class MainMenu extends Component {
       >
         <Menu.Item key="/groups">
           <NavLink to="/groups" activeClassName="active">
-            <span>Группы</span>
+            <div className="main-menu__item">
+              <GroupsIcon />
+              Группы
+            </div>
+          </NavLink>
+        </Menu.Item>
+        <Menu.Item key="/events/messages">
+          <NavLink to="/events/messages">
+            <div className="main-menu__item">
+              <MessagesIcon />
+              Собщения
+            </div>
+          </NavLink>
+        </Menu.Item>
+        <Menu.Item key="/events/docs">
+          <NavLink to="/events/docs">
+            <div className="main-menu__item">
+              <DocIcon />
+              Документы
+            </div>
           </NavLink>
         </Menu.Item>
         <Menu.Item key="/events/my">
@@ -28,11 +50,7 @@ class MainMenu extends Component {
             <span>События</span>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/conversations">
-          <NavLink to="/conversations">
-            <span>Мои обсуждения</span>
-          </NavLink>
-        </Menu.Item>
+
         {isAdmin && (
           <Menu.Item key="/admin/users">
             <NavLink to="/admin/users">
