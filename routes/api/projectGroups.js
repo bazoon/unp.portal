@@ -22,11 +22,12 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
   await uploadFiles(files);
   await uploadFiles(docs);
 
-  const result = await models.ProjectGroup.create({
+  const group = await models.ProjectGroup.create({
     title: title,
     avatar: files && files[0] && files[0].name,
-    is_open: isOpen,
-    description: description
+    isOpen: isOpen === "true",
+    description: description,
+    userId: userId
   }).then(async group => {
     await models.File.bulkCreate(
       docs.map(doc => {
@@ -45,7 +46,9 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
       participantRoleId: role.id
     });
   });
-  ctx.body = result;
+  ctx.body = {
+    id: group.id
+  };
 });
 
 function getGroups(userId, query, countQuery) {
@@ -80,14 +83,12 @@ function getGroups(userId, query, countQuery) {
 router.get("/list", async (ctx, next) => {
   const userId = ctx.user.id;
 
-  const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
+  const query = `select title, avatar, id, is_open, user_id from
               project_groups`;
 
   const countQuery = `select project_groups.id, count(*) from project_groups, participants
                     where (project_groups.id = participants.project_group_id)
                     group by project_groups.id`;
-
-  // const groups = await getGroups(userId, query, countQuery);
 
   const groupsResult = await models.sequelize.query(query);
 
@@ -119,7 +120,8 @@ router.get("/list", async (ctx, next) => {
       isOpen: group.is_open,
       participantsCount: participantsResult[0][0].count,
       conversationsCount: conversationsResult[0][0].count,
-      participant: participant !== null
+      participant: participant !== null,
+      isAdmin: group.user_id == userId
     };
   });
 
@@ -161,7 +163,7 @@ router.get("/get", async (ctx, next) => {
   const userId = ctx.user.id;
 
   const query = `select project_groups.title, project_groups.avatar, project_groups.id, 
-              project_groups.is_open, project_groups.description from
+              project_groups.is_open, project_groups.description, user_id from
               project_groups where project_groups.id = ${id}`;
 
   const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
@@ -204,6 +206,7 @@ router.get("/get", async (ctx, next) => {
     description: group.description,
     avatar: getUploadFilePath(group.avatar),
     isOpen: group.is_open,
+    isAdmin: group.user_id == userId,
     conversations: conversations,
     files: files.map(file => {
       return {

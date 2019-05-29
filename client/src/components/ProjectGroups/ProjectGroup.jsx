@@ -39,6 +39,31 @@ export class ProjectGroup extends Component {
     );
   };
 
+  renderRequestButton = () => {
+    return (
+      <Button
+        className="project-group__join-button"
+        style={{ marginLeft: "24px" }}
+        onClick={this.handleSubscribe}
+      >
+        Подать заявку
+      </Button>
+    );
+  };
+
+  renderOnReviewButton = () => {
+    return (
+      <Button
+        disabled
+        className="project-group__leave-button"
+        style={{ marginLeft: "24px" }}
+        onClick={this.handleSubscribe}
+      >
+        На рассмотрении
+      </Button>
+    );
+  };
+
   renderLeaveButton = () => {
     return (
       <Button
@@ -60,7 +85,8 @@ export class ProjectGroup extends Component {
       isOpen,
       participantsCount,
       conversationsCount,
-      participant
+      participant,
+      isAdmin
     } = group;
 
     const conversationPlurals = ["обсуждение", "обсуждения", "обсуждений"];
@@ -83,7 +109,14 @@ export class ProjectGroup extends Component {
             </div>
           </div>
 
-          {participant ? this.renderLeaveButton() : this.renderJoinButton()}
+          {(isOpen || isAdmin) &&
+            (participant ? this.renderLeaveButton() : this.renderJoinButton())}
+
+          {!isOpen &&
+            !isAdmin &&
+            (participant
+              ? this.renderLeaveButton()
+              : this.renderRequestButton())}
         </div>
       </>
     );
