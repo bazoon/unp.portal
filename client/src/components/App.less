@@ -3,8 +3,17 @@ body {
 }
 
 .container {
+  width: 100%;
+  height: 100%;
   max-width: 1120px;
   margin: 0 auto;
+  &_content {
+    min-height: calc(100vh - 90px - 16px - 64px - 80px);
+  }
+  &_footer {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .outer-container {
@@ -14,12 +23,15 @@ body {
 
 .header {
   padding: 0;
-  display: flex;
-  padding: 10px;
-  height: 80px;
-  justify-content: space-between;
   margin-bottom: 16px;
-  align-items: center;
+  height: 90px;
+
+  &__container {
+    display: flex;
+    height: 100%;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
 
   &__search {
     &-container {
@@ -34,10 +46,15 @@ body {
     }
   }
 
-  &-icons {
+  &__info {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom: 4px;
+  }
+
+  &__icons {
+    display: flex;
   }
 
   &__logo {
@@ -45,22 +62,19 @@ body {
     width: 300px;
   }
 
-  &__mail {
-    display: flex;
-  }
-
   &__support {
     line-height: 20px;
     display: flex;
     align-items: center;
-
-    &-phone {
-      font-size: 18px;
-    }
+    margin-bottom: 6px;
+    color: #989898;
 
     &-text {
+      font-size: 12px;
+    }
+    &-phone {
       font-size: 14px;
-      font-family: FiraSans;
+      font-family: OpenSansBold;
     }
   }
   &__notification {
@@ -75,14 +89,31 @@ body {
     align-items: center;
 
     &-avatar {
-      width: 50px;
-      height: 50px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       object-fit: cover;
     }
 
     a {
       margin-left: 10px;
+    }
+  }
+}
+
+.footer {
+  background: #fff;
+  margin-top: 64px;
+  height: 80px;
+
+  &__support {
+    color: #989898;
+    &-text {
+      font-size: 12px;
+    }
+    &-phone {
+      font-size: 14px;
+      font-family: OpenSansBold;
     }
   }
 }
@@ -149,6 +180,28 @@ body {
   .ant-menu {
     background-color: #fff;
   }
+}
+
+.logo-wrap {
+  line-height: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.logo-text-wrap {
+  margin-left: 3px;
+}
+
+.logo-text-main {
+  font-family: OpenSansBold;
+  font-size: 18px;
+  color: #989898;
+}
+
+.logo-text {
+  font-size: 11.5px;
+  color: #989898;
 }
 
 // Fonts

@@ -172,7 +172,7 @@ router.get("/get", async (ctx, next) => {
                               where conversations.project_group_id = ${id}
                               group by conversations.id, users."name"
                               `;
-  const participantsQuery = `select users."name", users."id" as user_id, participant_roles."name" as role_name, level, positions."name" as position, users."avatar"
+  const participantsQuery = `select participants."id", users."name", users."id" as user_id, participant_roles."name" as role_name, level, positions."name" as position, users."avatar"
                             from users, participants, participant_roles, positions where
                             (participants.project_group_id = ${id}) and (participants.participant_role_id = participant_roles.id) and 
                             (users.position_id = positions.id) and (participants.user_id = users.id)
@@ -185,6 +185,18 @@ router.get("/get", async (ctx, next) => {
   const participantsResult = await models.sequelize.query(participantsQuery);
   const participants = participantsResult[0];
 
+  const participant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [{ UserId: userId }, { ProjectGroupId: id }]
+    }
+  });
+
+  const files = await models.File.findAll({
+    where: {
+      groupId: id
+    }
+  });
+
   ctx.body = {
     id: group.id,
     isOpen: group.is_open,
@@ -193,7 +205,13 @@ router.get("/get", async (ctx, next) => {
     avatar: getUploadFilePath(group.avatar),
     isOpen: group.is_open,
     conversations: conversations,
-
+    files: files.map(file => {
+      return {
+        id: file.id,
+        name: file.file,
+        url: getUploadFilePath(file.file)
+      };
+    }),
     participants: participants.map(participant => {
       return {
         id: participant.id,
@@ -205,9 +223,7 @@ router.get("/get", async (ctx, next) => {
         avatar: getUploadFilePath(participant.avatar)
       };
     }),
-    participant: !!participants.find(
-      participant => participant.user_id == userId
-    )
+    participant: participant !== null
   };
 });
 

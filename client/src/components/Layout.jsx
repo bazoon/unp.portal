@@ -22,8 +22,11 @@ import GroupFeed from "./Group/GroupFeed";
 import { Actions } from "jumpstate";
 import UserLayout from "./UserLayout";
 import AdminLayout from "./AdminLayout";
+import Logo from "../../images/logo";
+import ColorLogo from "../../images/top-logo";
+import PhoneIcon from "../../images/phone";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Footer } = Layout;
 
 class L extends Component {
   constructor(props) {
@@ -64,27 +67,47 @@ class L extends Component {
     return (
       <BrowserRouter>
         <div className="outer-container">
-          <div className="container">
-            <Row gutter={27}>
-              <Col span={24}>
-                <ChatIcon onClick={this.handleChatClick} />
-                <Chat visible={isChatOpen} onClose={this.handleChatClose} />
-                <Header className="header">
-                  <img
-                    className="header__logo"
-                    src={`${logo.slice(1)}`}
-                    alt="Logo"
-                  />
+          <ChatIcon onClick={this.handleChatClick} />
+          <Chat visible={isChatOpen} onClose={this.handleChatClose} />
 
-                  <div className="main-menu">
-                    <Route
-                      path="/"
-                      component={props => <MainMenu {...props} />}
-                    />
+          <Header className="header">
+            <div className="container">
+              <div className="header__container">
+                <div className="logo-wrap">
+                  <ColorLogo />
+                  <div className="logo-text-wrap">
+                    <div className="logo-text-main">Электронный бюджет</div>
+                    <div className="logo-text">
+                      Управление национальными проектами
+                    </div>
+                  </div>
+                </div>
+
+                <div className="main-menu">
+                  <Route
+                    path="/"
+                    component={props => <MainMenu {...props} />}
+                  />
+                </div>
+
+                <div className="header__info">
+                  <div className="header__support">
+                    <PhoneIcon />
+                    <div style={{ marginLeft: "4px" }}>
+                      <div className="header__support-text">
+                        Техническая поддержка
+                      </div>
+                      <div className="header__support-phone">
+                        8-800-350-02-18
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="header-icons">
-                    <Link to="/profile" style={{ display: "flex" }}>
+                  <div className="header__icons">
+                    <Link
+                      to="/profile"
+                      style={{ display: "flex", marginRight: "8px" }}
+                    >
                       {avatar ? (
                         <img
                           src={avatar}
@@ -95,6 +118,7 @@ class L extends Component {
                         <Icon type="user" className="icon__medium" />
                       )}
                     </Link>
+
                     <div className="header__user">
                       <div>
                         <Popover
@@ -114,15 +138,39 @@ class L extends Component {
                       </div>
                     </div>
                   </div>
-                </Header>
-              </Col>
-            </Row>
+                </div>
+              </div>
+            </div>
+          </Header>
 
+          <div className="container container_content">
             <Switch>
               <Route path="/admin" component={AdminLayout} />
               <Route path="/" component={UserLayout} />
             </Switch>
           </div>
+
+          <Footer className="footer">
+            <div className="container container_footer">
+              <div className="logo-wrap">
+                <Logo />
+                <div className="logo-text-wrap">
+                  <div className="logo-text-main">Электронный бюджет</div>
+                  <div className="logo-text">
+                    Управление национальными проектами
+                  </div>
+                </div>
+              </div>
+              <div className="footer__support">
+                <div>
+                  <div className="footer__support-text">
+                    Техническая поддержка
+                  </div>
+                  <div className="footer__support-phone">8-800-350-02-18</div>
+                </div>
+              </div>
+            </div>
+          </Footer>
         </div>
       </BrowserRouter>
     );

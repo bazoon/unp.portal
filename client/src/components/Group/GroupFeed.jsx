@@ -14,8 +14,9 @@ import UpIcon from "../../../images/arrow_up";
 import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
 import Participants from "./Participants";
+import FileIcon from "../../../images/file";
 
-const maxDescriptionLength = 600;
+const maxDescriptionSentences = 10;
 
 class GroupFeed extends Component {
   constructor(props) {
@@ -119,7 +120,7 @@ class GroupFeed extends Component {
           const date = moment(conversation.created_at).fromNow();
           const link = `${id}/conversation/${conversation.id}`;
           return (
-            <div className="group__conversation">
+            <div key={conversation.id} className="group__conversation">
               <div className="group__conversation-header">
                 <div className="group__conversation-user">
                   Написал &nbsp; {conversation.name}
@@ -152,12 +153,21 @@ class GroupFeed extends Component {
   }
 
   renderFiles() {
+    const { files } = this.props.group;
     return (
       <div className="group__files">
         <div className="group__files-title">Прикрепленные файлы</div>
         <ul>
-          <li>Паспорт проекта.pdf</li>
-          <li>Паспорт проекта.pdf</li>
+          {files.map(file => {
+            return (
+              <li className="group__file">
+                <FileIcon />
+                <a download href={file.url}>
+                  {file.name}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     );
@@ -172,11 +182,13 @@ class GroupFeed extends Component {
       participant,
       participants
     } = this.props.group;
+
     const { isShortMode } = this.state;
+    const sentences = description && description.split(".");
     const shortDescription =
-      description && description.slice(0, maxDescriptionLength);
+      sentences && `${sentences.slice(0, maxDescriptionSentences).join(".")}.`;
     const restDescription =
-      description && description.slice(maxDescriptionLength);
+      sentences && `${sentences.slice(maxDescriptionSentences).join(".")}.`;
 
     return (
       <>
@@ -247,10 +259,17 @@ class GroupFeed extends Component {
             </div>
           </Col>
         </Row>
-        <div style={{ marginBottom: "40px" }} />
+
+        {!isShortMode && (
+          <Row type="flex">
+            <Col span={16}>{this.renderRestDescription(restDescription)}</Col>
+            <Col span={8}>{this.renderFiles()}</Col>
+          </Row>
+        )}
+
         <Row gutter={37}>
           <Col span={16}>
-            {!isShortMode && this.renderRestDescription(restDescription)}
+            <div style={{ marginBottom: "40px" }} />
             {this.renderAddRegion()}
             {this.renderConversations()}
             <Posts
@@ -259,7 +278,6 @@ class GroupFeed extends Component {
               onSend={this.handleSend}
             />
           </Col>
-          <Col span={8}>{!isShortMode && this.renderFiles()}</Col>
         </Row>
         <ConversationModal
           proectGroupId={id}

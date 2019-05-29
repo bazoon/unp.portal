@@ -26,7 +26,6 @@ class App extends Component {
 
   render() {
     const isLoggedIn = this.props.login.token != undefined;
-
     return (
       <HashRouter>
         {isLoggedIn ? (

@@ -4,6 +4,10 @@
   padding-right: 24px;
 
   &__files {
+    background: #fff;
+    padding-top: 24px;
+    padding-left: 24px;
+    height: 100%;
     &-title {
       font-family: OpenSans-Bold;
       font-size: 16px;
@@ -13,6 +17,14 @@
     ul {
       list-style-type: none;
       padding-left: 0px;
+    }
+  }
+
+  &__file {
+    display: flex;
+    align-items: center;
+    svg {
+      margin-right: 4px;
     }
   }
 
@@ -44,15 +56,14 @@
   &__feed {
     height: 100%;
     opacity: 0.8;
-    border-radius: 8px 8px 0 0;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
     background-color: #423319;
     background-blend-mode: multiply;
     &-header {
       padding: 24px 32px 24px 32px;
       color: white;
       height: 100%;
-      border-top-left-radius: 8px;
-      border-bottom-left-radius: 8px;
     }
 
     &-title {
@@ -81,6 +92,7 @@
     }
 
     &-rest-description {
+      height: 100%;
       padding: 24px 32px;
       background: #fff;
       margin-bottom: 45px;

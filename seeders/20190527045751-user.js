@@ -250,6 +250,19 @@ module.exports = {
           avatar: "5.jpg",
           created_at: "2019-05-23 17:15:29.054+05",
           updated_at: "2019-05-23 17:15:29.054+05"
+        },
+        {
+          id: 15,
+          name: "Мамонов Иван Васильевич",
+          login: "sokol",
+          password:
+            "$2a$08$i0OKfjIlkrluyUU2ejHcJej9F8s711WKTvaPKaTU2MwrouxXJsVre",
+          is_admin: true,
+          position_id: 5,
+          organization_id: 1,
+          avatar: "5.jpg",
+          created_at: "2019-05-23 17:15:29.054+05",
+          updated_at: "2019-05-23 17:15:29.054+05"
         }
       ],
       {}
@@ -456,12 +469,20 @@ module.exports = {
           participant_role_id: 4,
           created_at: "2019-05-23 17:15:29.054+05",
           updated_at: "2019-05-23 17:15:29.054+05"
+        },
+        {
+          id: 15,
+          project_group_id: 1,
+          user_id: 15,
+          participant_role_id: 4,
+          created_at: "2019-05-23 17:15:29.054+05",
+          updated_at: "2019-05-23 17:15:29.054+05"
         }
       ],
       {}
     );
 
-    return queryInterface.bulkInsert(
+    queryInterface.bulkInsert(
       "conversations",
       [
         {
@@ -489,6 +510,21 @@ module.exports = {
       ],
       {}
     );
+
+    const promises = [
+      "users",
+      "positions",
+      "organizations",
+      "project_groups",
+      "participant_roles",
+      "participants"
+    ].map(async table => {
+      return await queryInterface.sequelize.query(
+        ` select setval('${table}_id_seq', (select max(id) from ${table}), true)`
+      );
+    });
+
+    return Promise.all(promises);
   },
 
   down: async (queryInterface, Sequelize) => {

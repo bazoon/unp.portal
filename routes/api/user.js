@@ -54,9 +54,10 @@ router.post("/signup", async ctx => {
     ctx.body = "enter password and username!";
   }
 
-  const result = await models.User.findOrCreate({
-    where: { name: userName }
-  }).then(([user, created]) => {
+  try {
+    const [user, created] = await models.User.findOrCreate({
+      where: { name: userName }
+    });
     const hashedPassword = bcrypt.hashSync(password, 8);
 
     const avatar = "";
@@ -69,16 +70,17 @@ router.post("/signup", async ctx => {
         expiresIn: expiresIn
       }
     );
-    return {
+
+    ctx.body = {
       userId: user.id,
       isAdmin: user.isAdmin,
       token,
       userName,
       avatar
     };
-  });
-
-  ctx.body = result;
+  } catch (e) {
+    ctx.body = e;
+  }
 });
 
 module.exports = router;

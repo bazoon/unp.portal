@@ -22,36 +22,35 @@ const { Sider, Content } = Layout;
 class UserLayout extends Component {
   render() {
     return (
-      <div className="container">
-        <Row gutter={27}>
-          <Col span={24}>
-            <Switch>
-              <Route
-                exact
-                path="/groups"
-                component={() => <ProjectGroups type="all" />}
-              />
+      <Row gutter={27}>
+        <Col span={24}>
+          <Switch>
+            <Route
+              exact
+              path="/groups"
+              component={() => <ProjectGroups type="all" />}
+            />
 
-              <Route path="/profile" component={() => <UserProfile />} />
-              <Route
-                exact
-                path="/groups/:id/conversation/:conversationId"
-                component={props => (
-                  <>
-                    <Conversation {...props} />
-                  </>
-                )}
-              />
-              <Route
-                path="/groups/:id"
-                component={props => <GroupFeed {...props} />}
-              />
+            <Route path="/profile" component={() => <UserProfile />} />
+            <Route
+              exact
+              path="/groups/:id/conversation/:conversationId"
+              component={props => (
+                <>
+                  <Conversation {...props} />
+                </>
+              )}
+            />
+            <Route
+              path="/groups/:id"
+              component={props => <GroupFeed {...props} />}
+            />
 
-              <Route path="/events/my" component={EventList} />
-              <Route path="/" component={Feed} />
-            </Switch>
-          </Col>
-          {/* <Col span={8}>
+            <Route path="/events/my" component={EventList} />
+            <Route path="/" component={Feed} />
+          </Switch>
+        </Col>
+        {/* <Col span={8}>
             <Switch>
               <Route
                 exact
@@ -70,8 +69,7 @@ class UserLayout extends Component {
               />
             </Switch>
           </Col> */}
-        </Row>
-      </div>
+      </Row>
     );
   }
 }

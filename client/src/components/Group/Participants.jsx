@@ -36,7 +36,10 @@ class Participants extends Component {
           <div className="group__participants-rest">
             {restFive.map(participant => {
               return (
-                <div className="group__participant-avatar group__participant-avatar_row">
+                <div
+                  key={participant.id}
+                  className="group__participant-avatar group__participant-avatar_row"
+                >
                   <img src={participant.avatar} alt="avatar" />
                 </div>
               );

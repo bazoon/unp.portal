@@ -14,14 +14,14 @@ const projectGroups = State({
     const { groups } = state;
     const group = groups.find(g => g.id === groupId);
     group.participant = false;
-    group.count -= 1;
+    group.participantsCount = +group.participantsCount - 1;
     return { ...state, groups: [...groups] };
   },
   subscribeProjectGroup(state, { groupId }) {
     const { groups } = state;
     const group = groups.find(g => g.id === groupId);
     group.participant = true;
-    group.count += 1;
+    group.participantsCount = +group.participantsCount + 1;
     return { ...state, groups: [...groups] };
   }
 });
