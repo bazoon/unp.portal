@@ -1,8 +1,6 @@
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
-  .BundleAnalyzerPlugin;
 
 const miniCssExtractPlugin = new MiniCssExtractPlugin({
   filename: "[name].css",
@@ -134,7 +132,6 @@ module.exports = {
       template: "./src/index.html",
       filename: "./index.html"
     }),
-    miniCssExtractPlugin,
-    new BundleAnalyzerPlugin()
+    miniCssExtractPlugin
   ]
 };
