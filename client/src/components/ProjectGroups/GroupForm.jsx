@@ -134,7 +134,6 @@ class GroupForm extends Component {
   renderStep3(step) {
     const { getFieldDecorator } = this.props.form;
     const { backgrounds } = this.props;
-    console.log(backgrounds);
     const style = step !== 2 ? { display: "none" } : { display: "block" };
 
     return (

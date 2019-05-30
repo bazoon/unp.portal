@@ -554,7 +554,8 @@ module.exports = {
       "organizations",
       "project_groups",
       "participant_roles",
-      "participants"
+      "participants",
+      "conversations"
     ].map(async table => {
       return await queryInterface.sequelize.query(
         ` select setval('${table}_id_seq', (select max(id) from ${table}), true)`

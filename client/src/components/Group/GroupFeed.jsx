@@ -30,6 +30,8 @@ import { pluralizeFiles } from "../../utils/pluralize";
 import cn from "classnames";
 import SelectBgIcon from "../../../images/selectBg";
 import BackgroundSlider from "./BackgroundSlider";
+import EditIcon from "../../../images/edit";
+import DoneEditIcon from "../../../images/done-edit";
 
 const maxDescriptionSentences = 10;
 
@@ -39,8 +41,11 @@ class GroupFeed extends Component {
     this.state = {
       isConversationModalVisible: false,
       isShortMode: true,
-      isTitleOver: false
+      isTitleOver: false,
+      isTitleEditing: false,
+      isShortDescriptionEditing: false
     };
+    this.editingFields = {};
   }
 
   componentDidMount() {
@@ -48,6 +53,18 @@ class GroupFeed extends Component {
     Actions.getProjectGroup({ id });
     Actions.getOwnGroupPosts(id);
     Actions.getProjectGroupsBackgrounds();
+  }
+
+  componentWillUnmount() {
+    if (this.titleEditCancel) {
+      document.body.removeEventListener("click", this.titleEditCancel);
+      document.body.removeEventListener(
+        "click",
+        this.shortDescriptionEditCancel
+      );
+      this.titleEditCancel = null;
+      this.shortDescriptionEditCancel = null;
+    }
   }
 
   handleCreateConversation = () => {
@@ -134,19 +151,98 @@ class GroupFeed extends Component {
     Actions.postUpdateBackground({ groupId: id, backgroundId });
   };
 
+  handleEditTitle = () => {
+    this.setState({
+      isTitleEditing: true
+    });
+
+    this.titleEditCancel = document.body.addEventListener("click", e => {
+      if (!e.target.closest(".group__feed-title")) {
+        this.handleCancelEditTitle();
+      }
+    });
+  };
+
+  handleDoneEditTitle = () => {
+    const { id } = this.props.group;
+    if (this.editingFields.title) {
+      Actions.postUpdateProjectGroupTitle({
+        groupId: id,
+        title: this.editingFields.title
+      });
+    }
+    this.handleCancelEditTitle();
+  };
+
+  handleCancelEditTitle = () => {
+    this.setState({
+      isTitleEditing: false
+    });
+    document.body.removeEventListener("click", this.titleEditCancel);
+    this.titleEditCancel = null;
+  };
+
+  handleEditShortDescription = () => {
+    this.setState({
+      isShortDescriptionEditing: true
+    });
+
+    this.shortDescriptionEditCancel = document.body.addEventListener(
+      "click",
+      e => {
+        if (!e.target.closest(".group__feed-description")) {
+          this.handleCancelEditShortDescription();
+        }
+      }
+    );
+  };
+
+  handleDoneEditShortDescription = () => {
+    const { id } = this.props.group;
+    if (this.editingFields.shortDescription) {
+      Actions.postUpdateProjectGroupShortDescription({
+        groupId: id,
+        shortDescription: this.editingFields.shortDescription
+      });
+    }
+    this.handleCancelEditShortDescription();
+  };
+
+  handleCancelEditShortDescription = () => {
+    this.setState({
+      isShortDescriptionEditing: false
+    });
+    document.body.removeEventListener("click", this.shortDescriptionEditCancel);
+    this.shortDescriptionEditCancel = null;
+  };
+
+  handleChangeField = (field, e) => {
+    this.editingFields = {
+      [field]: e.target.value
+    };
+  };
+
   renderAddRegion() {
     return (
       <div
         className="group__add-region"
         onClick={this.handleCreateConversation}
       >
-        Добавить запись в группе
+        Добавить обсуждение в группе
       </div>
     );
   }
 
   renderConversations() {
     const { id, conversations } = this.props.group;
+
+    if (conversations.length === 0) {
+      return (
+        <div className="group__conversations">
+          <div className="group__conversations-empty">Записей пока нет</div>
+        </div>
+      );
+    }
 
     return (
       <div className="group__conversations">
@@ -267,6 +363,7 @@ class GroupFeed extends Component {
       title,
       avatar,
       description,
+      shortDescription,
       participant,
       participants,
       files,
@@ -274,18 +371,11 @@ class GroupFeed extends Component {
       isAdmin
     } = this.props.group;
 
-    const { isShortMode } = this.state;
-    const sentences = description && description.split(".");
-    const shortDescription =
-      sentences && `${sentences.slice(0, maxDescriptionSentences).join(".")}.`;
-    let restDescription =
-      sentences && `${sentences.slice(maxDescriptionSentences).join(".")}`;
-    if (
-      restDescription &&
-      restDescription[restDescription.length - 1] !== "."
-    ) {
-      restDescription = `${restDescription}.`;
-    }
+    const {
+      isShortMode,
+      isTitleEditing,
+      isShortDescriptionEditing
+    } = this.state;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -317,10 +407,43 @@ class GroupFeed extends Component {
                   onMouseLeave={this.handleTitleOut}
                   className={titleCls}
                 >
-                  {title}
+                  {isTitleEditing ? (
+                    <Input.TextArea
+                      className="group__feed-title-editor"
+                      defaultValue={title}
+                      rows={2}
+                      onChange={this.handleChangeField.bind(this, "title")}
+                    />
+                  ) : (
+                    title
+                  )}
+                  {isTitleEditing ? (
+                    <DoneEditIcon onClick={this.handleDoneEditTitle} />
+                  ) : (
+                    <EditIcon onClick={this.handleEditTitle} />
+                  )}
                 </div>
                 <div className="group__feed-description">
-                  {shortDescription}
+                  {isShortDescriptionEditing ? (
+                    <Input.TextArea
+                      className="group__feed-description-editor"
+                      defaultValue={shortDescription}
+                      rows={7}
+                      onChange={this.handleChangeField.bind(
+                        this,
+                        "shortDescription"
+                      )}
+                    />
+                  ) : (
+                    shortDescription
+                  )}
+                  {isShortDescriptionEditing ? (
+                    <DoneEditIcon
+                      onClick={this.handleDoneEditShortDescription}
+                    />
+                  ) : (
+                    <EditIcon onClick={this.handleEditShortDescription} />
+                  )}
                 </div>
                 <div className="group__feed-footer">
                   <div
@@ -407,10 +530,16 @@ class GroupFeed extends Component {
           </Col>
         </Row>
 
-        {!isShortMode && (restDescription || files.length > 0) && (
+        {!isShortMode && files.length > 0 && (
           <Row type="flex">
-            <Col span={16}>{this.renderRestDescription(restDescription)}</Col>
-            <Col span={8}>{this.renderFiles()}</Col>
+            {description ? (
+              <>
+                <Col span={16}>{this.renderRestDescription(description)}</Col>
+                <Col span={8}>{this.renderFiles()}</Col>
+              </>
+            ) : (
+              <Col span={24}>{this.renderFiles()}</Col>
+            )}
           </Row>
         )}
 
@@ -419,11 +548,6 @@ class GroupFeed extends Component {
             <div style={{ marginBottom: "40px" }} />
             {this.renderAddRegion()}
             {this.renderConversations()}
-            <Posts
-              posts={this.props.posts}
-              onReplySend={this.handleReplySend}
-              onSend={this.handleSend}
-            />
           </Col>
         </Row>
         <ConversationModal

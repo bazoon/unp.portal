@@ -184,7 +184,7 @@ router.get("/get", async (ctx, next) => {
     isOpen: group.is_open,
     title: group.title,
     description: group.description,
-    description: group.short_description,
+    shortDescription: group.short_description,
     avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
     isAdmin: group.user_id == userId,
@@ -335,6 +335,40 @@ router.post("/backgrounds/update", async ctx => {
   await models.ProjectGroup.update(
     {
       backgroundId
+    },
+    {
+      where: {
+        id: groupId
+      }
+    }
+  );
+
+  ctx.body = "ok";
+});
+
+router.post("/update/title", async ctx => {
+  const { groupId, title } = ctx.request.body;
+
+  await models.ProjectGroup.update(
+    {
+      title
+    },
+    {
+      where: {
+        id: groupId
+      }
+    }
+  );
+
+  ctx.body = "ok";
+});
+
+router.post("/update/shortDescription", async ctx => {
+  const { groupId, shortDescription } = ctx.request.body;
+
+  await models.ProjectGroup.update(
+    {
+      shortDescription
     },
     {
       where: {

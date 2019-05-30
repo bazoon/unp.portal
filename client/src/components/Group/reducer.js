@@ -70,6 +70,16 @@ const projectGroups = State({
       ...state,
       group: { ...state.group, conversations: [...conversations] }
     };
+  },
+  updateProjectGroupTitle(state, { title }) {
+    const { group } = state;
+    group.title = title;
+    return { ...state, group: { ...group } };
+  },
+  updateProjectGroupShortDescription(state, { shortDescription }) {
+    const { group } = state;
+    group.shortDescription = shortDescription;
+    return { ...state, group: { ...group } };
   }
 });
 
@@ -166,6 +176,20 @@ Effect("postUpdateBackground", payload => {
   return api.post("api/projectGroups/backgrounds/update", payload).then(() => {
     Actions.getProjectGroup({ id: payload.groupId });
   });
+});
+
+Effect("postUpdateProjectGroupTitle", payload => {
+  return api.post("api/projectGroups/update/title", payload).then(() => {
+    Actions.updateProjectGroupTitle(payload);
+  });
+});
+
+Effect("postUpdateProjectGroupShortDescription", payload => {
+  return api
+    .post("api/projectGroups/update/shortDescription", payload)
+    .then(() => {
+      Actions.updateProjectGroupShortDescription(payload);
+    });
 });
 
 export default projectGroups;
