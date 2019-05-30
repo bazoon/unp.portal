@@ -162,4 +162,10 @@ Effect("postCreateConversation", payload => {
     });
 });
 
+Effect("postUpdateBackground", payload => {
+  return api.post("api/projectGroups/backgrounds/update", payload).then(() => {
+    Actions.getProjectGroup({ id: payload.groupId });
+  });
+});
+
 export default projectGroups;

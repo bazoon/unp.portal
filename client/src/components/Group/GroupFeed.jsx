@@ -1,6 +1,16 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Input, Layout, Breadcrumb, Col, Row, Button, Icon } from "antd";
+import {
+  Input,
+  Layout,
+  Breadcrumb,
+  Col,
+  Row,
+  Button,
+  Icon,
+  Carousel,
+  Popover
+} from "antd";
 import { ProjectGroup } from "../ProjectGroups/ProjectGroup";
 import { Actions } from "jumpstate";
 import { pluralizeComments } from "../../utils/pluralize";
@@ -18,6 +28,8 @@ import Participants from "./Participants";
 import FileIcon from "../../../images/file";
 import { pluralizeFiles } from "../../utils/pluralize";
 import cn from "classnames";
+import SelectBgIcon from "../../../images/selectBg";
+import BackgroundSlider from "./BackgroundSlider";
 
 const maxDescriptionSentences = 10;
 
@@ -35,6 +47,7 @@ class GroupFeed extends Component {
     const { id } = this.props.match.params;
     Actions.getProjectGroup({ id });
     Actions.getOwnGroupPosts(id);
+    Actions.getProjectGroupsBackgrounds();
   }
 
   handleCreateConversation = () => {
@@ -114,6 +127,11 @@ class GroupFeed extends Component {
     this.setState({
       isTitleOver: false
     });
+  };
+
+  handleSelectBackground = backgroundId => {
+    const { id } = this.props.group;
+    Actions.postUpdateBackground({ groupId: id, backgroundId });
   };
 
   renderAddRegion() {
@@ -222,6 +240,27 @@ class GroupFeed extends Component {
     );
   }
 
+  renderBgList = () => {
+    const { backgrounds } = this.props;
+    return (
+      <div>
+        {backgrounds.map(bg => {
+          return (
+            <div>
+              <img
+                style={{ width: "60px", height: "60px" }}
+                alt={bg.id}
+                key={bg.id}
+                className="group__feed-background"
+                src={bg.background}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   render() {
     const {
       id,
@@ -300,9 +339,52 @@ class GroupFeed extends Component {
                       </span>
                     )}
                   </div>
-                  <div className="group__feed-files-info">
-                    {pluralizeFiles(files.length)}
-                  </div>
+                  {isAdmin ? (
+                    <Popover
+                      placement="bottom"
+                      content={
+                        <BackgroundSlider
+                          onSelect={this.handleSelectBackground}
+                          backgrounds={this.props.backgrounds}
+                        />
+                      }
+                      trigger="click"
+                    >
+                      <div
+                        style={{
+                          width: "48px",
+                          height: "40px",
+                          position: "relative"
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            background: "#000",
+                            opacity: "0.4",
+                            borderRadius: "8px"
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: "50%",
+                            top: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "16px",
+                            height: "16px"
+                          }}
+                        >
+                          <SelectBgIcon />
+                        </div>
+                      </div>
+                    </Popover>
+                  ) : (
+                    <div className="group__feed-files-info">
+                      {pluralizeFiles(files.length)}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -358,7 +440,8 @@ const mapStateToProps = state => {
   return {
     userId: state.Login.userId,
     posts: state.ProjectGroup.posts,
-    group: state.ProjectGroup.group
+    group: state.ProjectGroup.group,
+    backgrounds: state.projectGroups.backgrounds
   };
 };
 

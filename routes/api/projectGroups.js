@@ -329,4 +329,21 @@ router.post("/backgrounds", async ctx => {
   });
 });
 
+router.post("/backgrounds/update", async ctx => {
+  const { groupId, backgroundId } = ctx.request.body;
+
+  await models.ProjectGroup.update(
+    {
+      backgroundId
+    },
+    {
+      where: {
+        id: groupId
+      }
+    }
+  );
+
+  ctx.body = "ok";
+});
+
 module.exports = router;
