@@ -14,6 +14,12 @@ module.exports = {
       avatar: {
         type: Sequelize.STRING
       },
+      background_id: {
+        type: Sequelize.INTEGER
+      },
+      short_description: {
+        type: Sequelize.TEXT
+      },
       description: {
         type: Sequelize.TEXT
       },

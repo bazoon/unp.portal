@@ -1,13 +1,18 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Modal } from "antd";
+import { Modal, Steps, Button } from "antd";
 import { Actions } from "jumpstate";
 import GroupForm from "./GroupForm";
+
+const { Step } = Steps;
 
 class GroupCreateModal extends Component {
   constructor(props) {
     super(props);
     this.formRef = React.createRef();
+    this.state = {
+      currentStep: 0
+    };
   }
 
   handleOk = () => {
@@ -17,12 +22,7 @@ class GroupCreateModal extends Component {
     const formData = new FormData();
 
     form.validateFields((err, fields) => {
-      let files = [];
       let docs = [];
-      if (fields.files) {
-        files = fields.files.fileList.map(f => f.originFileObj);
-        delete fields.files;
-      }
 
       if (fields.docs) {
         docs = fields.docs.fileList.map(f => f.originFileObj);
@@ -38,10 +38,6 @@ class GroupCreateModal extends Component {
 
       formData.append("userId", userId);
 
-      files.forEach(f => {
-        formData.append("file", f);
-      });
-
       docs.forEach(d => {
         formData.append("doc", d);
       });
@@ -56,16 +52,59 @@ class GroupCreateModal extends Component {
     this.onFormSubmit = onFormSubmit;
   };
 
+  handleBack = () => {
+    this.setState({
+      currentStep: this.state.currentStep - 1
+    });
+  };
+
+  handleNext = () => {
+    this.setState({
+      currentStep: this.state.currentStep + 1
+    });
+  };
+
   render() {
+    const { currentStep } = this.state;
+    const { backgrounds } = this.props;
+
     return (
       <Modal
-        title="Создать событие"
+        title="Создание группы"
         visible={this.props.visible}
         onCancel={this.props.onCancel}
         onOk={this.handleOk}
-        width={600}
+        width={800}
+        bodyStyle={{ minHeight: "400px" }}
+        footer={[
+          currentStep > 0 && (
+            <Button key="back" onClick={this.handleBack}>
+              Назад
+            </Button>
+          ),
+          currentStep < 2 && (
+            <Button key="next" onClick={this.handleNext}>
+              Вперед
+            </Button>
+          ),
+          currentStep === 2 && (
+            <Button key="submit" type="primary" onClick={this.handleOk}>
+              Создать
+            </Button>
+          )
+        ]}
       >
-        <GroupForm ref={this.formRef} onSubmit={this.handleSubmit} />
+        <Steps size="small" current={currentStep}>
+          <Step title="Шаг1" description="Название и описание" />
+          <Step title="Шаг 2" description="Добавление файлов" />
+          <Step title="Шаг 3" description="Фоновая картинка" />
+        </Steps>
+        <GroupForm
+          backgrounds={backgrounds}
+          step={currentStep}
+          ref={this.formRef}
+          onSubmit={this.handleSubmit}
+        />
       </Modal>
     );
   }
@@ -73,7 +112,8 @@ class GroupCreateModal extends Component {
 
 const mapStateToProps = state => {
   return {
-    userId: state.Login.userId
+    userId: state.Login.userId,
+    backgrounds: state.projectGroups.backgrounds
   };
 };
 

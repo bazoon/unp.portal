@@ -2,7 +2,7 @@ import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
 const projectGroups = State({
-  initial: { groups: [] },
+  initial: { groups: [], backgrounds: [] },
   setProjectGroups(state, payload) {
     return { ...state, groups: payload };
   },
@@ -23,6 +23,9 @@ const projectGroups = State({
     group.participant = true;
     group.participantsCount = +group.participantsCount + 1;
     return { ...state, groups: [...groups] };
+  },
+  setProjectGroupsBackgrounds(state, { data }) {
+    return { ...state, backgrounds: [...data] };
   }
 });
 
@@ -72,6 +75,12 @@ Effect("postSubscribeProjectGroup", ({ groupId, userId }) => {
     .then(() => {
       Actions.subscribeProjectGroup({ groupId });
     });
+});
+
+Effect("getProjectGroupsBackgrounds", () => {
+  api.post("api/projectGroups/backgrounds").then(data => {
+    Actions.setProjectGroupsBackgrounds(data);
+  });
 });
 
 export default projectGroups;

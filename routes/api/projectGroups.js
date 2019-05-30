@@ -13,7 +13,13 @@ const { createPost, getPosts } = require("./common/posts");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
-  const { title, isOpen, description } = ctx.request.body;
+  const {
+    title,
+    isOpen,
+    description,
+    shortDescription,
+    backgroundId
+  } = ctx.request.body;
   const { file, doc } = ctx.request.files;
 
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
@@ -26,8 +32,10 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     title: title,
     avatar: files && files[0] && files[0].name,
     isOpen: isOpen === "true",
-    description: description,
-    userId: userId
+    shortDescription,
+    description,
+    userId,
+    backgroundId
   }).then(async group => {
     await models.File.bulkCreate(
       docs.map(doc => {
@@ -128,43 +136,15 @@ router.get("/list", async (ctx, next) => {
   ctx.body = await Promise.all(groups);
 });
 
-router.get("/list/my", async (ctx, next) => {
-  const { userId } = ctx.request.query;
-
-  const query = `select project_groups.title, project_groups.avatar, project_groups.id,is_open from
-              project_groups, users, participants where (project_groups.id = participants.project_groupId) and
-              (participants.user_id=users.id) and
-              (participants.user_id=${userId})`;
-
-  const countQuery = `select project_groups.id, count(*) from project_groups, participants
-                    where (project_groups.id = participants.project_group_id)
-                    group by project_groups.id`;
-  const groups = await getGroups(userId, query, countQuery);
-  ctx.body = groups;
-});
-
-router.get("/list/created", async (ctx, next) => {
-  const { userId } = ctx.request.query;
-
-  const query = `select project_groups.title, project_groups.avatar, project_groups.id, is_open from
-                project_groups where 
-                (project_groups.user_id=${userId})`;
-
-  const countQuery = `select project_groups.id, count(*) from project_groups, participants
-                    where (project_groups.id = participants.project_group_id)
-                    group by project_groups.id`;
-
-  const groups = await getGroups(userId, query, countQuery);
-  ctx.body = groups;
-});
-
 router.get("/get", async (ctx, next) => {
   const { id } = ctx.request.query;
   const userId = ctx.user.id;
 
-  const query = `select project_groups.title, project_groups.avatar, project_groups.id, 
-              project_groups.is_open, project_groups.description, user_id from
-              project_groups where project_groups.id = ${id}`;
+  const query = `select title, file, project_groups.id, is_open, description, short_description, project_groups.user_id 
+              from project_groups 
+              left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
+              left join files on project_group_backgrounds.file_id = files.id 
+              where project_groups.id = ${id}`;
 
   const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
                               left join posts
@@ -198,13 +178,14 @@ router.get("/get", async (ctx, next) => {
       groupId: id
     }
   });
-
+  console.log(group);
   ctx.body = {
     id: group.id,
     isOpen: group.is_open,
     title: group.title,
     description: group.description,
-    avatar: getUploadFilePath(group.avatar),
+    description: group.short_description,
+    avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
     isAdmin: group.user_id == userId,
     conversations: conversations,
@@ -244,48 +225,6 @@ router.post("/links/post", (req, res) => {
 router.post("/links/remove", (req, res) => {
   const { id } = req.body;
   models.ProjectGroupLink.destroy({ where: { id } }).then(() => {
-    res.json({});
-  });
-});
-
-// router.post("/docs/post", upload.array("file", 12), function(req, res, next) {
-//   const { ProjectGroupId } = req.body;
-//   models.ProjectGroupDoc.bulkCreate(
-//     req.files.map(f => ({
-//       ProjectGroupId: ProjectGroupId,
-//       file: f.filename,
-//       size: f.size
-//     })),
-//     { returning: true }
-//   ).then(docs => {
-//     res.json(docs);
-//   });
-// });
-
-// router.post("/media/post", upload.array("file", 12), function(req, res, next) {
-//   const { ProjectGroupId } = req.body;
-//   models.ProjectGroupMedia.bulkCreate(
-//     req.files.map(f => ({
-//       ProjectGroupId: ProjectGroupId,
-//       file: f.filename,
-//       size: f.size
-//     })),
-//     { returning: true }
-//   ).then(media => {
-//     res.json(media);
-//   });
-// });
-
-router.post("/docs/remove", (req, res) => {
-  const { id } = req.body;
-  models.ProjectGroupDoc.destroy({ where: { id } }).then(() => {
-    res.json({});
-  });
-});
-
-router.post("/media/remove", (req, res) => {
-  const { id } = req.body;
-  models.ProjectGroupMedia.destroy({ where: { id } }).then(() => {
     res.json({});
   });
 });
@@ -375,6 +314,19 @@ router.post("/conversation/create", async ctx => {
     count: 0,
     lastpostdate: null
   };
+});
+
+router.post("/backgrounds", async ctx => {
+  const query = `select project_group_backgrounds.id, file from files, project_group_backgrounds 
+                where files.id = project_group_backgrounds.file_id`;
+  const result = await models.sequelize.query(query);
+
+  ctx.body = result[0].map(r => {
+    return {
+      id: r.id,
+      background: getUploadFilePath(r.file)
+    };
+  });
 });
 
 module.exports = router;

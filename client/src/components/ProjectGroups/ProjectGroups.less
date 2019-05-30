@@ -1,6 +1,71 @@
 .project-groups {
   background: #fff;
 
+  &__form {
+    background: #fafafa;
+    margin-top: 32px;
+
+    .ant-row {
+      margin-bottom: 24px;
+    }
+    .ant-upload-list {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .ant-upload-list-item {
+      margin-right: 8px;
+    }
+    .ant-upload-list-item:last-child {
+      margin-right: 0px;
+    }
+
+    &-background {
+      width: 88px;
+      height: 88px;
+      object-fit: cover;
+    }
+
+    &-background-wrap {
+      width: 104px;
+      height: 104px;
+      position: relative;
+      background: #ffffff;
+      border: 1px solid #d4d4d4;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .ant-upload-list-item-thumbnail img {
+      object-fit: cover;
+    }
+
+    .ant-radio {
+      display: none;
+    }
+
+    .ant-radio + span svg {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .ant-radio-checked + span svg {
+      display: block;
+    }
+
+    .ant-radio-checked + span img {
+      filter: brightness(40%);
+    }
+
+    .ant-radio-checked + span &-background-wrap {
+      border: 1px solid #1790ff;
+    }
+  }
+
   &__side {
     &-wrap {
       padding: 30px 19px 24px 24px;
