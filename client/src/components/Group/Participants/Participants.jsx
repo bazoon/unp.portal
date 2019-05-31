@@ -18,56 +18,78 @@ import moment from "moment";
 import MoreIcon from "../../../../images/more";
 import "./Participants.less";
 
-function renderMenu(id) {
-  return (
-    <div>
-      <div className="page-participants__link">Удалить из группы</div>
-      <div className="page-participants__link">Назначить админом</div>
-    </div>
-  );
-}
-
-const columns = [
-  {
-    title: "",
-    dataIndex: "avatar",
-    key: "avatar",
-    render: value => {
-      return <img src={value} className="page-participant__avatar" />;
-    }
-  },
-  {
-    title: "",
-    dataIndex: "position",
-    key: "position",
-    render: (value, record) => {
-      return (
-        <div>
-          <div>{record.name}</div>
-          <div>{record.position}</div>
-        </div>
-      );
-    }
-  },
-  {
-    title: "",
-    dataIndex: "commands",
-    key: "commands",
-    render: (value, record) => (
-      <Popover
-        placement="bottom"
-        content={renderMenu(record.id)}
-        trigger="click"
-      >
-        <div style={{ cursor: "pointer" }}>
-          <MoreIcon style={{ cursor: "pointer" }} />
-        </div>
-      </Popover>
-    )
-  }
-];
-
 export class Participants extends Component {
+  constructor(props) {
+    super(props);
+    this.columns = [
+      {
+        title: "",
+        dataIndex: "avatar",
+        key: "avatar",
+        render: value => {
+          return <img src={value} className="page-participant__avatar" />;
+        }
+      },
+      {
+        title: "",
+        dataIndex: "position",
+        key: "position",
+        render: (value, record) => {
+          return (
+            <div>
+              <div>{record.name}</div>
+              <div>{record.position}</div>
+            </div>
+          );
+        }
+      },
+      {
+        title: "",
+        dataIndex: "commands",
+        key: "commands",
+        render: (value, record) => (
+          <Popover
+            placement="bottom"
+            content={this.renderMenu(record.id)}
+            trigger="click"
+          >
+            <div style={{ cursor: "pointer" }}>
+              <MoreIcon style={{ cursor: "pointer" }} />
+            </div>
+          </Popover>
+        )
+      }
+    ];
+  }
+
+  handleMakeAdmin = (id, userId) => {
+    Actions.postMakeAdmin({ id, userId });
+  };
+
+  handleRemoveFromGroup = (id, userId) => {
+    Actions.postRemoveFromGroup({ id, userId });
+  };
+
+  renderMenu(userId) {
+    const { id } = this.props.match.params;
+    return (
+      <div>
+        <div
+          onClick={() => this.handleRemoveFromGroup(id, userId)}
+          className="page-participants__link"
+        >
+          Удалить из группы
+        </div>
+        <div
+          onClick={() => this.handleMakeAdmin(id, userId)}
+          className="page-participants__link"
+        >
+          Назначить админом
+        </div>
+      </div>
+    );
+  }
+
   componentDidMount() {
     const { id } = this.props.match.params;
     Actions.getProjectGroup({ id });
@@ -89,13 +111,13 @@ export class Participants extends Component {
         </Breadcrumb>
 
         <Row type="flex" gutter={37}>
-          <Col span={16}>
+          <Col span={16} style={{ background: "#fff" }}>
             <div className="page-participants">
               <Table
                 rowKey="id"
                 showHeader={false}
                 dataSource={participants}
-                columns={columns}
+                columns={this.columns}
               />
             </div>
           </Col>

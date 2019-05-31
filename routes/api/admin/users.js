@@ -44,8 +44,6 @@ router.post("/create", async (ctx, next) => {
   } = ctx.request.body;
 
   const hashedPassword = bcrypt.hashSync(password, 8);
-  console.log(password);
-  console.log(hashedPassword);
 
   let newUser = await models.User.create({
     name,

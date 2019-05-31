@@ -440,24 +440,71 @@ router.post("/conversation/unpin", async ctx => {
   ctx.body = "ok";
 });
 
-router.get("/participants", async ctx => {
-  const { groupId } = ctx.request.body;
-  const query = `select participants.id, users."name" as userName, positions."name" as position, participants.is_admin from participants
-                left join users on participants.user_id = users.id
-                left join positions on positions.id = users.position_id
-                where project_group_id = ${groupId}
-                `;
+// router.get("/participants", async ctx => {
+//   const { groupId } = ctx.request.body;
+//   const query = `select participants.id, users."name" as userName, positions."name" as position, participants.is_admin from participants
+//                 left join users on participants.user_id = users.id
+//                 left join positions on positions.id = users.position_id
+//                 where project_group_id = ${groupId}
+//                 `;
 
-  const participants = await models.sequelize.query(query);
+//   const participants = await models.sequelize.query(query);
 
-  ctx.body = participant[0].map(p => {
-    return {
-      id: p.id,
-      userName: p.userName,
-      position: p.position,
-      isAdmin: p.isAdmin
-    };
+//   ctx.body = participant[0].map(p => {
+//     return {
+//       id: p.id,
+//       userName: p.userName,
+//       position: p.position,
+//       isAdmin: p.isAdmin
+//     };
+//   });
+// });
+
+router.post("/participants/makeAdmin", async ctx => {
+  const { id, userId } = ctx.request.body;
+  const currentUserId = ctx.user.id;
+
+  const currentParticipant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [{ userId: currentUserId }, { projectGroupId: id }]
+    }
   });
+
+  if (!currentParticipant.isAdmin) {
+    throw new Error("Unauthorized!");
+  }
+
+  await models.Participant.update(
+    {
+      isAdmin: true
+    },
+    {
+      where: {
+        [Op.and]: [{ userId }, { projectGroupId: id }]
+      }
+    }
+  );
+  ctx.body = "ok";
+});
+
+router.post("/participants/remove", async ctx => {
+  const { id, userId } = ctx.request.body;
+  const currentUserId = ctx.user.id;
+
+  const currentParticipant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [{ userId: currentUserId }, { projectGroupId: id }]
+    }
+  });
+
+  if (!currentParticipant.isAdmin) {
+    throw new Error("Unauthorized!");
+  }
+
+  await models.Participant.destroy({
+    where: { id: userId }
+  });
+  ctx.body = "ok";
 });
 
 module.exports = router;

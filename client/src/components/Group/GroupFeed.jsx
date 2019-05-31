@@ -65,7 +65,6 @@ class GroupFeed extends Component {
     document.body.removeEventListener("click", this.handleOutTitleClick);
   }
 
-  
   handleCreateConversation = () => {
     this.setState({
       isConversationModalVisible: true
@@ -184,8 +183,7 @@ class GroupFeed extends Component {
   };
 
   handleOutShortDescriptionClick = e => {
-      this.handleCancelEditShortDescription();
-    }
+    this.handleCancelEditShortDescription();
   };
 
   handleEditShortDescription = () => {
@@ -219,7 +217,6 @@ class GroupFeed extends Component {
       "click",
       this.handleOutShortDescriptionClick
     );
-  };
 
     this.editingFields = {
       [field]: e.target.value
@@ -280,8 +277,12 @@ class GroupFeed extends Component {
         {conversations.map(conversation => {
           const date = moment(conversation.createdAt).fromNow();
           const link = `${id}/conversation/${conversation.id}`;
+          const className = cn("group__conversation", {
+            group__conversation_news: !conversation.isCommentable
+          });
+
           return (
-            <div key={conversation.id} className="group__conversation">
+            <div key={conversation.id} className={className}>
               <div className="group__conversation-header">
                 <div style={{ display: "flex" }}>
                   <div className="group__conversation-user">

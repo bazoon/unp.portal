@@ -100,6 +100,14 @@ const projectGroups = State({
       ...state,
       group: { ...state.group, conversations: [...conversations] }
     };
+  },
+  removeFromGroup(state, { userId }) {
+    let { participants } = state.group;
+    participants = participants.filter(p => p.id !== userId);
+    return {
+      ...state,
+      group: { ...state.group, participants: [...participants] }
+    };
   }
 });
 
@@ -224,5 +232,19 @@ Effect("postUnpinConversation", payload => {
   });
 });
 
+Effect("postMakeAdmin", payload => {
+  return api
+    .post("api/projectGroups/participants/makeAdmin", payload)
+    .then(() => {
+      // Actions.makeAdmin(payload);
+    });
+});
+
+Effect("postRemoveFromGroup", payload => {
+  return api.post("api/projectGroups/participants/remove", payload).then(() => {
+    Actions.removeFromGroup(payload);
+    debugger;
+  });
+});
 
 export default projectGroups;
