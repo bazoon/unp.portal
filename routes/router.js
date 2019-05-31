@@ -9,6 +9,7 @@ const chat = require("./api/chat");
 const conversations = require("./api/conversations");
 const events = require("./api/events");
 const users = require("./api/users");
+const files = require("./api/files");
 
 // Admin
 const adminUsers = require("./api/admin/users");
@@ -23,6 +24,7 @@ router.use("/api/profile_preferences", profilePreferences.routes());
 router.use("/api/chat", chat.routes());
 router.use("/api/conversations", conversations.routes());
 router.use("/api/events", events.routes());
+router.use("/api/files", files.routes());
 
 router.use("/admin/api/users", adminUsers.routes());
 router.use("/admin/api/organizations", adminOrganizations.routes());

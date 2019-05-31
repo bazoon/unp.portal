@@ -10,6 +10,7 @@ import ProjectGroup from "./components/Group/reducer";
 import Conversation from "./components/Conversation/reducer";
 import Events from "./components/Events/reducer";
 import Users from "./usersReducer";
+import Documents from "./components/Documents/reducer";
 
 import Admin from "./components/Admin/reducer";
 
@@ -25,5 +26,6 @@ export default combineReducers({
   Conversation,
   Events,
   Users,
-  Admin
+  Admin,
+  Documents
 });

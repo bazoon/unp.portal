@@ -4,12 +4,15 @@ import { func } from "prop-types";
 import findInTree from "../../utils/findPostInTree";
 
 const projectGroups = State({
-  initial: { conversations: {}, posts: {}, title: "" },
+  initial: { conversations: {}, posts: {}, title: "", files: [] },
   setPosts(state, { data, conversationId }) {
     const conversations = { ...state.conversations };
     conversations[conversationId] = {
       postsTree: data.postsTree,
-      title: data.title
+      title: data.title,
+      description: data.description,
+      name: data.name,
+      files: data.files
     };
     return { ...state, conversations };
   },

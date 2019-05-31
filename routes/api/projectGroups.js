@@ -21,16 +21,12 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     backgroundId
   } = ctx.request.body;
   const { file, doc } = ctx.request.files;
-
-  const files = file ? (Array.isArray(file) ? file : [file]) : [];
   const docs = doc ? (Array.isArray(doc) ? doc : [doc]) : [];
 
-  await uploadFiles(files);
   await uploadFiles(docs);
 
   const group = await models.ProjectGroup.create({
     title: title,
-    avatar: files && files[0] && files[0].name,
     isOpen: isOpen === "true",
     shortDescription,
     description,
@@ -42,7 +38,8 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
         return {
           userId,
           file: doc.name,
-          groupId: group.id
+          groupId: group.id,
+          size: doc.size
         };
       })
     );
@@ -146,7 +143,7 @@ router.get("/get", async (ctx, next) => {
               left join files on project_group_backgrounds.file_id = files.id 
               where project_groups.id = ${id}`;
 
-  const conversationsQuery = `select conversations.id, title, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
+  const conversationsQuery = `select conversations.id, title, is_commentable, is_pinned, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
                               left join posts
                               on conversations.id = posts.conversation_id
                               left join users 
@@ -178,7 +175,7 @@ router.get("/get", async (ctx, next) => {
       groupId: id
     }
   });
-  console.log(group);
+
   ctx.body = {
     id: group.id,
     isOpen: group.is_open,
@@ -188,7 +185,16 @@ router.get("/get", async (ctx, next) => {
     avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
     isAdmin: group.user_id == userId,
-    conversations: conversations,
+    conversations: conversations.map(c => ({
+      id: c.id,
+      title: c.title,
+      isCommentable: c.is_commentable,
+      isPinned: c.is_pinned,
+      count: c.count,
+      name: c.name,
+      description: c.description,
+      createdAt: c.created_at
+    })),
     files: files.map(file => {
       return {
         id: file.id,
@@ -297,22 +303,42 @@ router.post("/post/post", koaBody({ multipart: true }), async ctx => {
   });
 });
 
-router.post("/conversation/create", async ctx => {
-  const { projectGroupId, title, description } = ctx.request.body;
+router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
+  const { projectGroupId, title, description, isNews } = ctx.request.body;
   const userId = ctx.user.id;
+  const { file } = ctx.request.files;
+
+  const files = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(files);
+
   const conversation = await models.Conversation.create({
     title,
     ProjectGroupId: projectGroupId,
     description,
-    userId
+    userId,
+    isCommentable: !(isNews === "true")
   });
+
+  await models.File.bulkCreate(
+    files.map(file => {
+      return {
+        userId,
+        file: file.name,
+        conversationId: conversation.id,
+        size: conversatio.size
+      };
+    })
+  );
+
   ctx.body = {
     id: conversation.id,
     title: conversation.title,
     description: conversation.description,
     userId: conversation.userId,
     count: 0,
-    lastpostdate: null
+    lastpostdate: null,
+    files: files,
+    isCommentable: conversation.isCommentable
   };
 });
 
@@ -373,6 +399,40 @@ router.post("/update/shortDescription", async ctx => {
     {
       where: {
         id: groupId
+      }
+    }
+  );
+
+  ctx.body = "ok";
+});
+
+router.post("/conversation/pin", async ctx => {
+  const { conversationId } = ctx.request.body;
+
+  await models.Conversation.update(
+    {
+      isPinned: true
+    },
+    {
+      where: {
+        id: conversationId
+      }
+    }
+  );
+
+  ctx.body = "ok";
+});
+
+router.post("/conversation/unpin", async ctx => {
+  const { conversationId } = ctx.request.body;
+
+  await models.Conversation.update(
+    {
+      isPinned: false
+    },
+    {
+      where: {
+        id: conversationId
       }
     }
   );

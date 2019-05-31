@@ -81,12 +81,6 @@ class ProjectGroups extends Component {
           </Breadcrumb.Item>
           <Breadcrumb.Item>Группы</Breadcrumb.Item>
         </Breadcrumb>
-        <div className="project-groups__header">
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Icon type="left" />
-            <div className="project-groups__title">Группы</div>
-          </div>
-        </div>
 
         <GroupCreateModal
           visible={this.state.isCreateModalVisible}
@@ -112,7 +106,7 @@ class ProjectGroups extends Component {
               </div>
               <Button
                 type="primary"
-                style={{ width: "100%" }}
+                style={{ width: "100%", height: "52px" }}
                 onClick={this.handleAddGroup}
               >
                 Создать новую группу

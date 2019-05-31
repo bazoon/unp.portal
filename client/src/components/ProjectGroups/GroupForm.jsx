@@ -27,7 +27,6 @@ class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      files: [],
       docs: []
     };
   }
@@ -39,26 +38,11 @@ class GroupForm extends Component {
 
   handleSubmit = e => {
     this.props.form.resetFields();
-    this.setState({
-      files: []
-    });
-  };
-
-  handleFilesChanged = info => {
-    this.setState({
-      files: info.fileList
-    });
   };
 
   handleDocsChanged = info => {
-    this.setState({
-      docs: info.fileList
-    });
+    this.props.onDocsChanged(info.fileList);
   };
-
-  handlePreview = () => {};
-
-  previewFile;
 
   renderStep1(step) {
     const { getFieldDecorator } = this.props.form;
@@ -114,8 +98,7 @@ class GroupForm extends Component {
               <Upload
                 listType="picture"
                 onChange={this.handleDocsChanged}
-                onPreview={this.handlePreview}
-                fileList={this.state.docs}
+                fileList={this.props.docs}
                 beforeUpload={() => false}
                 multiple
               >

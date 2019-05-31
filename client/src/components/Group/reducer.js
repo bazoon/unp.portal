@@ -80,6 +80,26 @@ const projectGroups = State({
     const { group } = state;
     group.shortDescription = shortDescription;
     return { ...state, group: { ...group } };
+  },
+  pinConversation(state, { conversationId }) {
+    const { conversations } = state.group;
+    const conversation = conversations.find(c => c.id === conversationId);
+    conversation.isPinned = true;
+
+    return {
+      ...state,
+      group: { ...state.group, conversations: [...conversations] }
+    };
+  },
+  unpinConversation(state, { conversationId }) {
+    const { conversations } = state.group;
+    const conversation = conversations.find(c => c.id === conversationId);
+    conversation.isPinned = false;
+
+    return {
+      ...state,
+      group: { ...state.group, conversations: [...conversations] }
+    };
   }
 });
 
@@ -190,6 +210,18 @@ Effect("postUpdateProjectGroupShortDescription", payload => {
     .then(() => {
       Actions.updateProjectGroupShortDescription(payload);
     });
+});
+
+Effect("postPinConversation", payload => {
+  return api.post("api/projectGroups/conversation/pin", payload).then(() => {
+    Actions.pinConversation(payload);
+  });
+});
+
+Effect("postUnpinConversation", payload => {
+  return api.post("api/projectGroups/conversation/unpin", payload).then(() => {
+    Actions.unpinConversation(payload);
+  });
 });
 
 export default projectGroups;

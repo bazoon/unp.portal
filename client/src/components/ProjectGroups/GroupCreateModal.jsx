@@ -11,7 +11,8 @@ class GroupCreateModal extends Component {
     super(props);
     this.formRef = React.createRef();
     this.state = {
-      currentStep: 0
+      currentStep: 0,
+      docs: []
     };
   }
 
@@ -64,6 +65,22 @@ class GroupCreateModal extends Component {
     });
   };
 
+  handleCancel = () => {
+    const form = this.formRef.current;
+    form.resetFields();
+    this.setState({
+      docs: [],
+      currentStep: 0
+    });
+    this.props.onCancel();
+  };
+
+  handleDocsChanged = docs => {
+    this.setState({
+      docs
+    });
+  };
+
   render() {
     const { currentStep } = this.state;
     const { backgrounds } = this.props;
@@ -72,27 +89,29 @@ class GroupCreateModal extends Component {
       <Modal
         title="Создание группы"
         visible={this.props.visible}
-        onCancel={this.props.onCancel}
+        onCancel={this.handleCancel}
         onOk={this.handleOk}
         width={800}
         bodyStyle={{ minHeight: "400px" }}
-        footer={[
-          currentStep > 0 && (
-            <Button key="back" onClick={this.handleBack}>
-              Назад
-            </Button>
-          ),
-          currentStep < 2 && (
-            <Button key="next" onClick={this.handleNext}>
-              Вперед
-            </Button>
-          ),
-          currentStep === 2 && (
-            <Button key="submit" type="primary" onClick={this.handleOk}>
-              Создать
-            </Button>
-          )
-        ]}
+        footer={
+          <div>
+            {currentStep === 2 && (
+              <Button key="submit" type="primary" onClick={this.handleOk}>
+                Создать
+              </Button>
+            )}
+            {currentStep > 0 && (
+              <Button key="back" onClick={this.handleBack}>
+                Назад
+              </Button>
+            )}
+            {currentStep < 2 && (
+              <Button type="primary" key="next" onClick={this.handleNext}>
+                Далее
+              </Button>
+            )}
+          </div>
+        }
       >
         <Steps size="small" current={currentStep}>
           <Step title="Шаг1" description="Название и описание" />
@@ -104,6 +123,8 @@ class GroupCreateModal extends Component {
           step={currentStep}
           ref={this.formRef}
           onSubmit={this.handleSubmit}
+          docs={this.state.docs}
+          onDocsChanged={this.handleDocsChanged}
         />
       </Modal>
     );

@@ -32,6 +32,10 @@ import SelectBgIcon from "../../../images/selectBg";
 import BackgroundSlider from "./BackgroundSlider";
 import EditIcon from "../../../images/edit";
 import DoneEditIcon from "../../../images/done-edit";
+import ConversationForm from "./Conversation/ConversationForm";
+import Files from "./Files";
+import MoreIcon from "../../../images/more";
+import ChatIcon from "../../../images/chat";
 
 const maxDescriptionSentences = 10;
 
@@ -46,6 +50,7 @@ class GroupFeed extends Component {
       isShortDescriptionEditing: false
     };
     this.editingFields = {};
+    this.formRef = React.createRef();
   }
 
   componentDidMount() {
@@ -222,6 +227,14 @@ class GroupFeed extends Component {
     };
   };
 
+  handlePin = conversationId => {
+    Actions.postPinConversation({ conversationId });
+  };
+
+  handleUnpin = conversationId => {
+    Actions.postUnpinConversation({ conversationId });
+  };
+
   renderAddRegion() {
     return (
       <div
@@ -230,6 +243,25 @@ class GroupFeed extends Component {
       >
         Добавить обсуждение в группе
       </div>
+    );
+  }
+
+  renderConversationMenu(id, isPinned) {
+    return (
+      <>
+        {isPinned ? (
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => this.handleUnpin(id)}
+          >
+            Открепить
+          </div>
+        ) : (
+          <div style={{ cursor: "pointer" }} onClick={() => this.handlePin(id)}>
+            Закрепить
+          </div>
+        )}
+      </>
     );
   }
 
@@ -247,29 +279,49 @@ class GroupFeed extends Component {
     return (
       <div className="group__conversations">
         {conversations.map(conversation => {
-          const date = moment(conversation.created_at).fromNow();
+          const date = moment(conversation.createdAt).fromNow();
           const link = `${id}/conversation/${conversation.id}`;
           return (
             <div key={conversation.id} className="group__conversation">
               <div className="group__conversation-header">
-                <div className="group__conversation-user">
-                  Написал &nbsp; {conversation.name}
+                <div style={{ display: "flex" }}>
+                  <div className="group__conversation-user">
+                    Написал &nbsp; {conversation.name}
+                  </div>
+                  <div className="group__conversation-date">{date}</div>
                 </div>
-                <div className="group__conversation-date">{date}</div>
+
+                <Popover
+                  placement="bottom"
+                  content={this.renderConversationMenu(
+                    conversation.id,
+                    conversation.isPinned
+                  )}
+                  trigger="click"
+                >
+                  <div style={{ cursor: "pointer" }}>
+                    <MoreIcon style={{ cursor: "pointer" }} />
+                  </div>
+                </Popover>
               </div>
               <div className="group__conversation-title">
-                {conversation.title}
+                <Link to={link}>{conversation.title}</Link>
               </div>
               <div className="group__conversation-description">
                 {conversation.description}
               </div>
               <div className="group__conversation-footer">
-                <ChatWaitIcon
-                  style={{ marginRight: "8px" }}
-                  className="svg-icon"
-                />
-
-                <Link to={link}>{pluralizeComments(conversation.count)}</Link>
+                {conversation.isCommentable && (
+                  <>
+                    <ChatWaitIcon
+                      style={{ marginRight: "8px" }}
+                      className="svg-icon"
+                    />
+                    <Link to={link}>
+                      {pluralizeComments(conversation.count)}
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           );
@@ -283,25 +335,10 @@ class GroupFeed extends Component {
   }
 
   renderFiles() {
-    const { files } = this.props.group;
-    if (files.length === 0) {
-      return null;
-    }
     return (
       <div className="group__files">
         <div className="group__files-title">Прикрепленные файлы</div>
-        <ul>
-          {files.map(file => {
-            return (
-              <li className="group__file">
-                <FileIcon />
-                <a download href={file.url}>
-                  {file.name}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        <Files files={this.props.group.files} />
       </div>
     );
   }
@@ -357,6 +394,28 @@ class GroupFeed extends Component {
     );
   };
 
+  renderPinnedConversations = () => {
+    const { id, conversations } = this.props.group;
+    const pinned = conversations.filter(c => c.isPinned);
+
+    return (
+      <div className="group__pinned">
+        <div className="group__pinned-title">Закрепленные обсуждения</div>
+        <ul style={{ padding: 0 }}>
+          {pinned.map(conversation => {
+            const url = `/groups/${id}/conversation/${conversation.id}`;
+            return (
+              <li key={conversation.id} className="group__pinned-name">
+                <ChatIcon />
+                <Link to={url}>{conversation.title}</Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  };
+
   render() {
     const {
       id,
@@ -392,7 +451,6 @@ class GroupFeed extends Component {
           </Breadcrumb.Item>
           <Breadcrumb.Item>{title}</Breadcrumb.Item>
         </Breadcrumb>
-
         <Row type="flex">
           <Col span={16}>
             <div
@@ -529,7 +587,6 @@ class GroupFeed extends Component {
             </div>
           </Col>
         </Row>
-
         {!isShortMode && files.length > 0 && (
           <Row type="flex">
             {description ? (
@@ -542,20 +599,25 @@ class GroupFeed extends Component {
             )}
           </Row>
         )}
-
         <Row gutter={37}>
           <Col span={16}>
             <div style={{ marginBottom: "40px" }} />
-            {this.renderAddRegion()}
-            {this.renderConversations()}
+            {!this.state.isConversationModalVisible && this.renderAddRegion()}
+            {this.state.isConversationModalVisible && (
+              <ConversationForm
+                ref={this.formRef}
+                avatar={this.props.userAvatar}
+                userName={this.props.userName}
+                onCancel={this.handleCancel}
+                onOk={this.handleOk}
+                projectGroupId={id}
+              />
+            )}
+            {!this.state.isConversationModalVisible &&
+              this.renderConversations()}
           </Col>
+          <Col span={8}>{this.renderPinnedConversations()}</Col>
         </Row>
-        <ConversationModal
-          proectGroupId={id}
-          visible={this.state.isConversationModalVisible}
-          onCancel={this.handleCancel}
-          onOk={this.handleOk}
-        />
       </>
     );
   }
@@ -563,6 +625,8 @@ class GroupFeed extends Component {
 const mapStateToProps = state => {
   return {
     userId: state.Login.userId,
+    userAvatar: state.Login.avatar,
+    userName: state.Login.userName,
     posts: state.ProjectGroup.posts,
     group: state.ProjectGroup.group,
     backgrounds: state.projectGroups.backgrounds

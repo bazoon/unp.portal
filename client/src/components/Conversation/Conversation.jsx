@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import Participants from "../Group/Participants";
 import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
+import Files from "../Group/Files";
+import PinnedIcon from "../../../images/pin";
 
 const { TextArea } = Input;
 
@@ -65,6 +67,42 @@ class Conversation extends Component {
     Actions.postUnsubscribeGroup({ groupId: id });
   };
 
+  handlePin = () => {
+    const { conversationId } = this.props.match.params;
+    Actions.postPinConversation({ conversationId, pinned: true });
+  };
+
+  renderConversation(conversation) {
+    const date = moment(conversation.created_at).fromNow();
+
+    return (
+      <div className="group__conversations">
+        {
+          <div key={conversation.id} className="group__conversation">
+            <div className="group__conversation-header">
+              <div className="group__conversation-user">
+                {conversation.name}
+              </div>
+              <div className="group__conversation-date">{date}</div>
+            </div>
+            <div className="group__conversation-title">
+              {conversation.title}
+            </div>
+            <div className="group__conversation-description">
+              {conversation.description}
+            </div>
+            <div>
+              <Files files={conversation.files} />
+            </div>
+            <div className="group__conversation-footer">
+              <PinnedIcon onClick={this.handlePin} />
+            </div>
+          </div>
+        }
+      </div>
+    );
+  }
+
   render() {
     const { conversationId } = this.props.match.params;
     const { id, title, avatar, participants, participant } = this.props.group;
@@ -74,6 +112,7 @@ class Conversation extends Component {
         this.props.conversations[conversationId] &&
         this.props.conversations[conversationId]) ||
       {};
+
     const postsTree = (conversation && conversation.postsTree) || [];
     const conversationTitle = conversation && conversation.title;
     return (
@@ -94,7 +133,7 @@ class Conversation extends Component {
         <Row gutter={27}>
           <Col span={16}>
             <div className="conversation__container">
-              <div className="conversation__title">{conversationTitle}</div>
+              {this.renderConversation(conversation)}
               <Posts
                 posts={postsTree}
                 avatar={this.props.avatar}

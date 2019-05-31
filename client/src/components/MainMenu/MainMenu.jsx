@@ -29,16 +29,16 @@ class MainMenu extends Component {
             </div>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/events/messages">
-          <NavLink to="/events/messages">
+        <Menu.Item key="/messages">
+          <NavLink to="/messages">
             <div className="main-menu__item">
               <MessagesIcon />
               Собщения
             </div>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/events/docs">
-          <NavLink to="/events/docs">
+        <Menu.Item key="/docs">
+          <NavLink to="/docs">
             <div className="main-menu__item">
               <DocIcon />
               Документы

@@ -7,7 +7,8 @@ module.exports = (sequelize, DataTypes) => {
       projectGroupId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
       description: DataTypes.TEXT,
-      is_commentable: DataTypes.BOOLEAN
+      isCommentable: DataTypes.BOOLEAN,
+      isPinned: DataTypes.BOOLEAN
     },
     {}
   );

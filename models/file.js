@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       postId: DataTypes.INTEGER,
       groupId: DataTypes.INTEGER,
       messageId: DataTypes.INTEGER,
+      conversationId: DataTypes.INTEGER,
       size: DataTypes.INTEGER
     },
     {}

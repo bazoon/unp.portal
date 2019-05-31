@@ -93,7 +93,7 @@ class L extends Component {
                 <div className="header__info">
                   <div className="header__support">
                     <PhoneIcon />
-                    <div style={{ marginLeft: "4px" }}>
+                    <div style={{ marginLeft: "8px" }}>
                       <div className="header__support-text">
                         Техническая поддержка
                       </div>

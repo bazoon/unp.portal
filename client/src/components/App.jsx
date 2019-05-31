@@ -5,6 +5,7 @@ import Layout from "./Layout";
 import LoginForm from "./LoginForm/LoginForm";
 import utils from "../utils";
 import { Actions } from "jumpstate";
+import "moment/locale/ru";
 
 import "../../fonts/opensans/opensans.woff2";
 import "../../fonts/opensans/opensansbold.woff2";

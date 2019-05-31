@@ -16,6 +16,7 @@ import Conversation from "./Conversation/Conversation";
 import EventList from "./Events/EventList";
 import GroupFeed from "./Group/GroupFeed";
 import Temp from "./temp/Temp";
+import Documents from "./Documents/Documents";
 
 const { Sider, Content } = Layout;
 
@@ -44,6 +45,10 @@ class UserLayout extends Component {
             <Route
               path="/groups/:id"
               component={props => <GroupFeed {...props} />}
+            />
+            <Route
+              path="/docs/"
+              component={props => <Documents {...props} />}
             />
 
             <Route path="/events/my" component={EventList} />

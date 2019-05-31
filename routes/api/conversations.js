@@ -11,6 +11,14 @@ router.get("/get", async (ctx, next) => {
   const { id } = ctx.request.query;
 
   const conversation = await models.Conversation.findOne({ where: { id: id } });
+  const user = await models.User.findOne({
+    where: { id: conversation.userId }
+  });
+  const files = await models.File.findAll({
+    where: {
+      conversation_id: conversation.id
+    }
+  });
 
   const query = `select posts.id, posts.parent_id, text, users.name, 
                 users.avatar, users.position_id, posts.created_at, positions.name as position
@@ -22,7 +30,14 @@ router.get("/get", async (ctx, next) => {
 
   ctx.body = {
     title: conversation.title,
-    postsTree
+    description: conversation.description,
+    postsTree,
+    name: user.name,
+    files: files.map(file => ({
+      id: file.id,
+      name: file.file,
+      url: getUploadFilePath(file.file)
+    }))
   };
 });
 

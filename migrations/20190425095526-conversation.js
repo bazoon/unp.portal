@@ -23,6 +23,9 @@ module.exports = {
       is_commentable: {
         type: Sequelize.BOOLEAN
       },
+      is_pinned: {
+        type: Sequelize.BOOLEAN
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

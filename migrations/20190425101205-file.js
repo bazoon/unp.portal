@@ -20,6 +20,9 @@ module.exports = {
       message_id: {
         type: Sequelize.INTEGER
       },
+      conversation_id: {
+        type: Sequelize.INTEGER
+      },
       file: {
         type: Sequelize.STRING
       },
