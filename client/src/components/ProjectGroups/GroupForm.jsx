@@ -52,9 +52,14 @@ class GroupForm extends Component {
       <div style={style}>
         <Row>
           <Col span={24}>
-            {getFieldDecorator("title", {
-              rules: [{ required: true, message: "Название группы" }]
-            })(<Input placeholder="Название группы" />)}
+            <Form.Item>
+              {getFieldDecorator("title", {
+                rules: [
+                  { required: true, message: "Название группы" },
+                  { max: 150, message: "Не больше 150 символов" }
+                ]
+              })(<Input placeholder="Название группы" />)}
+            </Form.Item>
           </Col>
         </Row>
 
@@ -69,17 +74,21 @@ class GroupForm extends Component {
 
         <Row>
           <Col span={24}>
-            {getFieldDecorator("shortDescription")(
-              <TextArea rows={3} placeholder="Краткое описание группы" />
-            )}
+            <Form.Item>
+              {getFieldDecorator("shortDescription", {
+                rules: [{ max: 400, message: "Не больше 400 символов" }]
+              })(<TextArea rows={3} placeholder="Краткое описание группы" />)}
+            </Form.Item>
           </Col>
         </Row>
 
         <Row>
           <Col span={24}>
-            {getFieldDecorator("description")(
-              <TextArea rows={3} placeholder="Описание группы" />
-            )}
+            <Form.Item>
+              {getFieldDecorator("description", {
+                rules: [{ max: 1000, message: "Не больше 1000 символов" }]
+              })(<TextArea rows={3} placeholder="Описание группы" />)}
+            </Form.Item>
           </Col>
         </Row>
       </div>

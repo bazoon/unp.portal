@@ -60,8 +60,13 @@ class GroupCreateModal extends Component {
   };
 
   handleNext = () => {
-    this.setState({
-      currentStep: this.state.currentStep + 1
+    const form = this.formRef.current;
+    form.validateFields(err => {
+      if (!err) {
+        this.setState({
+          currentStep: this.state.currentStep + 1
+        });
+      }
     });
   };
 

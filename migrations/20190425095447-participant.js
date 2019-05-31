@@ -14,6 +14,9 @@ module.exports = {
       user_id: {
         type: Sequelize.INTEGER
       },
+      isAdmin: {
+        type: Sequelize.BOOLEAN
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

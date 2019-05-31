@@ -15,8 +15,8 @@ import "./App.less";
 import Conversation from "./Conversation/Conversation";
 import EventList from "./Events/EventList";
 import GroupFeed from "./Group/GroupFeed";
-import Temp from "./temp/Temp";
 import Documents from "./Documents/Documents";
+import Participants from "./Group/Participants/Participants";
 
 const { Sider, Content } = Layout;
 
@@ -41,6 +41,10 @@ class UserLayout extends Component {
                   <Conversation {...props} />
                 </>
               )}
+            />
+            <Route
+              path="/groups/:id/participants"
+              component={props => <Participants {...props} />}
             />
             <Route
               path="/groups/:id"

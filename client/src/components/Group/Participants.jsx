@@ -1,7 +1,8 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
 class Participants extends Component {
-  renderParticipants(participants) {
+  renderParticipants(participants, projectGroupId) {
     const firstThree = participants.slice(0, 3);
     const restFive = participants.slice(3, 8);
     const rest = participants.slice(8);
@@ -46,7 +47,9 @@ class Participants extends Component {
             })}
             {rest.length > 0 && (
               <div className="group__participants-more">
-                И еще {rest.length}
+                <Link to={`${projectGroupId}/participants`}>
+                  И еще {rest.length}
+                </Link>
               </div>
             )}
           </div>
@@ -56,7 +59,10 @@ class Participants extends Component {
   }
 
   render() {
-    return this.renderParticipants(this.props.participants);
+    return this.renderParticipants(
+      this.props.participants,
+      this.props.projectGroupId
+    );
   }
 }
 

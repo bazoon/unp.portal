@@ -126,7 +126,7 @@ router.get("/list", async (ctx, next) => {
       participantsCount: participantsResult[0][0].count,
       conversationsCount: conversationsResult[0][0].count,
       participant: participant !== null,
-      isAdmin: group.user_id == userId
+      isAdmin: participant && participant.isAdmin
     };
   });
 
@@ -184,7 +184,7 @@ router.get("/get", async (ctx, next) => {
     shortDescription: group.short_description,
     avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
-    isAdmin: group.user_id == userId,
+    isAdmin: participant && participant.isAdmin,
     conversations: conversations.map(c => ({
       id: c.id,
       title: c.title,
@@ -438,6 +438,26 @@ router.post("/conversation/unpin", async ctx => {
   );
 
   ctx.body = "ok";
+});
+
+router.get("/participants", async ctx => {
+  const { groupId } = ctx.request.body;
+  const query = `select participants.id, users."name" as userName, positions."name" as position, participants.is_admin from participants
+                left join users on participants.user_id = users.id
+                left join positions on positions.id = users.position_id
+                where project_group_id = ${groupId}
+                `;
+
+  const participants = await models.sequelize.query(query);
+
+  ctx.body = participant[0].map(p => {
+    return {
+      id: p.id,
+      userName: p.userName,
+      position: p.position,
+      isAdmin: p.isAdmin
+    };
+  });
 });
 
 module.exports = router;

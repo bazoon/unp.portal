@@ -61,17 +61,11 @@ class GroupFeed extends Component {
   }
 
   componentWillUnmount() {
-    if (this.titleEditCancel) {
-      document.body.removeEventListener("click", this.titleEditCancel);
-      document.body.removeEventListener(
-        "click",
-        this.shortDescriptionEditCancel
-      );
-      this.titleEditCancel = null;
-      this.shortDescriptionEditCancel = null;
-    }
+    document.body.removeEventListener("click", this.handleOutTitleClick);
+    document.body.removeEventListener("click", this.handleOutTitleClick);
   }
 
+  
   handleCreateConversation = () => {
     this.setState({
       isConversationModalVisible: true
@@ -156,16 +150,18 @@ class GroupFeed extends Component {
     Actions.postUpdateBackground({ groupId: id, backgroundId });
   };
 
+  handleOutTitleClick = e => {
+    if (!e.target.closest(".group__feed-title")) {
+      this.handleCancelEditTitle();
+    }
+  };
+
   handleEditTitle = () => {
     this.setState({
       isTitleEditing: true
     });
 
-    this.titleEditCancel = document.body.addEventListener("click", e => {
-      if (!e.target.closest(".group__feed-title")) {
-        this.handleCancelEditTitle();
-      }
-    });
+    document.body.addEventListener("click", this.handleOutTitleClick);
   };
 
   handleDoneEditTitle = () => {
@@ -183,8 +179,13 @@ class GroupFeed extends Component {
     this.setState({
       isTitleEditing: false
     });
-    document.body.removeEventListener("click", this.titleEditCancel);
-    this.titleEditCancel = null;
+
+    document.body.removeEventListener("click", this.handleOutTitleClick);
+  };
+
+  handleOutShortDescriptionClick = e => {
+      this.handleCancelEditShortDescription();
+    }
   };
 
   handleEditShortDescription = () => {
@@ -194,11 +195,7 @@ class GroupFeed extends Component {
 
     this.shortDescriptionEditCancel = document.body.addEventListener(
       "click",
-      e => {
-        if (!e.target.closest(".group__feed-description")) {
-          this.handleCancelEditShortDescription();
-        }
-      }
+      this.handleOutShortDescriptionClick
     );
   };
 
@@ -217,11 +214,13 @@ class GroupFeed extends Component {
     this.setState({
       isShortDescriptionEditing: false
     });
-    document.body.removeEventListener("click", this.shortDescriptionEditCancel);
-    this.shortDescriptionEditCancel = null;
+
+    document.body.removeEventListener(
+      "click",
+      this.handleOutShortDescriptionClick
+    );
   };
 
-  handleChangeField = (field, e) => {
     this.editingFields = {
       [field]: e.target.value
     };
@@ -416,6 +415,99 @@ class GroupFeed extends Component {
     );
   };
 
+  renderTitleEditControls(title) {
+    const { isTitleEditing } = this.state;
+    return (
+      <>
+        {isTitleEditing ? (
+          <Input.TextArea
+            className="group__feed-title-editor"
+            defaultValue={title}
+            rows={2}
+            onChange={e => this.handleChangeField("title", e)}
+          />
+        ) : (
+          title
+        )}
+        {isTitleEditing ? (
+          <DoneEditIcon onClick={this.handleDoneEditTitle} />
+        ) : (
+          <EditIcon onClick={this.handleEditTitle} />
+        )}
+      </>
+    );
+  }
+
+  renderShortDescriptionControls(shortDescription) {
+    const { isShortDescriptionEditing } = this.state;
+    return (
+      <>
+        {isShortDescriptionEditing ? (
+          <Input.TextArea
+            className="group__feed-description-editor"
+            defaultValue={shortDescription}
+            rows={7}
+            onChange={e => this.handleChangeField("shortDescription", e)}
+          />
+        ) : (
+          shortDescription
+        )}
+        {isShortDescriptionEditing ? (
+          <DoneEditIcon onClick={this.handleDoneEditShortDescription} />
+        ) : (
+          <EditIcon onClick={this.handleEditShortDescription} />
+        )}
+      </>
+    );
+  }
+
+  renderBgSelect() {
+    return (
+      <>
+        <Popover
+          placement="bottom"
+          content={
+            <BackgroundSlider
+              onSelect={this.handleSelectBackground}
+              backgrounds={this.props.backgrounds}
+            />
+          }
+          trigger="click"
+        >
+          <div
+            style={{
+              width: "48px",
+              height: "40px",
+              position: "relative"
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                background: "#000",
+                opacity: "0.4",
+                borderRadius: "8px"
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "16px",
+                height: "16px"
+              }}
+            >
+              <SelectBgIcon />
+            </div>
+          </div>
+        </Popover>
+      </>
+    );
+  }
+
   render() {
     const {
       id,
@@ -430,11 +522,7 @@ class GroupFeed extends Component {
       isAdmin
     } = this.props.group;
 
-    const {
-      isShortMode,
-      isTitleEditing,
-      isShortDescriptionEditing
-    } = this.state;
+    const { isShortMode } = this.state;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -451,6 +539,7 @@ class GroupFeed extends Component {
           </Breadcrumb.Item>
           <Breadcrumb.Item>{title}</Breadcrumb.Item>
         </Breadcrumb>
+
         <Row type="flex">
           <Col span={16}>
             <div
@@ -465,43 +554,12 @@ class GroupFeed extends Component {
                   onMouseLeave={this.handleTitleOut}
                   className={titleCls}
                 >
-                  {isTitleEditing ? (
-                    <Input.TextArea
-                      className="group__feed-title-editor"
-                      defaultValue={title}
-                      rows={2}
-                      onChange={this.handleChangeField.bind(this, "title")}
-                    />
-                  ) : (
-                    title
-                  )}
-                  {isTitleEditing ? (
-                    <DoneEditIcon onClick={this.handleDoneEditTitle} />
-                  ) : (
-                    <EditIcon onClick={this.handleEditTitle} />
-                  )}
+                  {isAdmin ? this.renderTitleEditControls(title) : title}
                 </div>
                 <div className="group__feed-description">
-                  {isShortDescriptionEditing ? (
-                    <Input.TextArea
-                      className="group__feed-description-editor"
-                      defaultValue={shortDescription}
-                      rows={7}
-                      onChange={this.handleChangeField.bind(
-                        this,
-                        "shortDescription"
-                      )}
-                    />
-                  ) : (
-                    shortDescription
-                  )}
-                  {isShortDescriptionEditing ? (
-                    <DoneEditIcon
-                      onClick={this.handleDoneEditShortDescription}
-                    />
-                  ) : (
-                    <EditIcon onClick={this.handleEditShortDescription} />
-                  )}
+                  {isAdmin
+                    ? this.renderShortDescriptionControls(shortDescription)
+                    : shortDescription}
                 </div>
                 <div className="group__feed-footer">
                   <div
@@ -521,46 +579,7 @@ class GroupFeed extends Component {
                     )}
                   </div>
                   {isAdmin ? (
-                    <Popover
-                      placement="bottom"
-                      content={
-                        <BackgroundSlider
-                          onSelect={this.handleSelectBackground}
-                          backgrounds={this.props.backgrounds}
-                        />
-                      }
-                      trigger="click"
-                    >
-                      <div
-                        style={{
-                          width: "48px",
-                          height: "40px",
-                          position: "relative"
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            background: "#000",
-                            opacity: "0.4",
-                            borderRadius: "8px"
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: "50%",
-                            top: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: "16px",
-                            height: "16px"
-                          }}
-                        >
-                          <SelectBgIcon />
-                        </div>
-                      </div>
-                    </Popover>
+                    this.renderBgSelect()
                   ) : (
                     <div className="group__feed-files-info">
                       {pluralizeFiles(files.length)}
@@ -572,7 +591,7 @@ class GroupFeed extends Component {
           </Col>
           <Col span={8}>
             <div className="group__add-info">
-              <Participants participants={participants} />
+              <Participants projectGroupId={id} participants={participants} />
 
               {(isOpen || isAdmin) &&
                 (participant
