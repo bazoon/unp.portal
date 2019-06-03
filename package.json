@@ -8,7 +8,7 @@
     "install": "npm install",
     "install-all": "npm run install && npm run install-client",
     "start": "node server.js",
-    "server": "nodemon server.js",
+    "server": "nodemon --ignore client/ server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -44,6 +44,7 @@
     "koa-router": "^7.4.0",
     "koa-send": "^5.0.0",
     "koa-static": "^5.0.0",
-    "svg-inline-loader": "^0.8.0"
+    "svg-inline-loader": "^0.8.0",
+    "webpack-build-notifier": "^1.0.2"
   }
 }

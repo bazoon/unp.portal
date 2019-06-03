@@ -1,13 +1,12 @@
-const CleanWebpackPlugin = require("clean-webpack-plugin");
-const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const webpack = require("webpack");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 
+const path = require("path");
 const miniCssExtractPlugin = new MiniCssExtractPlugin({
   filename: "[name].css",
   chunkFilename: "[id].css"
 });
-
-const path = require("path");
 
 module.exports = {
   entry: "./src/index.js",
@@ -15,12 +14,36 @@ module.exports = {
     path: path.join(__dirname, "/dist"),
     filename: "index_bundle.js",
     publicPath: "/"
+    // filename: "[name].[contenthash].js"
   },
+  // optimization: {
+  //   runtimeChunk: "single",
+  //   splitChunks: {
+  //     chunks: "all",
+  //     maxInitialRequests: Infinity,
+  //     minSize: 0,
+  //     cacheGroups: {
+  //       vendor: {
+  //         test: /[\\/]node_modules[\\/]/,
+  //         name(module) {
+  //           // get the name. E.g. node_modules/packageName/not/this/part.js
+  //           // or node_modules/packageName
+  //           const packageName = module.context.match(
+  //             /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+  //           )[1];
+
+  //           // npm package names are URL-safe, but some servers don't like @ symbols
+  //           return `npm.${packageName.replace("@", "")}`;
+  //         }
+  //       }
+  //     }
+  //   }
+  // },
   resolve: {
     extensions: [".js", ".jsx"]
   },
   module: {
-    noParse: [/moment.js/],
+    noParse: [/moment.js|draft-js/],
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -126,12 +149,5 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebPackPlugin({
-      template: "./src/index.html",
-      filename: "./index.html"
-    }),
-    miniCssExtractPlugin
-  ]
+  plugins: [new CleanWebpackPlugin(), miniCssExtractPlugin]
 };
