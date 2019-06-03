@@ -1,22 +1,24 @@
 import React, { Component } from "react";
+import { observer, inject } from "mobx-react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { Button, Tabs, Input, Icon, Breadcrumb, Row, Col } from "antd";
-import { connect } from "react-redux";
-import { Actions } from "jumpstate";
-import { ProjectGroup } from "./ProjectGroup";
+import ProjectGroup from "./ProjectGroup";
 import "./ProjectGroups.less";
 import GroupCreateModal from "./GroupCreateModal";
 
 const { TabPane } = Tabs;
 const { Search } = Input;
 
+@inject("projectGroups")
+@observer
 class ProjectGroups extends Component {
   static propTypes = {
     groups: PropTypes.arrayOf(PropTypes.object)
   };
 
   constructor(props) {
+    window.foo = props.projectGroups;
     super(props);
     this.state = {
       isCreateModalVisible: false
@@ -28,13 +30,11 @@ class ProjectGroups extends Component {
   };
 
   handleUnsubscribe = groupId => {
-    const { userId } = this.props;
-    Actions.postUnsubscribeProjectGroup({ groupId, userId });
+    this.props.projectGroups.unsubscribe(groupId);
   };
 
   handleSubscribe = groupId => {
-    const { userId } = this.props;
-    Actions.postSubscribeProjectGroup({ groupId, userId });
+    this.props.projectGroups.subscribe(groupId);
   };
 
   handleAddGroup = () => {
@@ -56,12 +56,11 @@ class ProjectGroups extends Component {
   };
 
   componentDidMount = () => {
-    const { type, userId } = this.props;
-    Actions.getProjectGroups({ type, userId });
+    this.props.projectGroups.getAll();
+    this.props.projectGroups.getBackgrounds();
   };
 
-  renderGroups() {
-    const { groups } = this.props;
+  renderGroups(groups) {
     return groups.map(g => (
       <ProjectGroup
         onUnsubscribe={this.handleUnsubscribe}
@@ -93,7 +92,9 @@ class ProjectGroups extends Component {
             <div className="project-groups__search">
               <Search placeholder="Поиск по группам" />
             </div>
-            <div className="project-groups">{this.renderGroups()}</div>
+            <div className="project-groups">
+              {this.renderGroups(this.props.projectGroups.groups)}
+            </div>
           </Col>
           <Col span={8}>
             <div className="project-groups__side-wrap">
@@ -119,11 +120,4 @@ class ProjectGroups extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    groups: state.projectGroups.groups,
-    userId: state.Login.userId
-  };
-};
-
-export default connect(mapStateToProps)(ProjectGroups);
+export default ProjectGroups;

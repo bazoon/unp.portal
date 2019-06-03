@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
+import { observer, inject } from "mobx-react";
 import { Modal, Steps, Button } from "antd";
-import { Actions } from "jumpstate";
 import GroupForm from "./GroupForm";
 
 const { Step } = Steps;
-
+@inject("projectGroups")
+@observer
 class GroupCreateModal extends Component {
   constructor(props) {
     super(props);
@@ -43,7 +43,7 @@ class GroupCreateModal extends Component {
         formData.append("doc", d);
       });
 
-      Actions.postCreateGroup({ payload: formData, userId });
+      this.props.projectGroups.create(formData);
     });
     this.onFormSubmit();
     onOk();
@@ -88,7 +88,7 @@ class GroupCreateModal extends Component {
 
   render() {
     const { currentStep } = this.state;
-    const { backgrounds } = this.props;
+    const { backgrounds } = this.props.projectGroups;
 
     return (
       <Modal
@@ -136,11 +136,4 @@ class GroupCreateModal extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId,
-    backgrounds: state.projectGroups.backgrounds
-  };
-};
-
-export default connect(mapStateToProps)(GroupCreateModal);
+export default GroupCreateModal;

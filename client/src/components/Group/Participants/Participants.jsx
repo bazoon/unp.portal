@@ -16,9 +16,12 @@ import { Actions } from "jumpstate";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import MoreIcon from "../../../../images/more";
+import { observer, inject } from "mobx-react";
 import "./Participants.less";
 
-export class Participants extends Component {
+@inject("projectGroups")
+@observer
+class Participants extends Component {
   constructor(props) {
     super(props);
     this.columns = [
@@ -92,11 +95,16 @@ export class Participants extends Component {
 
   componentDidMount() {
     const { id } = this.props.match.params;
-    Actions.getProjectGroup({ id });
+    this.props.projectGroups.getCurrent(id);
   }
 
   render() {
-    const { title, participants, avatar } = this.props.group;
+    const {
+      title,
+      participants,
+      avatar
+    } = this.props.projectGroups.currentGroup;
+    const { id } = this.props.match.params;
 
     return (
       <>
@@ -107,7 +115,10 @@ export class Participants extends Component {
           <Breadcrumb.Item>
             <Link to="/groups">Группы</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{title}</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link to={`/groups/${id}`}>{title}</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>Участники</Breadcrumb.Item>
         </Breadcrumb>
 
         <Row type="flex" gutter={37}>
@@ -138,10 +149,4 @@ export class Participants extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    group: state.ProjectGroup.group
-  };
-};
-
-export default connect(mapStateToProps)(Participants);
+export default Participants;

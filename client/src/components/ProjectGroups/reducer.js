@@ -29,17 +29,15 @@ const projectGroups = State({
   }
 });
 
-Effect("getProjectGroups", ({ type, userId }) => {
-  const urls = {
-    my: "api/projectGroups/list/my",
-    created: "api/projectGroups/list/created",
-    all: "api/projectGroups/list"
-  };
+// Effect("getProjectGroups", ({ type, userId }) => {
+//   const urls = {
+//     all: "api/projectGroups"
+//   };
 
-  api.get(urls[type], { userId }).then(response => {
-    Actions.setProjectGroups(response.data);
-  });
-});
+//   api.get(urls[type], { userId }).then(response => {
+//     Actions.setProjectGroups(response.data);
+//   });
+// });
 
 Effect("postCreateGroup", ({ payload, userId }) => {
   api.post("api/ProjectGroups/create", payload).then(response => {

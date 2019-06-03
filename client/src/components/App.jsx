@@ -1,16 +1,18 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import { HashRouter } from "react-router-dom";
 import Layout from "./Layout";
 import LoginForm from "./LoginForm/LoginForm";
 import utils from "../utils";
 import { Actions } from "jumpstate";
 import "moment/locale/ru";
+import { observer, inject } from "mobx-react";
 
 import "../../fonts/opensans/opensans.woff2";
 import "../../fonts/opensans/opensansbold.woff2";
 import "../../fonts/opensans/opensanssemibold.woff2";
 
+@inject("currentUser")
+@observer
 class App extends Component {
   constructor(props) {
     super(props);
@@ -22,14 +24,13 @@ class App extends Component {
   };
 
   handleLogout = () => {
-    Actions.logout();
+    this.props.currentUser.logout();
   };
 
   render() {
-    const isLoggedIn = this.props.login.token != undefined;
     return (
       <HashRouter>
-        {isLoggedIn ? (
+        {this.props.currentUser.token ? (
           <Layout onLogout={this.handleLogout} />
         ) : (
           <LoginForm onLogin={this.handleLogin} />
@@ -39,8 +40,4 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return { login: state.Login };
-};
-
-export default connect(mapStateToProps)(App);
+export default App;

@@ -6,14 +6,18 @@ import cn from "classnames";
 import "./loginForm.less";
 import api from "../../api/api";
 import { Tabs } from "antd";
+import { observer, inject } from "mobx-react";
+
 const { TabPane } = Tabs;
 
-export class LoginForm extends Component {
+@observer
+@inject("currentUser")
+class LoginForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const userName = this.props.form.getFieldValue("userName");
     const password = this.props.form.getFieldValue("password");
-    Actions.login({ userName, password }).then(response => {
+    this.props.currentUser.login(userName, password).then(() => {
       this.props.onLogin();
     });
   };
@@ -22,18 +26,14 @@ export class LoginForm extends Component {
     e.preventDefault();
     const userName = this.props.form.getFieldValue("userName");
     const password = this.props.form.getFieldValue("password");
-    Actions.signup({ userName, password }).then(response => {
+    this.props.currentUser.signup(userName, password).then(() => {
       this.props.onLogin();
     });
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
-    console.log(this.props);
-  };
-
   render() {
     const { getFieldDecorator } = this.props.form;
-    const { loginFailed } = this.props.login;
+    const { loginFailed } = this.props.currentUser;
     const className = cn("login-form__wrap", {
       "login-form__wrap-failed": loginFailed
     });
@@ -163,9 +163,4 @@ export class LoginForm extends Component {
 }
 
 const WrappedNormalLoginForm = Form.create({ name: "normal_login" })(LoginForm);
-
-const mapStateToProps = state => {
-  return { login: state.Login };
-};
-
-export default connect(mapStateToProps)(WrappedNormalLoginForm);
+export default WrappedNormalLoginForm;

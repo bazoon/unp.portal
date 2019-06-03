@@ -85,7 +85,7 @@ function getGroups(userId, query, countQuery) {
   });
 }
 
-router.get("/list", async (ctx, next) => {
+router.get("/", async (ctx, next) => {
   const userId = ctx.user.id;
 
   const query = `select title, avatar, id, is_open, user_id from

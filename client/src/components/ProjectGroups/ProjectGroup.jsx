@@ -6,8 +6,10 @@ import { pluralize } from "../../utils/pluralize";
 import JoinButton from "./JoinButton";
 import LeaveButton from "./LeaveButton";
 import RequestButton from "./RequestButton";
+import { observer, inject } from "mobx-react";
 
-export class ProjectGroup extends Component {
+@observer
+class ProjectGroup extends Component {
   static propTypes = {
     group: PropTypes.shape({
       id: PropTypes.number,

@@ -85,7 +85,7 @@ class GroupForm extends Component {
           <div className="form-row form-row_24">
             {getFieldDecorator("title", {
               rules: [{ required: true, message: "Наименование" }]
-            })(<Input placeholder="Наименование" />)}
+            })(<Input placeholder="Наименование" autoFocus />)}
           </div>
           <div className="form-row form-row_32">
             {getFieldDecorator("description", {

@@ -12,7 +12,6 @@ import {
   Popover
 } from "antd";
 import { ProjectGroup } from "../ProjectGroups/ProjectGroup";
-import { Actions } from "jumpstate";
 import { pluralizeComments } from "../../utils/pluralize";
 import Posts from "./GroupPosts";
 import { Link } from "react-router-dom";
@@ -36,9 +35,14 @@ import ConversationForm from "./Conversation/ConversationForm";
 import Files from "./Files";
 import MoreIcon from "../../../images/more";
 import ChatIcon from "../../../images/chat";
+import { observer, inject } from "mobx-react";
+import projectGroups from "../ProjectGroups/reducer";
 
 const maxDescriptionSentences = 10;
 
+@inject("projectGroups")
+@inject("currentUser")
+@observer
 class GroupFeed extends Component {
   constructor(props) {
     super(props);
@@ -55,9 +59,11 @@ class GroupFeed extends Component {
 
   componentDidMount() {
     const { id } = this.props.match.params;
-    Actions.getProjectGroup({ id });
-    Actions.getOwnGroupPosts(id);
-    Actions.getProjectGroupsBackgrounds();
+    this.props.projectGroups.getCurrent(id);
+    this.props.projectGroups.getBackgrounds();
+    // Actions.getProjectGroup({ id });
+    // Actions.getOwnGroupPosts(id);
+    // Actions.getProjectGroupsBackgrounds();
   }
 
   componentWillUnmount() {
@@ -123,13 +129,13 @@ class GroupFeed extends Component {
   };
 
   handleSubscribe = () => {
-    const { id } = this.props.group;
-    Actions.postSubscribeGroup({ groupId: id });
+    const { id } = this.props.match.params;
+    this.props.projectGroups.subscribeToCurrent(id);
   };
 
   handleUnsubscribe = () => {
-    const { id } = this.props.group;
-    Actions.postUnsubscribeGroup({ groupId: id });
+    const { id } = this.props.match.params;
+    this.props.projectGroups.unsubscribeFromCurrent(id);
   };
 
   handleTitleOver = () => {
@@ -224,11 +230,11 @@ class GroupFeed extends Component {
   };
 
   handlePin = conversationId => {
-    Actions.postPinConversation({ conversationId });
+    this.props.projectGroups.pin(conversationId);
   };
 
   handleUnpin = conversationId => {
-    Actions.postUnpinConversation({ conversationId });
+    this.props.projectGroups.unpin(conversationId);
   };
 
   renderAddRegion() {
@@ -261,8 +267,8 @@ class GroupFeed extends Component {
     );
   }
 
-  renderConversations() {
-    const { id, conversations } = this.props.group;
+  renderConversations(conversations) {
+    const { id } = this.props.match.params;
 
     if (conversations.length === 0) {
       return (
@@ -334,11 +340,11 @@ class GroupFeed extends Component {
     return <div className="group__feed-rest-description">{description}</div>;
   }
 
-  renderFiles() {
+  renderFiles(files) {
     return (
       <div className="group__files">
         <div className="group__files-title">Прикрепленные файлы</div>
-        <Files files={this.props.group.files} />
+        <Files files={files} />
       </div>
     );
   }
@@ -373,29 +379,8 @@ class GroupFeed extends Component {
     );
   }
 
-  renderBgList = () => {
-    const { backgrounds } = this.props;
-    return (
-      <div>
-        {backgrounds.map(bg => {
-          return (
-            <div>
-              <img
-                style={{ width: "60px", height: "60px" }}
-                alt={bg.id}
-                key={bg.id}
-                className="group__feed-background"
-                src={bg.background}
-              />
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  renderPinnedConversations = () => {
-    const { id, conversations } = this.props.group;
+  renderPinnedConversations = group => {
+    const { id, conversations } = group;
     const pinned = conversations.filter(c => c.isPinned);
 
     return (
@@ -470,7 +455,7 @@ class GroupFeed extends Component {
           content={
             <BackgroundSlider
               onSelect={this.handleSelectBackground}
-              backgrounds={this.props.backgrounds}
+              backgrounds={this.props.projectGroups.backgrounds}
             />
           }
           trigger="click"
@@ -521,7 +506,7 @@ class GroupFeed extends Component {
       files,
       isOpen,
       isAdmin
-    } = this.props.group;
+    } = this.props.projectGroups.currentGroup;
 
     const { isShortMode } = this.state;
 
@@ -612,10 +597,10 @@ class GroupFeed extends Component {
             {description ? (
               <>
                 <Col span={16}>{this.renderRestDescription(description)}</Col>
-                <Col span={8}>{this.renderFiles()}</Col>
+                <Col span={8}>{this.renderFiles(files)}</Col>
               </>
             ) : (
-              <Col span={24}>{this.renderFiles()}</Col>
+              <Col span={24}>{this.renderFiles(files)}</Col>
             )}
           </Row>
         )}
@@ -626,31 +611,27 @@ class GroupFeed extends Component {
             {this.state.isConversationModalVisible && (
               <ConversationForm
                 ref={this.formRef}
-                avatar={this.props.userAvatar}
-                userName={this.props.userName}
+                avatar={this.props.currentUser.avatar}
+                userName={this.props.currentUser.userName}
                 onCancel={this.handleCancel}
                 onOk={this.handleOk}
                 projectGroupId={id}
               />
             )}
             {!this.state.isConversationModalVisible &&
-              this.renderConversations()}
+              this.renderConversations(
+                this.props.projectGroups.currentGroup.conversations
+              )}
           </Col>
-          <Col span={8}>{this.renderPinnedConversations()}</Col>
+          <Col span={8}>
+            {this.renderPinnedConversations(
+              this.props.projectGroups.currentGroup
+            )}
+          </Col>
         </Row>
       </>
     );
   }
 }
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId,
-    userAvatar: state.Login.avatar,
-    userName: state.Login.userName,
-    posts: state.ProjectGroup.posts,
-    group: state.ProjectGroup.group,
-    backgrounds: state.projectGroups.backgrounds
-  };
-};
 
-export default connect(mapStateToProps)(GroupFeed);
+export default GroupFeed;

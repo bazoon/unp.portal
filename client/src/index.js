@@ -5,12 +5,18 @@ import { LocaleProvider } from "antd";
 import ruRU from "antd/lib/locale-provider/ru_RU";
 import App from "./components/App";
 import store from "./store";
+import projectGroups from "./stores/projectGroups";
+import currentUser from "./stores/currentUser";
+
+import { Provider as MobxProvider } from "mobx-react";
 
 ReactDOM.render(
-  <Provider store={store}>
-    <LocaleProvider locale={ruRU}>
-      <App />
-    </LocaleProvider>
-  </Provider>,
+  <MobxProvider projectGroups={projectGroups} currentUser={currentUser}>
+    <Provider store={store}>
+      <LocaleProvider locale={ruRU}>
+        <App />
+      </LocaleProvider>
+    </Provider>
+  </MobxProvider>,
   document.getElementById("app")
 );

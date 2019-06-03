@@ -42,7 +42,8 @@ router.get("/get", async (ctx, next) => {
 });
 
 router.post("/post", koaBody({ multipart: true }), async ctx => {
-  const { text, conversationId, userId, postId } = ctx.request.body;
+  const { text, conversationId, postId } = ctx.request.body;
+  const userId = ctx.user.id;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
 

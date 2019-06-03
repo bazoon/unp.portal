@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Actions } from "jumpstate";
 import moment from "moment";
 import { Input, Tooltip, Icon, Button, Breadcrumb, Row, Col } from "antd";
 import { HashLink } from "react-router-hash-link";
@@ -12,16 +10,19 @@ import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
 import Files from "../Group/Files";
 import PinnedIcon from "../../../images/pin";
-
+import { observer, inject } from "mobx-react";
 const { TextArea } = Input;
 
+@inject("projectGroups")
+@inject("currentUser")
+@observer
 class Conversation extends Component {
   componentDidMount = () => {
     const { id, conversationId } = this.props.match.params;
-    const { userId } = this.props;
 
-    Actions.getProjectGroup({ id, userId });
-    Actions.getConversation(conversationId);
+    this.props.projectGroups.getCurrent(id).then(() => {
+      this.props.projectGroups.currentGroup.loadConversation(conversationId);
+    });
   };
 
   handleSend = (text, uploadFiles) => {
@@ -36,35 +37,34 @@ class Conversation extends Component {
       formData.append("file", f);
     });
 
-    return Actions.sendConversationPost({ conversationId, formData });
+    return this.props.projectGroups.currentGroup.sendPost(formData);
   };
 
   handleReplySend = (comment, post, files = []) => {
-    const { userId } = this.props;
     const { conversationId } = this.props.match.params;
 
     const formData = new FormData();
 
     formData.append("conversationId", conversationId);
     formData.append("postId", post.id);
-    formData.append("userId", userId);
     formData.append("text", comment);
 
     files.forEach(f => {
       formData.append("file", f);
     });
 
-    return Actions.sendConversationPost({ conversationId, formData });
+    // return Actions.sendConversationPost({ conversationId, formData });
+    return this.props.projectGroups.currentGroup.sendPost(formData);
   };
 
   handleSubscribe = () => {
-    const { id } = this.props.group;
-    Actions.postSubscribeGroup({ groupId: id });
+    const { id } = this.props.match.params;
+    this.props.projectGroups.subscribeToCurrent(id);
   };
 
   handleUnsubscribe = () => {
-    const { id } = this.props.group;
-    Actions.postUnsubscribeGroup({ groupId: id });
+    const { id } = this.props.match.params;
+    this.props.projectGroups.unsubscribeFromCurrent(id);
   };
 
   handlePin = () => {
@@ -105,13 +105,16 @@ class Conversation extends Component {
 
   render() {
     const { conversationId } = this.props.match.params;
-    const { id, title, avatar, participants, participant } = this.props.group;
+    const {
+      id,
+      title,
+      avatar,
+      participants,
+      participant
+    } = this.props.projectGroups.currentGroup;
 
     const conversation =
-      (this.props.conversations &&
-        this.props.conversations[conversationId] &&
-        this.props.conversations[conversationId]) ||
-      {};
+      this.props.projectGroups.currentGroup.currentConversation || {};
 
     const postsTree = (conversation && conversation.postsTree) || [];
     const conversationTitle = conversation && conversation.title;
@@ -136,7 +139,7 @@ class Conversation extends Component {
               {this.renderConversation(conversation)}
               <Posts
                 posts={postsTree}
-                avatar={this.props.avatar}
+                avatar={this.props.currentUser.avatar}
                 onSend={this.handleSend}
                 onReplySend={this.handleReplySend}
                 showConversationForm
@@ -175,14 +178,4 @@ class Conversation extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    conversations: state.Conversation.conversations,
-    avatar: state.Login.avatar,
-    userId: state.Login.userId,
-    postComments: state.Conversation.posts,
-    group: state.ProjectGroup.group
-  };
-};
-
-export default connect(mapStateToProps)(Conversation);
+export default Conversation;

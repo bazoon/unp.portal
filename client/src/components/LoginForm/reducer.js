@@ -14,66 +14,66 @@ const LoginForm = State({
     loginFailed: false,
     avatar: userAvatar,
     isAdmin
-  },
-  setLogin(state, { userName, token, userId, avatar, isAdmin }) {
-    return { userName, token, loginFailed: false, userId, avatar, isAdmin };
-  },
-  setLoginFailed(state) {
-    return { ...state, loginFailed: true };
-  },
-  setLogout(state) {
-    return { ...state, token: undefined, userName: undefined };
   }
+  // setLogin(state, { userName, token, userId, avatar, isAdmin }) {
+  //   return { userName, token, loginFailed: false, userId, avatar, isAdmin };
+  // },
+  // setLoginFailed(state) {
+  //   return { ...state, loginFailed: true };
+  // },
+  // setLogout(state) {
+  //   return { ...state, token: undefined, userName: undefined };
+  // }
 });
 
-Effect("login", ({ userName, password }) => {
-  api
-    .post("api/user/login", {
-      userName,
-      password
-    })
-    .then(response => {
-      const { token, userName, userId, avatar, isAdmin } = response.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("userName", userName);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("avatar", avatar);
-      localStorage.setItem("isAdmin", isAdmin);
-      Actions.setLogin(response.data);
-      return true;
-    })
-    .catch(() => {
-      Actions.setLoginFailed();
-      return false;
-    });
-});
+// Effect("login", ({ userName, password }) => {
+//   api
+//     .post("api/user/login", {
+//       userName,
+//       password
+//     })
+//     .then(response => {
+//       const { token, userName, userId, avatar, isAdmin } = response.data;
+//       localStorage.setItem("token", token);
+//       localStorage.setItem("userName", userName);
+//       localStorage.setItem("userId", userId);
+//       localStorage.setItem("avatar", avatar);
+//       localStorage.setItem("isAdmin", isAdmin);
+//       Actions.setLogin(response.data);
+//       return true;
+//     })
+//     .catch(() => {
+//       Actions.setLoginFailed();
+//       return false;
+//     });
+// });
 
-Effect("signup", ({ userName, password }) => {
-  api
-    .post("api/user/signup", {
-      userName,
-      password
-    })
-    .then(response => {
-      const { token, userName, userId, avatar, isAdmin } = response.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("userName", userName);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("avatar", avatar);
-      localStorage.setItem("isAdmin", isAdmin);
-      Actions.setLogin(response.data);
-      return true;
-    })
-    .catch(() => {
-      Actions.setLoginFailed();
-      return false;
-    });
-});
+// Effect("signup", ({ userName, password }) => {
+//   api
+//     .post("api/user/signup", {
+//       userName,
+//       password
+//     })
+//     .then(response => {
+//       const { token, userName, userId, avatar, isAdmin } = response.data;
+//       localStorage.setItem("token", token);
+//       localStorage.setItem("userName", userName);
+//       localStorage.setItem("userId", userId);
+//       localStorage.setItem("avatar", avatar);
+//       localStorage.setItem("isAdmin", isAdmin);
+//       Actions.setLogin(response.data);
+//       return true;
+//     })
+//     .catch(() => {
+//       Actions.setLoginFailed();
+//       return false;
+//     });
+// });
 
-Effect("logout", () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userName");
-  Actions.setLogout();
-});
+// Effect("logout", () => {
+//   localStorage.removeItem("token");
+//   localStorage.removeItem("userName");
+//   Actions.setLogout();
+// });
 
 export default LoginForm;
