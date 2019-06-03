@@ -12,9 +12,6 @@ module.exports = merge(common, {
   devServer: {
     contentBase: "./dist"
   },
-  entry: {
-    library: ["./src/index.js", "react", "redux", "antd"]
-  },
 
   plugins: [
     // new BundleAnalyzerPlugin(),
@@ -23,10 +20,10 @@ module.exports = merge(common, {
       // logo: path.resolve("./img/favicon.png"),
       suppressSuccess: true
     }),
-    new webpack.DllPlugin({
-      name: "[name]",
-      path: "./build/library/[name].json"
-    }),
+    // new webpack.DllPlugin({
+    //   name: "[name]",
+    //   path: "./build/library/[name].json"
+    // }),
     new HardSourceWebpackPlugin({
       // Either an absolute path or relative to webpack's options.context.
       cacheDirectory: "node_modules/.cache/hard-source/[confighash]",

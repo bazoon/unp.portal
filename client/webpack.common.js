@@ -1,7 +1,7 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
-
+const HtmlWebPackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const miniCssExtractPlugin = new MiniCssExtractPlugin({
   filename: "[name].css",
@@ -43,7 +43,7 @@ module.exports = {
     extensions: [".js", ".jsx"]
   },
   module: {
-    noParse: [/moment.js|draft-js/],
+    noParse: [/moment.js/],
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -149,5 +149,12 @@ module.exports = {
       }
     ]
   },
-  plugins: [new CleanWebpackPlugin(), miniCssExtractPlugin]
+  plugins: [
+    new CleanWebpackPlugin(),
+    miniCssExtractPlugin,
+    new HtmlWebPackPlugin({
+      template: "./src/index.html",
+      filename: "./index.html"
+    })
+  ]
 };
