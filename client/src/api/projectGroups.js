@@ -78,5 +78,10 @@ export default {
     return api
       .post("api/projectGroups/participants/approve", payload)
       .then(({ data }) => data.id);
+  },
+  createConversation(payload) {
+    return api
+      .post("api/projectGroups/conversation/create", payload)
+      .then(({ data }) => data);
   }
 };

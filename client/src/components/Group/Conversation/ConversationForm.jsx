@@ -14,11 +14,14 @@ import {
 } from "antd";
 
 import moment from "moment";
+import { observer, inject } from "mobx-react";
 import { Actions } from "jumpstate";
 
 const { Option } = Select;
 const { TextArea } = Input;
 
+@inject("projectGroups")
+@observer
 class GroupForm extends Component {
   constructor(props) {
     super(props);
@@ -54,7 +57,7 @@ class GroupForm extends Component {
 
       formData.append("projectGroupId", projectGroupId);
 
-      Actions.postCreateConversation(formData).then(() => {
+      this.props.projectGroups.createConversation(formData).then(() => {
         this.props.onOk();
         this.handleCancel();
       });
@@ -83,14 +86,18 @@ class GroupForm extends Component {
         </div>
         <Form layout="vertical" onSubmit={this.handleSubmit}>
           <div className="form-row form-row_24">
-            {getFieldDecorator("title", {
-              rules: [{ required: true, message: "Наименование" }]
-            })(<Input placeholder="Наименование" autoFocus />)}
+            <Form.Item>
+              {getFieldDecorator("title", {
+                rules: [{ required: true, message: "Наименование" }]
+              })(<Input placeholder="Наименование" autoFocus />)}
+            </Form.Item>
           </div>
           <div className="form-row form-row_32">
-            {getFieldDecorator("description", {
-              rules: [{ required: true, message: "Описание" }]
-            })(<Input.TextArea rows={5} placeholder="Описание" />)}
+            <Form.Item>
+              {getFieldDecorator("description", {
+                rules: [{ required: true, message: "Описание" }]
+              })(<Input.TextArea rows={5} placeholder="Описание" />)}
+            </Form.Item>
           </div>
           <div className="form-row form-row_40">
             {getFieldDecorator("files", {})(

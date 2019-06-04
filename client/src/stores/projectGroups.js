@@ -189,6 +189,12 @@ class ProjectGroupsStore {
   removeFromGroup(payload) {
     return this.removeFromGroup(payload).then(() => {});
   }
+
+  createConversation(payload) {
+    return this.api.createConversation(payload).then(data => {
+      this.currentGroup.conversations.push(data);
+    });
+  }
 }
 
 export default new ProjectGroupsStore(api);
