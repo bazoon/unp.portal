@@ -137,13 +137,15 @@ class Conversation extends Component {
           <Col span={16}>
             <div className="conversation__container">
               {this.renderConversation(conversation)}
-              <Posts
-                posts={postsTree}
-                avatar={this.props.currentUser.avatar}
-                onSend={this.handleSend}
-                onReplySend={this.handleReplySend}
-                showConversationForm
-              />
+              {conversation.isCommentable && (
+                <Posts
+                  posts={postsTree}
+                  avatar={this.props.currentUser.avatar}
+                  onSend={this.handleSend}
+                  onReplySend={this.handleReplySend}
+                  showConversationForm
+                />
+              )}
             </div>
           </Col>
           <Col span={8}>
