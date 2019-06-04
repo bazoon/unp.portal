@@ -15,6 +15,8 @@ class Group {
 
   @observable isAdmin;
 
+  @observable isMember;
+
   @observable isOpen;
 
   @observable participant;

@@ -243,7 +243,6 @@ Effect("postMakeAdmin", payload => {
 Effect("postRemoveFromGroup", payload => {
   return api.post("api/projectGroups/participants/remove", payload).then(() => {
     Actions.removeFromGroup(payload);
-    debugger;
   });
 });
 

@@ -50,45 +50,69 @@ class Participants extends Component {
         title: "",
         dataIndex: "commands",
         key: "commands",
-        render: (value, record) => (
-          <Popover
-            placement="bottom"
-            content={this.renderMenu(record.id)}
-            trigger="click"
-          >
-            <div style={{ cursor: "pointer" }}>
-              <MoreIcon style={{ cursor: "pointer" }} />
-            </div>
-          </Popover>
-        )
+        render: (value, record) =>
+          this.props.projectGroups.currentGroup.isAdmin && (
+            <Popover
+              placement="bottom"
+              content={this.renderMenu(
+                record.id,
+                record.isAdmin,
+                record.isMember
+              )}
+              trigger="click"
+            >
+              <div style={{ cursor: "pointer" }}>
+                <MoreIcon style={{ cursor: "pointer" }} />
+              </div>
+            </Popover>
+          )
       }
     ];
   }
 
-  handleMakeAdmin = (id, userId) => {
-    Actions.postMakeAdmin({ id, userId });
+  handleMakeAdmin = id => {
+    this.props.projectGroups.makeAdmin({ id });
+  };
+
+  handleRemoveAdmin = id => {
+    this.props.projectGroups.removeAdmin({ id });
   };
 
   handleRemoveFromGroup = (id, userId) => {
-    Actions.postRemoveFromGroup({ id, userId });
+    this.props.projectGroups.removeFromGroup({ id, userId });
   };
 
-  renderMenu(userId) {
-    const { id } = this.props.match.params;
+  handleApprove = id => {
+    this.props.projectGroups.approve({ id });
+  };
+
+  renderMenu(id, isAdmin, isMember) {
     return (
       <div>
         <div
-          onClick={() => this.handleRemoveFromGroup(id, userId)}
+          onClick={() => this.handleRemoveFromGroup(id)}
           className="page-participants__link"
         >
           Удалить из группы
         </div>
-        <div
-          onClick={() => this.handleMakeAdmin(id, userId)}
-          className="page-participants__link"
-        >
-          Назначить админом
-        </div>
+        {isAdmin ? (
+          <div
+            onClick={() => this.handleRemoveAdmin(id)}
+            className="page-participants__link"
+          >
+            Удалить из админов
+          </div>
+        ) : (
+          <div
+            onClick={() => this.handleMakeAdmin(id)}
+            className="page-participants__link"
+          >
+            Назначить админом
+          </div>
+        )}
+        {isMember === false && (
+          <div onClick={() => this.handleApprove(id)}>Одобрить заявку</div>
+        )}
       </div>
     );
   }
@@ -102,9 +126,17 @@ class Participants extends Component {
     const {
       title,
       participants,
-      avatar
+      avatar,
+      isAdmin,
+      isOpen,
+      isMember
     } = this.props.projectGroups.currentGroup;
+
     const { id } = this.props.match.params;
+    const canView = isAdmin || isOpen || isMember;
+    if (!canView) {
+      return <div>Нет доступа</div>;
+    }
 
     return (
       <>
@@ -129,6 +161,9 @@ class Participants extends Component {
                 showHeader={false}
                 dataSource={participants}
                 columns={this.columns}
+                pagination={{
+                  showQuickJumper: true
+                }}
               />
             </div>
           </Col>

@@ -7,11 +7,16 @@ import App from "./components/App";
 import store from "./store";
 import projectGroups from "./stores/projectGroups";
 import currentUser from "./stores/currentUser";
+import documents from "./stores/documents";
 
 import { Provider as MobxProvider } from "mobx-react";
 
 ReactDOM.render(
-  <MobxProvider projectGroups={projectGroups} currentUser={currentUser}>
+  <MobxProvider
+    projectGroups={projectGroups}
+    currentUser={currentUser}
+    documents={documents}
+  >
     <Provider store={store}>
       <LocaleProvider locale={ruRU}>
         <App />

@@ -1,12 +1,25 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Button, Tabs, Input, Icon, Breadcrumb, Row, Col, Table } from "antd";
+import {
+  Button,
+  Tabs,
+  Input,
+  Icon,
+  Upload,
+  Breadcrumb,
+  Row,
+  Col,
+  Table,
+  message
+} from "antd";
 import "./Documents.less";
 import { Actions } from "jumpstate";
 import { connect } from "react-redux";
 import moment from "moment";
 import prettyBytes from "pretty-bytes";
+import { observer, inject } from "mobx-react";
+import ShareIcon from "../../../images/share";
 
 const { Search } = Input;
 
@@ -17,7 +30,7 @@ const columns = [
     key: "title"
   },
   {
-    title: "Тип",
+    title: "",
     dataIndex: "createdAt",
     key: "type",
     render: value => {
@@ -31,18 +44,73 @@ const columns = [
     render: value => {
       return value && prettyBytes(value, { locale: "ru" });
     }
+  },
+  {
+    title: "Прделиться",
+    dataIndex: "share",
+    key: "share",
+    render: (value, record) => {
+      return (
+        <ShareIcon
+          onClick={() =>
+            navigator.clipboard
+              .writeText(`${location.origin}${record.url}`)
+              .then(() => {
+                message.success("Скопировано");
+              })
+          }
+        />
+      );
+    }
   }
 ];
 
+@inject("documents")
+@observer
 class Documents extends Component {
-  renderDocs() {
+  constructor(props) {
+    super(props);
+    this.state = {
+      docs: []
+    };
+  }
+
+  handleSubmit = (file, fileList) => {
+    const formData = new FormData();
+    const files = this.state.docs.map(f => f.originFileObj);
+    files.forEach(file => {
+      formData.append("file", file);
+    });
+
+    return this.props.documents.upload(formData).then(() => {
+      this.setState({
+        docs: []
+      });
+    });
+  };
+
+  handleDocsChanged = info => {
+    this.setState({
+      docs: info.fileList
+    });
+  };
+
+  renderDocs(documents) {
     return (
-      <Table rowKey="id" dataSource={this.props.files} columns={columns} />
+      <Table
+        showHeader={false}
+        rowKey="id"
+        dataSource={documents}
+        columns={columns}
+        pagination={{
+          showQuickJumper: true
+        }}
+      />
     );
   }
 
   componentDidMount() {
-    Actions.getDocuments();
+    this.props.documents.load();
   }
 
   render() {
@@ -60,7 +128,9 @@ class Documents extends Component {
             <div className="documents__search">
               <Search placeholder="Поиск по файлам" />
             </div>
-            <div className="documents">{this.renderDocs()}</div>
+            <div className="documents">
+              {this.renderDocs(this.props.documents.documents)}
+            </div>
           </Col>
           <Col span={8}>
             <div className="documents__side-wrap">
@@ -69,13 +139,30 @@ class Documents extends Component {
                 Все обсуждения сгруппированы по темам, если вы не нашли группу с
                 интересующим вас обсуждением – можете создать новую группу.
               </div>
-              <Button
-                type="primary"
-                style={{ width: "100%", height: "52px" }}
-                onClick={this.handleUploadFiles}
+
+              <Upload
+                onChange={this.handleDocsChanged}
+                multiple
+                fileList={this.state.docs}
+                beforeUpload={() => false}
               >
-                Загрузить
-              </Button>
+                <Button
+                  type="primary"
+                  style={{ width: "100%", height: "52px" }}
+                  onClick={this.handleUploadFiles}
+                >
+                  Загрузить
+                </Button>
+              </Upload>
+              {this.state.docs.length > 0 && (
+                <Button
+                  type="primary"
+                  onClick={this.handleSubmit}
+                  style={{ width: "100%", height: "52px" }}
+                >
+                  Сохранить
+                </Button>
+              )}
             </div>
           </Col>
         </Row>
@@ -83,8 +170,5 @@ class Documents extends Component {
     );
   }
 }
-const mapStateToProps = state => {
-  return { files: state.Documents.files };
-};
 
-export default connect(mapStateToProps)(Documents);
+export default Documents;

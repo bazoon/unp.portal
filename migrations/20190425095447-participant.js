@@ -17,6 +17,9 @@ module.exports = {
       isAdmin: {
         type: Sequelize.BOOLEAN
       },
+      isMember: {
+        type: Sequelize.BOOLEAN
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

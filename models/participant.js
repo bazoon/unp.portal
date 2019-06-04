@@ -6,7 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       projectGroupId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
       participantRoleId: DataTypes.INTEGER,
-      isAdmin: DataTypes.BOOLEAN
+      isAdmin: DataTypes.BOOLEAN,
+      isMember: DataTypes.INTEGER
     },
     {}
   );

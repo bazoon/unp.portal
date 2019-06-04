@@ -13,8 +13,24 @@ class Participant {
 
   @observable avatar;
 
+  @observable isAdmin;
+
+  @observable userId;
+
   constructor(data) {
     Object.assign(this, data);
+  }
+
+  clone() {
+    return new Participant({
+      id: this.id,
+      name: this.name,
+      position: this.position,
+      level: this.level,
+      avatar: this.avatar,
+      isAdmin: this.isAdmin,
+      userId: this.userId
+    });
   }
 }
 

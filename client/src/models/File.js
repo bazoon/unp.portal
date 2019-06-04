@@ -1,4 +1,4 @@
-import { observable, action } from "mobx";
+import { observable } from "mobx";
 
 class File {
   @observable id;
@@ -6,6 +6,8 @@ class File {
   @observable name;
 
   @observable url;
+
+  @observable size;
 
   constructor(data) {
     Object.assign(this, data);

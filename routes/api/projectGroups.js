@@ -126,6 +126,7 @@ router.get("/", async (ctx, next) => {
       participantsCount: participantsResult[0][0].count,
       conversationsCount: conversationsResult[0][0].count,
       participant: participant !== null,
+      isMember: participant && participant.isMember,
       isAdmin: participant && participant.isAdmin
     };
   });
@@ -151,11 +152,14 @@ router.get("/get", async (ctx, next) => {
                               where conversations.project_group_id = ${id}
                               group by conversations.id, users."name"
                               `;
-  const participantsQuery = `select participants."id", users."name", users."id" as user_id, participant_roles."name" as role_name, level, positions."name" as position, users."avatar"
-                            from users, participants, participant_roles, positions where
-                            (participants.project_group_id = ${id}) and (participants.participant_role_id = participant_roles.id) and 
-                            (users.position_id = positions.id) and (participants.user_id = users.id)
-                            order by level`;
+  const participantsQuery = `select participants."id", participants.is_admin, participants.is_member, users."name", users."id" as user_id, participant_roles."name" as role_name,
+                          level, positions."name" as position, users."avatar"
+                          from participants
+                          left join users on (participants.user_id = users.id)
+                          left join participant_roles on (participants.participant_role_id = participant_roles.id)
+                          left join positions on (users.position_id = positions.id)
+                          where (participants.project_group_id = ${id})
+                          order by level`;
 
   const groupResult = await models.sequelize.query(query);
   const group = groupResult[0][0];
@@ -185,6 +189,7 @@ router.get("/get", async (ctx, next) => {
     avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
     isAdmin: participant && participant.isAdmin,
+    isMember: participant && participant.isMember,
     conversations: conversations.map(c => ({
       id: c.id,
       title: c.title,
@@ -205,6 +210,8 @@ router.get("/get", async (ctx, next) => {
     participants: participants.map(participant => {
       return {
         id: participant.id,
+        isAdmin: participant.is_admin,
+        isMember: participant.is_member,
         userId: participant.userId,
         name: participant.name,
         position: participant.position,
@@ -238,30 +245,32 @@ router.post("/links/remove", (req, res) => {
 router.post("/unsubscribe", async ctx => {
   const userId = ctx.user.id;
   const { groupId } = ctx.request.body;
-  const participantPromise = models.Participant.destroy({
+  const participant = await models.Participant.destroy({
     where: {
       [Op.and]: [{ user_id: userId }, { project_group_id: groupId }]
     }
   });
 
-  const notificationPromise = models.NotificationPreference.destroy({
+  const notification = await models.NotificationPreference.destroy({
     where: { user_id: userId, source_id: groupId }
   });
 
-  const result = await Promise.all([participantPromise, notificationPromise]);
-  ctx.body = result;
+  ctx.body = participant;
 });
 
 router.post("/subscribe", async ctx => {
   const { groupId } = ctx.request.body;
   const userId = ctx.user.id;
 
+  const group = await models.ProjectGroup.findOne({ where: { id: groupId } });
+
   const role = await models.ParticipantRole.findOne();
 
   const participant = await models.Participant.create({
     ProjectGroupId: groupId,
     UserId: userId,
-    participantRoleId: role.id
+    participantRoleId: role.id,
+    isMember: group.isOpen
   });
 
   const notification = await models.NotificationPreference.create({
@@ -273,8 +282,7 @@ router.post("/subscribe", async ctx => {
     email: false
   });
 
-  const result = await Promise.all([participant, notification]);
-  ctx.body = result;
+  ctx.body = participant;
 });
 
 router.get("/get/posts", async (ctx, next) => {
@@ -357,6 +365,11 @@ router.post("/backgrounds", async ctx => {
 
 router.post("/backgrounds/update", async ctx => {
   const { groupId, backgroundId } = ctx.request.body;
+  const query = `select file
+              from project_groups 
+              left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
+              left join files on project_group_backgrounds.file_id = files.id 
+              where project_groups.id = ${groupId}`;
 
   await models.ProjectGroup.update(
     {
@@ -369,7 +382,8 @@ router.post("/backgrounds/update", async ctx => {
     }
   );
 
-  ctx.body = "ok";
+  const file = await models.sequelize.query(query);
+  ctx.body = file && { avatar: getUploadFilePath(file[0][0].file) };
 });
 
 router.post("/update/title", async ctx => {
@@ -464,9 +478,14 @@ router.post("/participants/makeAdmin", async ctx => {
   const { id, userId } = ctx.request.body;
   const currentUserId = ctx.user.id;
 
+  const participant = await models.Participant.findOne({ where: { id } });
+
   const currentParticipant = await models.Participant.findOne({
     where: {
-      [Op.and]: [{ userId: currentUserId }, { projectGroupId: id }]
+      [Op.and]: [
+        { userId: currentUserId },
+        { projectGroupId: participant.projectGroupId }
+      ]
     }
   });
 
@@ -474,17 +493,63 @@ router.post("/participants/makeAdmin", async ctx => {
     throw new Error("Unauthorized!");
   }
 
-  await models.Participant.update(
-    {
-      isAdmin: true
-    },
-    {
-      where: {
-        [Op.and]: [{ userId }, { projectGroupId: id }]
-      }
+  await participant.update({
+    isAdmin: true
+  });
+
+  ctx.body = { id: participant.id };
+});
+
+router.post("/participants/removeAdmin", async ctx => {
+  const { id, userId } = ctx.request.body;
+  const currentUserId = ctx.user.id;
+
+  const participant = await models.Participant.findOne({ where: { id } });
+
+  const currentParticipant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [
+        { userId: currentUserId },
+        { projectGroupId: participant.projectGroupId }
+      ]
     }
-  );
-  ctx.body = "ok";
+  });
+
+  if (!currentParticipant.isAdmin) {
+    throw new Error("Unauthorized!");
+  }
+
+  await participant.update({
+    isAdmin: false
+  });
+
+  ctx.body = { id: participant.id };
+});
+
+router.post("/participants/approve", async ctx => {
+  const { id, userId } = ctx.request.body;
+  const currentUserId = ctx.user.id;
+
+  const participant = await models.Participant.findOne({ where: { id } });
+
+  const currentParticipant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [
+        { userId: currentUserId },
+        { projectGroupId: participant.projectGroupId }
+      ]
+    }
+  });
+
+  if (!currentParticipant.isAdmin) {
+    throw new Error("Unauthorized!");
+  }
+
+  await participant.update({
+    isMember: true
+  });
+
+  ctx.body = { id: participant.id };
 });
 
 router.post("/participants/remove", async ctx => {

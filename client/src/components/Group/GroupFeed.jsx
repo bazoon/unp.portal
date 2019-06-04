@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import {
   Input,
   Layout,
@@ -37,6 +36,7 @@ import MoreIcon from "../../../images/more";
 import ChatIcon from "../../../images/chat";
 import { observer, inject } from "mobx-react";
 import projectGroups from "../ProjectGroups/reducer";
+import GroupButton from "../ProjectGroups/GroupButton";
 
 const maxDescriptionSentences = 10;
 
@@ -61,9 +61,6 @@ class GroupFeed extends Component {
     const { id } = this.props.match.params;
     this.props.projectGroups.getCurrent(id);
     this.props.projectGroups.getBackgrounds();
-    // Actions.getProjectGroup({ id });
-    // Actions.getOwnGroupPosts(id);
-    // Actions.getProjectGroupsBackgrounds();
   }
 
   componentWillUnmount() {
@@ -150,9 +147,13 @@ class GroupFeed extends Component {
     });
   };
 
+  handleChangeField = (field, e) => {
+    this.editingFields[field] = e.target.value;
+  };
+
   handleSelectBackground = backgroundId => {
-    const { id } = this.props.group;
-    Actions.postUpdateBackground({ groupId: id, backgroundId });
+    const { id } = this.props.match.params;
+    this.props.projectGroups.updateBackground({ groupId: id, backgroundId });
   };
 
   handleOutTitleClick = e => {
@@ -170,9 +171,9 @@ class GroupFeed extends Component {
   };
 
   handleDoneEditTitle = () => {
-    const { id } = this.props.group;
+    const { id } = this.props.match.params;
     if (this.editingFields.title) {
-      Actions.postUpdateProjectGroupTitle({
+      this.props.projectGroups.updateGroupTitle({
         groupId: id,
         title: this.editingFields.title
       });
@@ -189,7 +190,9 @@ class GroupFeed extends Component {
   };
 
   handleOutShortDescriptionClick = e => {
-    this.handleCancelEditShortDescription();
+    if (!e.target.closest(".group__feed-description")) {
+      this.handleCancelEditShortDescription();
+    }
   };
 
   handleEditShortDescription = () => {
@@ -204,9 +207,9 @@ class GroupFeed extends Component {
   };
 
   handleDoneEditShortDescription = () => {
-    const { id } = this.props.group;
+    const { id } = this.props.match.params;
     if (this.editingFields.shortDescription) {
-      Actions.postUpdateProjectGroupShortDescription({
+      this.props.projectGroups.updateGroupShortDescription({
         groupId: id,
         shortDescription: this.editingFields.shortDescription
       });
@@ -223,10 +226,6 @@ class GroupFeed extends Component {
       "click",
       this.handleOutShortDescriptionClick
     );
-
-    this.editingFields = {
-      [field]: e.target.value
-    };
   };
 
   handlePin = conversationId => {
@@ -505,10 +504,13 @@ class GroupFeed extends Component {
       participants,
       files,
       isOpen,
-      isAdmin
+      isAdmin,
+      isMember
     } = this.props.projectGroups.currentGroup;
 
     const { isShortMode } = this.state;
+
+    const canPost = isAdmin || isOpen || isMember;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -577,18 +579,19 @@ class GroupFeed extends Component {
           </Col>
           <Col span={8}>
             <div className="group__add-info">
-              <Participants projectGroupId={id} participants={participants} />
+              {canPost && (
+                <Participants projectGroupId={id} participants={participants} />
+              )}
 
-              {(isOpen || isAdmin) &&
-                (participant
-                  ? this.renderLeaveButton(id)
-                  : this.renderJoinButton(id))}
-
-              {!isOpen &&
-                !isAdmin &&
-                (participant
-                  ? this.renderLeaveButton(id)
-                  : this.renderRequestButton(id))}
+              <GroupButton
+                isOpen={isOpen}
+                isAdmin={isAdmin}
+                isMember={isMember}
+                participant={participant}
+                onJoin={this.handleSubscribe}
+                onLeave={this.handleUnsubscribe}
+                onRequest={this.handleSubscribe}
+              />
             </div>
           </Col>
         </Row>
@@ -597,17 +600,19 @@ class GroupFeed extends Component {
             {description ? (
               <>
                 <Col span={16}>{this.renderRestDescription(description)}</Col>
-                <Col span={8}>{this.renderFiles(files)}</Col>
+                <Col span={8}>{canPost && this.renderFiles(files)}</Col>
               </>
             ) : (
-              <Col span={24}>{this.renderFiles(files)}</Col>
+              <Col span={24}>{canPost && this.renderFiles(files)}</Col>
             )}
           </Row>
         )}
         <Row gutter={37}>
           <Col span={16}>
             <div style={{ marginBottom: "40px" }} />
-            {!this.state.isConversationModalVisible && this.renderAddRegion()}
+            {canPost &&
+              !this.state.isConversationModalVisible &&
+              this.renderAddRegion()}
             {this.state.isConversationModalVisible && (
               <ConversationForm
                 ref={this.formRef}
@@ -618,15 +623,17 @@ class GroupFeed extends Component {
                 projectGroupId={id}
               />
             )}
-            {!this.state.isConversationModalVisible &&
+            {canPost &&
+              !this.state.isConversationModalVisible &&
               this.renderConversations(
                 this.props.projectGroups.currentGroup.conversations
               )}
           </Col>
           <Col span={8}>
-            {this.renderPinnedConversations(
-              this.props.projectGroups.currentGroup
-            )}
+            {canPost &&
+              this.renderPinnedConversations(
+                this.props.projectGroups.currentGroup
+              )}
           </Col>
         </Row>
       </>

@@ -8,7 +8,7 @@ const Op = Sequelize.Op;
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 
-router.get("/", koaBody({ multipart: true }), async ctx => {
+router.get("/", async ctx => {
   const files = await models.File.findAll();
   ctx.body = files.map(file => {
     return {
@@ -19,6 +19,25 @@ router.get("/", koaBody({ multipart: true }), async ctx => {
       createdAt: file.createdAt
     };
   });
+});
+
+router.post("/", koaBody({ multipart: true }), async ctx => {
+  const { file } = ctx.request.files;
+
+  await uploadFiles(file);
+
+  await models.File.bulkCreate(
+    file.map(f => {
+      return {
+        file: f.name,
+        size: f.size,
+        url: getUploadFilePath(f.name),
+        createdAt: f.createdAt
+      };
+    })
+  );
+
+  ctx.body = "ok";
 });
 
 module.exports = router;

@@ -7,6 +7,8 @@ import JoinButton from "./JoinButton";
 import LeaveButton from "./LeaveButton";
 import RequestButton from "./RequestButton";
 import { observer, inject } from "mobx-react";
+import WaitButton from "./WaitButton";
+import GroupButton from "./GroupButton";
 
 @observer
 class ProjectGroup extends Component {
@@ -66,7 +68,8 @@ class ProjectGroup extends Component {
       participantsCount,
       conversationsCount,
       participant,
-      isAdmin
+      isAdmin,
+      isMember
     } = group;
 
     const conversationPlurals = ["обсуждение", "обсуждения", "обсуждений"];
@@ -89,16 +92,15 @@ class ProjectGroup extends Component {
             </div>
           </div>
 
-          {(isOpen || isAdmin) &&
-            (participant
-              ? this.renderLeaveButton(id)
-              : this.renderJoinButton(id))}
-
-          {!isOpen &&
-            !isAdmin &&
-            (participant
-              ? this.renderLeaveButton(id)
-              : this.renderRequestButton(id))}
+          <GroupButton
+            isOpen={isOpen}
+            isAdmin={isAdmin}
+            isMember={isMember}
+            participant={participant}
+            onJoin={this.handleSubscribe}
+            onLeave={this.handleUnsubscribe}
+            onRequest={this.handleSubscribe}
+          />
         </div>
       </>
     );

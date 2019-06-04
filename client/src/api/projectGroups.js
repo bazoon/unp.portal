@@ -43,5 +43,40 @@ export default {
   },
   unpin(conversationId) {
     return api.post("api/projectGroups/conversation/unpin", { conversationId });
+  },
+  updateBackground(payload) {
+    return api
+      .post("api/projectGroups/backgrounds/update", payload)
+      .then(({ data }) => data);
+  },
+  updateGroupTitle(payload) {
+    return api
+      .post("api/projectGroups/update/title", payload)
+      .then(({ data }) => data);
+  },
+  updateGroupShortDescription(payload) {
+    return api
+      .post("api/projectGroups/update/shortDescription", payload)
+      .then(({ data }) => data);
+  },
+  makeAdmin(payload) {
+    return api
+      .post("api/projectGroups/participants/makeAdmin", payload)
+      .then(({ data }) => data.id);
+  },
+  removeAdmin(payload) {
+    return api
+      .post("api/projectGroups/participants/removeAdmin", payload)
+      .then(({ data }) => data.id);
+  },
+  removeFromGroup(payload) {
+    return api
+      .post("api/projectGroups/participants/remove", payload)
+      .then(({ data }) => data.id);
+  },
+  approve(payload) {
+    return api
+      .post("api/projectGroups/participants/approve", payload)
+      .then(({ data }) => data.id);
   }
 };

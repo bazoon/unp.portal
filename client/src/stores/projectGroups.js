@@ -20,6 +20,7 @@ class ProjectGroupsStore {
   getAll() {
     this.api.getAll().then(data => {
       this.groups = data.map(item => new Group(item));
+      window.groups = this.groups;
     });
   }
 
@@ -43,6 +44,7 @@ class ProjectGroupsStore {
     return this.api.subscribe(groupId).then(() => {
       const group = this.groups.find(g => g.id === groupId);
       group.participant = true;
+      group.isMember = group.isOpen;
       group.participantsCount = +group.participantsCount + 1;
     });
   }
@@ -51,33 +53,52 @@ class ProjectGroupsStore {
     return this.api.unsubscribe(groupId).then(() => {
       const group = this.groups.find(g => g.id === groupId);
       group.participant = false;
+      group.isMember = group.isOpen;
       group.participantsCount = +group.participantsCount - 1;
     });
   }
 
   subscribeToCurrent(groupId) {
     this.api.subscribe(groupId).then(() => {
-      const group = this.groups.find(g => g.id == groupId);
-      if (group) {
-        group.participant = true;
-        group.participantsCount = +group.participantsCount + 1;
-      }
-      this.currentGroup.participant = true;
-      this.currentGroup.participantsCount =
-        +this.currentGroup.participantsCount + 1;
+      return this.api.get(groupId).then(data => {
+        debugger;
+        const group = this.groups.find(g => g.id == groupId);
+        if (group) {
+          group.participant = true;
+          group.participants = data.participants;
+          group.isMember = group.isOpen;
+          group.participantsCount = data.participants.length;
+          this.currentGroup.participant = true;
+          this.currentGroup.isMember = this.currentGroup.isOpen;
+          this.currentGroup.participants = data.participants;
+        } else {
+          this.currentGroup.participant = true;
+          this.currentGroup.participants = data.participants;
+          this.currentGroup.isMember = this.currentGroup.isOpen;
+        }
+      });
     });
   }
 
   unsubscribeFromCurrent(groupId) {
     return this.api.unsubscribe(groupId).then(() => {
-      const group = this.groups.find(g => g.id == groupId);
-      if (group) {
-        group.participant = false;
-        group.participantsCount = +group.participantsCount - 1;
-      }
-      this.currentGroup.participant = false;
-      this.currentGroup.participantsCount =
-        +this.currentGroup.participantsCount - 1;
+      return this.api.get(groupId).then(data => {
+        debugger;
+        const group = this.groups.find(g => g.id == groupId);
+        if (group) {
+          group.participant = false;
+          group.participants = data.participants;
+          group.isMember = undefined;
+          group.participantsCount = data.participants.length;
+          this.currentGroup.participant = false;
+          this.currentGroup.isMember = undefined;
+          this.currentGroup.participants = data.participants;
+        } else {
+          this.currentGroup.participant = false;
+          this.currentGroup.isMember = undefined;
+          this.currentGroup.participants = data.participants;
+        }
+      });
     });
   }
 
@@ -103,6 +124,70 @@ class ProjectGroupsStore {
       );
       conversation.isPinned = false;
     });
+  }
+
+  updateBackground(payload) {
+    return this.api.updateBackground(payload).then(({ avatar }) => {
+      this.currentGroup.avatar = avatar;
+    });
+  }
+
+  updateGroupTitle(payload) {
+    this.api.updateGroupTitle(payload).then(() => {
+      this.currentGroup.title = payload.title;
+    });
+  }
+
+  updateGroupShortDescription(payload) {
+    return this.api.updateGroupShortDescription(payload).then(() => {
+      this.currentGroup.shortDescription = payload.shortDescription;
+    });
+  }
+
+  makeAdmin(payload) {
+    return this.api.makeAdmin(payload).then(() => {
+      const participants = this.currentGroup.participants.map(p => {
+        if (p.id == payload.id) {
+          p.isAdmin = true;
+          return p.clone();
+        }
+        return p;
+      });
+
+      this.currentGroup.participants = participants;
+    });
+  }
+
+  removeAdmin(payload) {
+    return this.api.makeAdmin(payload).then(() => {
+      const participants = this.currentGroup.participants.map(p => {
+        if (p.id == payload.id) {
+          p.isAdmin = false;
+          return p.clone();
+        }
+        return p;
+      });
+
+      this.currentGroup.participants = participants;
+    });
+  }
+
+  approve(payload) {
+    return this.api.approve(payload).then(() => {
+      const participants = this.currentGroup.participants.map(p => {
+        if (p.id == payload.id) {
+          p.isMember = true;
+          return p.clone();
+        }
+        return p;
+      });
+
+      this.currentGroup.participants = participants;
+    });
+  }
+
+  removeFromGroup(payload) {
+    return this.removeFromGroup(payload).then(() => {});
   }
 }
 
