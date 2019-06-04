@@ -28,7 +28,7 @@ router.get("/channels/all", async (ctx, next) => {
 });
 
 router.get("/channels", async (ctx, next) => {
-  const { userId } = ctx.request.query;
+  const userId = ctx.user.id;
 
   const query = `select distinct channels.name, channels.avatar, channels.id,
                 channels.first_user_id, channels.second_user_id

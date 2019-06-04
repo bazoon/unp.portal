@@ -1,4 +1,5 @@
 import axios from "axios";
+import currentUser from "../stores/currentUser";
 
 const api = {
   get: (url, params = {}) => {
@@ -8,7 +9,11 @@ const api = {
       params
     };
 
-    return axios.get("/" + url, config);
+    return axios.get("/" + url, config).catch(e => {
+      if (e.request.status === 401) {
+        currentUser.logout();
+      }
+    });
   },
   post: (url, data) => {
     const token = `Bearer ${localStorage.getItem("token")}`;
@@ -16,7 +21,11 @@ const api = {
       headers: { authorization: token }
     };
 
-    return axios.post("/" + url, data, config);
+    return axios.post("/" + url, data, config).catch(e => {
+      if (e.request.status === 401) {
+        currentUser.logout();
+      }
+    });
   }
 };
 window.api = api;

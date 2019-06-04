@@ -135,10 +135,7 @@ class Documents extends Component {
           <Col span={8}>
             <div className="documents__side-wrap">
               <div className="documents__side-title">Файлы</div>
-              <div className="documents__side-text">
-                Все обсуждения сгруппированы по темам, если вы не нашли группу с
-                интересующим вас обсуждением – можете создать новую группу.
-              </div>
+              <div className="documents__side-text" />
 
               <Upload
                 onChange={this.handleDocsChanged}

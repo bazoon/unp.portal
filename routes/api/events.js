@@ -81,7 +81,7 @@ router.get("/list", async (ctx, next) => {
 });
 
 router.get("/list/all", async (ctx, next) => {
-  const { userId } = ctx.request.query;
+  const userId = ctx.user.id;
   const events = await getEvents(userId, undefined, undefined);
   ctx.body = events;
 });
