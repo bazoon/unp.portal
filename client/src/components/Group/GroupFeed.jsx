@@ -310,7 +310,11 @@ class GroupFeed extends Component {
                 </Popover>
               </div>
               <div className="group__conversation-title">
-                <Link to={link}>{conversation.title}</Link>
+                {conversation.isCommentable ? (
+                  <Link to={link}>{conversation.title}</Link>
+                ) : (
+                  conversation.title
+                )}
               </div>
               <div className="group__conversation-description">
                 {conversation.description}
