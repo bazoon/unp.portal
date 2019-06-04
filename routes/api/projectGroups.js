@@ -333,7 +333,7 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
         userId,
         file: file.name,
         conversationId: conversation.id,
-        size: conversatio.size
+        size: conversation.size
       };
     })
   );
