@@ -11,6 +11,7 @@ import LeaveButton from "../ProjectGroups/LeaveButton";
 import Files from "../Group/Files";
 import PinnedIcon from "../../../images/pin";
 import { observer, inject } from "mobx-react";
+import GroupButton from "../ProjectGroups/GroupButton";
 const { TextArea } = Input;
 
 @inject("projectGroups")
@@ -53,7 +54,6 @@ class Conversation extends Component {
       formData.append("file", f);
     });
 
-    // return Actions.sendConversationPost({ conversationId, formData });
     return this.props.projectGroups.currentGroup.sendPost(formData);
   };
 
@@ -110,7 +110,10 @@ class Conversation extends Component {
       title,
       avatar,
       participants,
-      participant
+      participant,
+      isOpen,
+      isAdmin,
+      isMember
     } = this.props.projectGroups.currentGroup;
 
     const conversation =
@@ -159,19 +162,16 @@ class Conversation extends Component {
             </div>
             <div className="group__add-info">
               <Participants participants={participants} />
-              {participant ? (
-                <LeaveButton
-                  style={{ width: "100%" }}
-                  groupId={id}
-                  onClick={this.handleUnsubscribe}
-                />
-              ) : (
-                <JoinButton
-                  style={{ width: "100%" }}
-                  groupId={id}
-                  onClick={this.handleSubscribe}
-                />
-              )}
+
+              <GroupButton
+                isOpen={isOpen}
+                isAdmin={isAdmin}
+                isMember={isMember}
+                participant={participant}
+                onJoin={this.handleSubscribe}
+                onLeave={this.handleUnsubscribe}
+                onRequest={this.handleSubscribe}
+              />
             </div>
           </Col>
         </Row>
