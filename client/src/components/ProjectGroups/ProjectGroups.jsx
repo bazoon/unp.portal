@@ -10,7 +10,7 @@ import GroupCreateModal from "./GroupCreateModal";
 const { TabPane } = Tabs;
 const { Search } = Input;
 
-@inject("projectGroups")
+@inject("groupsStore")
 @observer
 class ProjectGroups extends Component {
   static propTypes = {
@@ -18,7 +18,6 @@ class ProjectGroups extends Component {
   };
 
   constructor(props) {
-    window.foo = props.projectGroups;
     super(props);
     this.state = {
       isCreateModalVisible: false
@@ -30,11 +29,15 @@ class ProjectGroups extends Component {
   };
 
   handleUnsubscribe = groupId => {
-    this.props.projectGroups.unsubscribe(groupId);
+    this.props.groupsStore.unsubscribe(groupId);
   };
 
   handleSubscribe = groupId => {
-    this.props.projectGroups.subscribe(groupId);
+    this.props.groupsStore.subscribe(groupId);
+  };
+
+  handleRequest = groupId => {
+    this.props.groupsStore.request(groupId);
   };
 
   handleAddGroup = () => {
@@ -56,8 +59,8 @@ class ProjectGroups extends Component {
   };
 
   componentDidMount = () => {
-    this.props.projectGroups.getAll();
-    this.props.projectGroups.getBackgrounds();
+    this.props.groupsStore.loadGroups();
+    window.g = this.props.groupsStore;
   };
 
   renderGroups(groups) {
@@ -65,6 +68,7 @@ class ProjectGroups extends Component {
       <ProjectGroup
         onUnsubscribe={this.handleUnsubscribe}
         onSubscribe={this.handleSubscribe}
+        onRequest={this.handleRequest}
         key={g.id}
         group={g}
       />
@@ -93,7 +97,7 @@ class ProjectGroups extends Component {
               <Search placeholder="Поиск по группам" />
             </div>
             <div className="project-groups">
-              {this.renderGroups(this.props.projectGroups.groups)}
+              {this.renderGroups(this.props.groupsStore.groups)}
             </div>
           </Col>
           <Col span={8}>

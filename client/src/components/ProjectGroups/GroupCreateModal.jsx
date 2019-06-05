@@ -4,7 +4,7 @@ import { Modal, Steps, Button } from "antd";
 import GroupForm from "./GroupForm";
 
 const { Step } = Steps;
-@inject("projectGroups")
+@inject("groupsStore")
 @observer
 class GroupCreateModal extends Component {
   constructor(props) {
@@ -43,7 +43,7 @@ class GroupCreateModal extends Component {
         formData.append("doc", d);
       });
 
-      this.props.projectGroups.create(formData);
+      this.props.groupsStore.createGroup(formData);
     });
     this.onFormSubmit();
     onOk();
@@ -88,7 +88,7 @@ class GroupCreateModal extends Component {
 
   render() {
     const { currentStep } = this.state;
-    const { backgrounds } = this.props.projectGroups;
+    const { backgrounds } = this.props.groupsStore;
 
     return (
       <Modal

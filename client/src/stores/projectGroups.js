@@ -61,7 +61,6 @@ class ProjectGroupsStore {
   subscribeToCurrent(groupId) {
     this.api.subscribe(groupId).then(() => {
       return this.api.get(groupId).then(data => {
-        debugger;
         const group = this.groups.find(g => g.id == groupId);
         if (group) {
           group.participant = true;

@@ -48,7 +48,8 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     return models.Participant.create({
       ProjectGroupId: group.id,
       UserId: userId,
-      participantRoleId: role.id
+      participantRoleId: role.id,
+      state: 1
     });
   });
   ctx.body = {
@@ -126,8 +127,11 @@ router.get("/", async (ctx, next) => {
       participantsCount: participantsResult[0][0].count,
       conversationsCount: conversationsResult[0][0].count,
       participant: participant !== null,
-      isMember: participant && participant.isMember,
-      isAdmin: participant && participant.isAdmin
+      state: participant && participant.state,
+      isAdmin: participant && participant.isAdmin,
+      files: [],
+      participants: [],
+      conversations: []
     };
   });
 
@@ -152,7 +156,7 @@ router.get("/get", async (ctx, next) => {
                               where conversations.project_group_id = ${id}
                               group by conversations.id, users."name"
                               `;
-  const participantsQuery = `select participants."id", participants.is_admin, participants.is_member, users."name", users."id" as user_id, participant_roles."name" as role_name,
+  const participantsQuery = `select participants."id", participants.is_admin, participants.state, users."name", users."id" as user_id, participant_roles."name" as role_name,
                           level, positions."name" as position, users."avatar"
                           from participants
                           left join users on (participants.user_id = users.id)
@@ -189,7 +193,7 @@ router.get("/get", async (ctx, next) => {
     avatar: getUploadFilePath(group.file),
     isOpen: group.is_open,
     isAdmin: participant && participant.isAdmin,
-    isMember: participant && participant.isMember,
+    state: participant && participant.state,
     conversations: conversations.map(c => ({
       id: c.id,
       title: c.title,
@@ -211,7 +215,7 @@ router.get("/get", async (ctx, next) => {
       return {
         id: participant.id,
         isAdmin: participant.is_admin,
-        isMember: participant.is_member,
+        state: participant.state,
         userId: participant.userId,
         name: participant.name,
         position: participant.position,
@@ -266,11 +270,17 @@ router.post("/subscribe", async ctx => {
 
   const role = await models.ParticipantRole.findOne();
 
-  const participant = await models.Participant.create({
-    ProjectGroupId: groupId,
-    UserId: userId,
-    participantRoleId: role.id,
-    isMember: group.isOpen
+  const participant = await models.Participant.findOrCreate({
+    where: {
+      ProjectGroupId: groupId,
+      UserId: userId
+    },
+    defaults: {
+      ProjectGroupId: groupId,
+      UserId: userId,
+      participantRoleId: role.id,
+      state: group.isOpen ? 1 : 2
+    }
   });
 
   const notification = await models.NotificationPreference.create({
@@ -339,14 +349,17 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
   );
 
   ctx.body = {
-    id: conversation.id,
+    id: conversation.id + "",
+    name: ctx.user.userName,
     title: conversation.title,
+    isPinned: false,
     description: conversation.description,
     userId: conversation.userId,
     count: 0,
     lastpostdate: null,
     files: files,
-    isCommentable: conversation.isCommentable
+    isCommentable: conversation.isCommentable,
+    createdAt: conversation.createdAt
   };
 });
 
@@ -357,7 +370,7 @@ router.post("/backgrounds", async ctx => {
 
   ctx.body = result[0].map(r => {
     return {
-      id: r.id,
+      id: r.id + "",
       background: getUploadFilePath(r.file)
     };
   });
@@ -383,7 +396,7 @@ router.post("/backgrounds/update", async ctx => {
   );
 
   const file = await models.sequelize.query(query);
-  ctx.body = file && { avatar: getUploadFilePath(file[0][0].file) };
+  ctx.body = file && getUploadFilePath(file[0][0].file);
 });
 
 router.post("/update/title", async ctx => {
@@ -546,7 +559,7 @@ router.post("/participants/approve", async ctx => {
   }
 
   await participant.update({
-    isMember: true
+    state: 1
   });
 
   ctx.body = { id: participant.id };

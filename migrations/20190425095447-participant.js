@@ -17,8 +17,8 @@ module.exports = {
       isAdmin: {
         type: Sequelize.BOOLEAN
       },
-      isMember: {
-        type: Sequelize.BOOLEAN
+      state: {
+        type: Sequelize.INTEGER
       },
       created_at: {
         allowNull: false,

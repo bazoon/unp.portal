@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       userId: DataTypes.INTEGER,
       participantRoleId: DataTypes.INTEGER,
       isAdmin: DataTypes.BOOLEAN,
-      isMember: DataTypes.INTEGER
+      state: DataTypes.INTEGER
     },
     {}
   );

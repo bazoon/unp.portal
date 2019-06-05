@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "@researchgate/react-intersection-observer": "^0.7.4",
     "antd": "^3.14.0",
     "apollo-boost": "^0.3.1",
@@ -25,6 +26,7 @@
     "jumpstate": "^2.2.2",
     "mobx": "^5.9.4",
     "mobx-react": "^6.0.2",
+    "mobx-state-tree": "^3.14.0",
     "pretty-bytes": "^5.1.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.3",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-async-generator-functions": "^7.2.0",
     "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/plugin-proposal-decorators": "^7.4.4",
     "@babel/preset-env": "^7.3.4",

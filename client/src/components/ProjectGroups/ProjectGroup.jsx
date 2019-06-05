@@ -34,28 +34,9 @@ class ProjectGroup extends Component {
     onSubscribe(group.id);
   };
 
-  renderLeaveButton(id) {
-    return <LeaveButton groupId={id} onClick={this.handleUnsubscribe} />;
-  }
-
-  renderJoinButton(id) {
-    return <JoinButton groupId={id} onClick={this.handleSubscribe} />;
-  }
-
-  renderRequestButton(id) {
-    return <RequestButton groupId={id} onClick={this.handleSubscribe} />;
-  }
-
-  renderLeaveButton = () => {
-    return (
-      <Button
-        className="project-group__leave-button"
-        style={{ marginLeft: "24px" }}
-        onClick={this.handleUnsubscribe}
-      >
-        Покинуть группу
-      </Button>
-    );
+  handleRequest = () => {
+    const { group, onRequest } = this.props;
+    onRequest(group.id);
   };
 
   render() {
@@ -69,7 +50,7 @@ class ProjectGroup extends Component {
       conversationsCount,
       participant,
       isAdmin,
-      isMember
+      state
     } = group;
 
     const conversationPlurals = ["обсуждение", "обсуждения", "обсуждений"];
@@ -95,11 +76,11 @@ class ProjectGroup extends Component {
           <GroupButton
             isOpen={isOpen}
             isAdmin={isAdmin}
-            isMember={isMember}
+            state={state}
             participant={participant}
             onJoin={this.handleSubscribe}
             onLeave={this.handleUnsubscribe}
-            onRequest={this.handleSubscribe}
+            onRequest={this.handleRequest}
           />
         </div>
       </>

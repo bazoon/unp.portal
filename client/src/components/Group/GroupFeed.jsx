@@ -40,7 +40,7 @@ import GroupButton from "../ProjectGroups/GroupButton";
 
 const maxDescriptionSentences = 10;
 
-@inject("projectGroups")
+@inject("groupsStore")
 @inject("currentUser")
 @observer
 class GroupFeed extends Component {
@@ -59,8 +59,8 @@ class GroupFeed extends Component {
 
   componentDidMount() {
     const { id } = this.props.match.params;
-    this.props.projectGroups.getCurrent(id);
-    this.props.projectGroups.getBackgrounds();
+    this.props.groupsStore.getCurrent(id);
+    this.props.groupsStore.getBackgrounds();
   }
 
   componentWillUnmount() {
@@ -127,12 +127,17 @@ class GroupFeed extends Component {
 
   handleSubscribe = () => {
     const { id } = this.props.match.params;
-    this.props.projectGroups.subscribeToCurrent(id);
+    this.props.groupsStore.subscribe(id);
+  };
+
+  handleRequest = () => {
+    const { id } = this.props.match.params;
+    this.props.groupsStore.request(id);
   };
 
   handleUnsubscribe = () => {
     const { id } = this.props.match.params;
-    this.props.projectGroups.unsubscribeFromCurrent(id);
+    this.props.groupsStore.unsubscribe(id);
   };
 
   handleTitleOver = () => {
@@ -153,7 +158,7 @@ class GroupFeed extends Component {
 
   handleSelectBackground = backgroundId => {
     const { id } = this.props.match.params;
-    this.props.projectGroups.updateBackground({ groupId: id, backgroundId });
+    this.props.groupsStore.updateBackground({ groupId: id, backgroundId });
   };
 
   handleOutTitleClick = e => {
@@ -173,7 +178,7 @@ class GroupFeed extends Component {
   handleDoneEditTitle = () => {
     const { id } = this.props.match.params;
     if (this.editingFields.title) {
-      this.props.projectGroups.updateGroupTitle({
+      this.props.groupsStore.updateGroupTitle({
         groupId: id,
         title: this.editingFields.title
       });
@@ -209,7 +214,7 @@ class GroupFeed extends Component {
   handleDoneEditShortDescription = () => {
     const { id } = this.props.match.params;
     if (this.editingFields.shortDescription) {
-      this.props.projectGroups.updateGroupShortDescription({
+      this.props.groupsStore.updateGroupShortDescription({
         groupId: id,
         shortDescription: this.editingFields.shortDescription
       });
@@ -229,11 +234,11 @@ class GroupFeed extends Component {
   };
 
   handlePin = conversationId => {
-    this.props.projectGroups.pin(conversationId);
+    this.props.groupsStore.pin(conversationId);
   };
 
   handleUnpin = conversationId => {
-    this.props.projectGroups.unpin(conversationId);
+    this.props.groupsStore.unpin(conversationId);
   };
 
   renderAddRegion() {
@@ -454,7 +459,7 @@ class GroupFeed extends Component {
           content={
             <BackgroundSlider
               onSelect={this.handleSelectBackground}
-              backgrounds={this.props.projectGroups.backgrounds}
+              backgrounds={this.props.groupsStore.backgrounds}
             />
           }
           trigger="click"
@@ -494,6 +499,7 @@ class GroupFeed extends Component {
   }
 
   render() {
+    const currentGroup = this.props.groupsStore.current || {};
     const {
       id,
       title,
@@ -501,16 +507,16 @@ class GroupFeed extends Component {
       description,
       shortDescription,
       participant,
-      participants,
-      files,
+      participants = [],
+      files = [],
       isOpen,
       isAdmin,
-      isMember
-    } = this.props.projectGroups.currentGroup;
+      state
+    } = currentGroup;
 
     const { isShortMode } = this.state;
 
-    const canPost = isAdmin || isOpen || isMember;
+    const canPost = isAdmin || isOpen || state === 1;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -582,15 +588,14 @@ class GroupFeed extends Component {
               {canPost && (
                 <Participants projectGroupId={id} participants={participants} />
               )}
-
               <GroupButton
                 isOpen={isOpen}
                 isAdmin={isAdmin}
-                isMember={isMember}
+                state={state}
                 participant={participant}
                 onJoin={this.handleSubscribe}
                 onLeave={this.handleUnsubscribe}
-                onRequest={this.handleSubscribe}
+                onRequest={this.handleRequest}
               />
             </div>
           </Col>
@@ -626,14 +631,12 @@ class GroupFeed extends Component {
             {canPost &&
               !this.state.isConversationModalVisible &&
               this.renderConversations(
-                this.props.projectGroups.currentGroup.conversations
+                this.props.groupsStore.current.conversations
               )}
           </Col>
           <Col span={8}>
             {canPost &&
-              this.renderPinnedConversations(
-                this.props.projectGroups.currentGroup
-              )}
+              this.renderPinnedConversations(this.props.groupsStore.current)}
           </Col>
         </Row>
       </>

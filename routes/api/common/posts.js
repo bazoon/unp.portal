@@ -38,15 +38,20 @@ const createPost = async function createPost({
   const users = await models.sequelize.query(userQuery);
   const user = users[0][0];
 
+  console.log(post);
+
   return {
-    id: post.id,
-    parentId: post.parentId,
+    id: post.id + "",
+    parentId: post.parentId && post.parentId + "",
     text: post.text,
     avatar: getUploadFilePath(user.avatar),
     userName: user.name,
     position: user.position,
     createdAt: post.createdAt,
-    files: files.map(f => ({ name: getUploadFilePath(f.name), size: f.size })),
+    files: files.map(f => ({
+      name: getUploadFilePath(f.name),
+      size: f.size
+    })),
     children: []
   };
 };
@@ -61,8 +66,8 @@ const getPosts = async function getPosts(query) {
     const files = await models.sequelize.query(filesQuery).then(f => f[0]);
 
     return {
-      id: post.id,
-      parentId: post.parent_id,
+      id: post.id + "",
+      parentId: post.parent_id && post.parent_id + "",
       text: post.text,
       avatar: getUploadFilePath(post.avatar),
       userName: post.name,
@@ -85,8 +90,12 @@ const getPosts = async function getPosts(query) {
 
   return extendedPosts.reduce((acc, post) => {
     post.children = post.children || [];
+
     if (post.parentId) {
       const parentPost = postsLookup[post.parentId];
+      // console.log(postsLookup);
+      // console.log("=======================");
+      // console.log(post.parentId, parentPost);
       parentPost.children = parentPost.children || [];
       parentPost.children.push(post);
       return acc;

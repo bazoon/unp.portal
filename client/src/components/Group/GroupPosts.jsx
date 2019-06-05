@@ -291,7 +291,6 @@ class GroupPosts extends Component {
   }
 
   renderPost(post, level, parentPost, isFirstLevel) {
-    console.log(level);
     const { currentPost, postRepliesVisible } = this.state;
     const date = moment(post.createdAt).fromNow();
     const postId = `post_${post.id}`;

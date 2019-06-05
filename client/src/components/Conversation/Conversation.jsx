@@ -14,16 +14,21 @@ import { observer, inject } from "mobx-react";
 import GroupButton from "../ProjectGroups/GroupButton";
 const { TextArea } = Input;
 
-@inject("projectGroups")
+// @inject("projectGroups")
+@inject("groupsStore")
 @inject("currentUser")
 @observer
 class Conversation extends Component {
   componentDidMount = () => {
     const { id, conversationId } = this.props.match.params;
 
-    this.props.projectGroups.getCurrent(id).then(() => {
-      this.props.projectGroups.currentGroup.loadConversation(conversationId);
+    this.props.groupsStore.getCurrent(id).then(() => {
+      this.props.groupsStore.getConversation(conversationId);
     });
+
+    // this.props.projectGroups.getCurrent(id).then(() => {
+    //   this.props.projectGroups.currentGroup.loadConversation(conversationId);
+    // });
   };
 
   handleSend = (text, uploadFiles) => {
@@ -38,7 +43,7 @@ class Conversation extends Component {
       formData.append("file", f);
     });
 
-    return this.props.projectGroups.currentGroup.sendPost(formData);
+    return this.props.groupsStore.sendPost(formData);
   };
 
   handleReplySend = (comment, post, files = []) => {
@@ -54,7 +59,7 @@ class Conversation extends Component {
       formData.append("file", f);
     });
 
-    return this.props.projectGroups.currentGroup.sendPost(formData);
+    return this.props.groupsStore.sendPost(formData);
   };
 
   handleSubscribe = () => {
@@ -109,16 +114,15 @@ class Conversation extends Component {
       id,
       title,
       avatar,
-      participants,
+      participants = [],
       participant,
       isOpen,
       isAdmin,
       isMember
-    } = this.props.projectGroups.currentGroup;
+    } = this.props.groupsStore.current || {};
 
-    const conversation =
-      this.props.projectGroups.currentGroup.currentConversation || {};
-
+    const conversation = this.props.groupsStore.currentConversation || {};
+    console.log(conversation);
     const postsTree = (conversation && conversation.postsTree) || [];
     const conversationTitle = conversation && conversation.title;
     return (

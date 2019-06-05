@@ -9,19 +9,17 @@ class GroupButton extends Component {
     const {
       isOpen,
       isAdmin,
-      isMember,
+      state,
       onLeave,
       onJoin,
       onRequest,
       participant
     } = this.props;
 
-    console.log(this.props);
-
-    const canJoin = (isOpen && !participant) || (isAdmin && !participant);
-    const canRequest = !isOpen && !participant && isMember !== false;
-    const canLeave = participant && isMember !== false;
-    const isWaiting = !isOpen && isMember === false;
+    const canJoin = isOpen && state === 0;
+    const canRequest = !isOpen && state === 0;
+    const canLeave = state === 1;
+    const isWaiting = state === 2;
 
     return (
       <div>

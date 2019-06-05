@@ -29,12 +29,13 @@ router.get("/get", async (ctx, next) => {
   const postsTree = await getPosts(query);
 
   ctx.body = {
+    id: conversation.id + "",
     title: conversation.title,
     description: conversation.description,
     postsTree,
     name: user.name,
     files: files.map(file => ({
-      id: file.id,
+      id: file.id + "",
       name: file.file,
       url: getUploadFilePath(file.file)
     }))

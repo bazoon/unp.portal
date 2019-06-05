@@ -20,7 +20,7 @@ import { Actions } from "jumpstate";
 const { Option } = Select;
 const { TextArea } = Input;
 
-@inject("projectGroups")
+@inject("groupsStore")
 @observer
 class GroupForm extends Component {
   constructor(props) {
@@ -57,7 +57,7 @@ class GroupForm extends Component {
 
       formData.append("projectGroupId", projectGroupId);
 
-      this.props.projectGroups.createConversation(formData).then(() => {
+      this.props.groupsStore.createConversation(formData).then(() => {
         this.props.onOk();
         this.handleCancel();
       });
