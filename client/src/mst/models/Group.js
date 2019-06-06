@@ -7,7 +7,7 @@ import api from "../../api/projectGroups";
 const Group = types
   .model("ProjectGroup", {
     id: types.identifierNumber,
-    title: types.optional(types.string, ""),
+    title: types.optional(types.maybeNull(types.string), ""),
     conversationsCount: types.optional(types.number, 0),
     isAdmin: types.optional(types.boolean, false),
     state: types.optional(types.number, 0),
