@@ -53,13 +53,17 @@ const columns = [
       return (
         <ShareIcon
           style={{ cursor: "pointer" }}
-          onClick={() =>
-            navigator.clipboard
-              .writeText(`${location.origin}${record.url}`)
-              .then(() => {
-                message.success("Скопировано");
-              })
-          }
+          onClick={() => {
+            if (navigator.clipboard) {
+              navigator.clipboard
+                .writeText(`${location.origin}${record.url}`)
+                .then(() => {
+                  message.success("Скопировано");
+                });
+            } else {
+              message.success("Копирование недоступно");
+            }
+          }}
         />
       );
     }
