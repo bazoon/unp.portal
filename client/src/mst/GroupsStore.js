@@ -1,68 +1,24 @@
-import { types, onSnapshot, flow, applySnapshot } from "mobx-state-tree";
+import {
+  types,
+  onSnapshot,
+  flow,
+  applySnapshot,
+  getSnapshot
+} from "mobx-state-tree";
 import Group from "./models/Group";
 import api from "../api/projectGroups";
 import "@babel/polyfill";
 import Background from "./models/Background";
+import Participant from "./models/Participant";
 import Conversation from "./models/Conversation";
 import findInTree from "../utils/findPostInTree";
-
-function mapRawParticipant(item) {
-  return {
-    id: item.id + "",
-    name: item.name,
-    position: item.position + "",
-    roleName: item.roleName + "",
-    level: +item.level,
-    avatar: item.avatar + "",
-    isAdmin: Boolean(item.isAdmin),
-    userId: +item.userId
-  };
-}
-
-function mapRawFile(item) {
-  return {
-    id: item.id + "",
-    name: item.name,
-    url: item.url,
-    size: +item.size
-  };
-}
-
-function mapRawConversation(item) {
-  return {
-    id: item.id + "",
-    name: item.name,
-    count: +item.count,
-    createdAt: item.createdAt,
-    description: item.description,
-    isCommentable: Boolean(item.isCommentable),
-    isPinned: Boolean(item.isPinned),
-    title: item.title
-  };
-}
-
-function mapRawGroup(item) {
-  return {
-    id: item.id + "",
-    title: item.title,
-    conversationsCount: +item.conversationsCount,
-    isAdmin: Boolean(item.isAdmin),
-    state: +item.state,
-    isOpen: Boolean(item.isOpen),
-    participant: Boolean(item.participant),
-    participantsCount: +item.participantsCount,
-    description: item.description || "",
-    shortDescription: item.shortDescription || "",
-    avatar: item.avatar || "",
-    participants: item.participants.map(mapRawParticipant),
-    files: item.files.map(mapRawFile),
-    conversations: item.conversations.map(mapRawConversation)
-  };
-}
 
 const GroupsStore = types
   .model("ProjectGroups", {
     groups: types.array(Group),
+    total: types.maybeNull(types.number),
+    page: types.optional(types.maybeNull(types.number), 1),
+    pageSize: types.optional(types.maybeNull(types.number), 10),
     current: types.maybeNull(types.reference(Group)),
     currentConversation: types.maybeNull(types.reference(Conversation)),
     backgrounds: types.array(Background)
@@ -73,16 +29,25 @@ const GroupsStore = types
     }
   }))
   .actions(self => {
+    function setPage(page) {
+      self.page = page;
+    }
+
     function updateGroups(data) {
-      Object.assign(self.groups, data.map(mapRawGroup));
+      self.groups = data;
     }
 
     const loadGroups = flow(function* loadGroups() {
       try {
         self.setCurrentGroup(null);
         self.setCurrentConversation(null);
-        const json = yield api.getAll();
-        updateGroups(json);
+        const json = yield api.getAll({
+          page: self.page,
+          pageSize: self.pageSize
+        });
+
+        updateGroups(json.groups);
+        self.total = json.pagination.total;
       } catch (err) {
         console.error("Failed to load groups ", err);
       }
@@ -94,15 +59,17 @@ const GroupsStore = types
 
     const subscribe = flow(function* subscribe(groupId) {
       yield api.subscribe(groupId);
-      const group = self.groups.find(g => g.id === groupId);
+      const data = yield api.get(groupId);
+      const group = self.groups.find(g => g.id == groupId);
       group.participant = true;
+      group.participants = data;
       group.state = 1;
       group.participantsCount = +group.participantsCount + 1;
     });
 
     const request = flow(function* request(groupId) {
       yield api.subscribe(groupId);
-      const group = self.groups.find(g => g.id === groupId);
+      const group = self.groups.find(g => g.id == groupId);
       group.participant = true;
       group.state = 2;
       group.participantsCount = +group.participantsCount + 1;
@@ -110,9 +77,11 @@ const GroupsStore = types
 
     const unsubscribe = flow(function* unsubscribe(groupId) {
       yield api.unsubscribe(groupId);
-      const group = self.groups.find(g => g.id === groupId);
+      const data = yield api.get(groupId);
+      const group = self.groups.find(g => g.id == groupId);
       group.participant = false;
       group.state = 0;
+      group.participants = data;
       group.isAdmin = false;
       group.participantsCount = +group.participantsCount - 1;
     });
@@ -126,9 +95,9 @@ const GroupsStore = types
     }
 
     const getCurrent = flow(function* getCurrent(id) {
-      const data = mapRawGroup(yield api.get(id));
+      const data = yield api.get(id);
+      const group = self.groups.find(g => g.id == id);
 
-      const group = self.groups.find(g => g.id === id);
       if (group) {
         Object.assign(group, data);
         self.currentGroup = group.id;
@@ -182,7 +151,7 @@ const GroupsStore = types
       const participants = self.current.participants.map(p => {
         if (p.id == payload.id) {
           p.isAdmin = true;
-          return p.clone();
+          return Participant.create(getSnapshot(p));
         }
         return p;
       });
@@ -191,16 +160,15 @@ const GroupsStore = types
     });
 
     const removeAdmin = flow(function* removeAdmin(payload) {
-      yield api.makeAdmin(payload);
+      yield api.removeAdmin(payload);
       const participants = self.current.participants.map(p => {
         if (p.id == payload.id) {
           p.isAdmin = false;
-          return p.clone();
+          return Participant.create(getSnapshot(p));
         }
         return p;
-
-        self.current.participants = participants;
       });
+      self.current.participants = participants;
     });
 
     const approve = flow(function* approve(payload) {
@@ -242,6 +210,7 @@ const GroupsStore = types
     });
 
     return {
+      setPage,
       createGroup,
       loadGroups,
       subscribe,

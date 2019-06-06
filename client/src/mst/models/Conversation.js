@@ -3,7 +3,7 @@ import Post from "./Post";
 import File from "./File";
 
 const Conversation = types.model("Conversation", {
-  id: types.identifier,
+  id: types.identifierNumber,
   name: types.maybeNull(types.string),
   count: types.number,
   createdAt: types.string,

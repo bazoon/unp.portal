@@ -353,39 +353,9 @@ class GroupFeed extends Component {
     );
   }
 
-  renderLeaveButton(id) {
-    return (
-      <LeaveButton
-        style={{ width: "100%" }}
-        groupId={id}
-        onClick={this.handleUnsubscribe}
-      />
-    );
-  }
-
-  renderJoinButton(id) {
-    return (
-      <JoinButton
-        style={{ width: "100%" }}
-        groupId={id}
-        onClick={this.handleSubscribe}
-      />
-    );
-  }
-
-  renderRequestButton(id) {
-    return (
-      <RequestButton
-        style={{ width: "100%" }}
-        groupId={id}
-        onClick={this.handleSubscribe}
-      />
-    );
-  }
-
   renderPinnedConversations = group => {
-    const { id, conversations } = group;
-    const pinned = conversations.filter(c => c.isPinned);
+    const { id } = group;
+    const { pinned } = group;
 
     return (
       <div className="group__pinned">

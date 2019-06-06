@@ -1,8 +1,8 @@
 import api from "./api";
 
 export default {
-  getAll() {
-    return api.get("api/projectGroups/").then(({ data }) => {
+  getAll(payload) {
+    return api.get("api/projectGroups/", payload).then(({ data }) => {
       return data;
     });
   },

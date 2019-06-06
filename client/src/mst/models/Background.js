@@ -1,7 +1,7 @@
 import { types, onSnapshot, flow } from "mobx-state-tree";
 
 const Background = types.model("Background", {
-  id: types.identifier,
+  id: types.identifierNumber,
   background: types.string
 });
 

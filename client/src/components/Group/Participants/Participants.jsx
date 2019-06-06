@@ -19,7 +19,7 @@ import MoreIcon from "../../../../images/more";
 import { observer, inject } from "mobx-react";
 import "./Participants.less";
 
-@inject("projectGroups")
+@inject("groupsStore")
 @observer
 class Participants extends Component {
   constructor(props) {
@@ -51,7 +51,7 @@ class Participants extends Component {
         dataIndex: "commands",
         key: "commands",
         render: (value, record) =>
-          this.props.projectGroups.currentGroup.isAdmin && (
+          this.props.groupsStore.current.isAdmin && (
             <Popover
               placement="bottom"
               content={this.renderMenu(
@@ -71,19 +71,19 @@ class Participants extends Component {
   }
 
   handleMakeAdmin = id => {
-    this.props.projectGroups.makeAdmin({ id });
+    this.props.groupsStore.makeAdmin({ id });
   };
 
   handleRemoveAdmin = id => {
-    this.props.projectGroups.removeAdmin({ id });
+    this.props.groupsStore.removeAdmin({ id });
   };
 
   handleRemoveFromGroup = (id, userId) => {
-    this.props.projectGroups.removeFromGroup({ id, userId });
+    this.props.groupsStore.removeFromGroup({ id, userId });
   };
 
   handleApprove = id => {
-    this.props.projectGroups.approve({ id });
+    this.props.groupsStore.approve({ id });
   };
 
   renderMenu(id, isAdmin, isMember) {
@@ -119,18 +119,12 @@ class Participants extends Component {
 
   componentDidMount() {
     const { id } = this.props.match.params;
-    this.props.projectGroups.getCurrent(id);
+    this.props.groupsStore.getCurrent(id);
   }
 
   render() {
-    const {
-      title,
-      participants,
-      avatar,
-      isAdmin,
-      isOpen,
-      isMember
-    } = this.props.projectGroups.currentGroup;
+    const { title, participants, avatar, isAdmin, isOpen, isMember } =
+      this.props.groupsStore.current || {};
 
     const { id } = this.props.match.params;
     const canView = isAdmin || isOpen || isMember;

@@ -2,7 +2,16 @@ import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Button, Tabs, Input, Icon, Breadcrumb, Row, Col } from "antd";
+import {
+  Button,
+  Tabs,
+  Input,
+  Icon,
+  Breadcrumb,
+  Row,
+  Col,
+  Pagination
+} from "antd";
 import ProjectGroup from "./ProjectGroup";
 import "./ProjectGroups.less";
 import GroupCreateModal from "./GroupCreateModal";
@@ -59,8 +68,13 @@ class ProjectGroups extends Component {
   };
 
   componentDidMount = () => {
-    this.props.groupsStore.loadGroups();
+    this.props.groupsStore.loadGroups({ page: 1, pageSize: 10 });
     window.g = this.props.groupsStore;
+  };
+
+  handleChangePagination = (page, pageSize) => {
+    this.props.groupsStore.setPage(page);
+    this.props.groupsStore.loadGroups();
   };
 
   renderGroups(groups) {
@@ -76,6 +90,7 @@ class ProjectGroups extends Component {
   }
 
   render() {
+    const { page, pageSize } = this.props.groupsStore;
     return (
       <>
         <Breadcrumb>
@@ -99,6 +114,12 @@ class ProjectGroups extends Component {
             <div className="project-groups">
               {this.renderGroups(this.props.groupsStore.groups)}
             </div>
+            <Pagination
+              showQuickJumper
+              onChange={this.handleChangePagination}
+              total={this.props.groupsStore.total}
+              pageSize={10}
+            />
           </Col>
           <Col span={8}>
             <div className="project-groups__side-wrap">

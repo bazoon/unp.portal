@@ -15,7 +15,7 @@ class GroupButton extends Component {
       onRequest,
       participant
     } = this.props;
-
+    const style = { width: "100%" };
     const canJoin = isOpen && state === 0;
     const canRequest = !isOpen && state === 0;
     const canLeave = state === 1;
@@ -23,13 +23,13 @@ class GroupButton extends Component {
 
     return (
       <div>
-        {canJoin && <JoinButton onClick={onJoin} />}
+        {canJoin && <JoinButton style={style} onClick={onJoin} />}
 
-        {canLeave && <LeaveButton onClick={onLeave} />}
+        {canLeave && <LeaveButton style={style} onClick={onLeave} />}
 
-        {canRequest && <RequestButton onClick={onRequest} />}
+        {canRequest && <RequestButton style={style} onClick={onRequest} />}
 
-        {isWaiting && <WaitButton />}
+        {isWaiting && <WaitButton style={style} />}
       </div>
     );
   }

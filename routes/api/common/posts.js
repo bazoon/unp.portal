@@ -41,8 +41,8 @@ const createPost = async function createPost({
   console.log(post);
 
   return {
-    id: post.id + "",
-    parentId: post.parentId && post.parentId + "",
+    id: post.id,
+    parentId: post.parentId && post.parentId,
     text: post.text,
     avatar: getUploadFilePath(user.avatar),
     userName: user.name,
@@ -66,8 +66,8 @@ const getPosts = async function getPosts(query) {
     const files = await models.sequelize.query(filesQuery).then(f => f[0]);
 
     return {
-      id: post.id + "",
-      parentId: post.parent_id && post.parent_id + "",
+      id: post.id,
+      parentId: post.parent_id && post.parent_id,
       text: post.text,
       avatar: getUploadFilePath(post.avatar),
       userName: post.name,

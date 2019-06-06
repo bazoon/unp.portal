@@ -47,6 +47,7 @@ class GroupCreateModal extends Component {
     });
     this.onFormSubmit();
     onOk();
+    this.handleCancel();
   };
 
   handleSubmit = onFormSubmit => {

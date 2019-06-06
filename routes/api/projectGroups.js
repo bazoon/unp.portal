@@ -87,16 +87,21 @@ function getGroups(userId, query, countQuery) {
 }
 
 router.get("/", async (ctx, next) => {
+  const { page, pageSize } = ctx.request.query;
   const userId = ctx.user.id;
+  const offset = (page - 1) * pageSize;
+  const limit = pageSize;
 
   const query = `select title, avatar, id, is_open, user_id from
-              project_groups`;
+              project_groups limit ${limit} offset ${offset}`;
 
   const countQuery = `select project_groups.id, count(*) from project_groups, participants
                     where (project_groups.id = participants.project_group_id)
                     group by project_groups.id`;
 
   const groupsResult = await models.sequelize.query(query);
+
+  const groupsCount = await models.ProjectGroup.count();
 
   const groups = groupsResult[0].map(async group => {
     const participantsQuery = `select count(*) from participants where project_group_id=${
@@ -122,20 +127,28 @@ router.get("/", async (ctx, next) => {
       id: group.id,
       isOpen: group.is_open,
       title: group.title,
-      avatar: getUploadFilePath(group.avatar),
+      avatar: getUploadFilePath(group.avatar) || "",
       isOpen: group.is_open,
-      participantsCount: participantsResult[0][0].count,
-      conversationsCount: conversationsResult[0][0].count,
+      participantsCount: +participantsResult[0][0].count,
+      conversationsCount: +conversationsResult[0][0].count,
       participant: participant !== null,
-      state: participant && participant.state,
-      isAdmin: participant && participant.isAdmin,
+      state: (participant && participant.state) || 0,
+      isAdmin: Boolean(participant && participant.isAdmin),
       files: [],
       participants: [],
       conversations: []
     };
   });
 
-  ctx.body = await Promise.all(groups);
+  const g = await Promise.all(groups);
+  console.log(g);
+
+  ctx.body = {
+    groups: g,
+    pagination: {
+      total: groupsCount
+    }
+  };
 });
 
 router.get("/get", async (ctx, next) => {
@@ -187,21 +200,21 @@ router.get("/get", async (ctx, next) => {
   ctx.body = {
     id: group.id,
     isOpen: group.is_open,
-    title: group.title,
-    description: group.description,
-    shortDescription: group.short_description,
-    avatar: getUploadFilePath(group.file),
-    isOpen: group.is_open,
-    isAdmin: participant && participant.isAdmin,
-    state: participant && participant.state,
+    title: group.title || "",
+    description: group.description || "",
+    shortDescription: group.short_description || "",
+    avatar: getUploadFilePath(group.file) || "",
+    isOpen: Boolean(group.is_open),
+    isAdmin: Boolean(participant && participant.isAdmin),
+    state: (participant && participant.state) || 0,
     conversations: conversations.map(c => ({
       id: c.id,
-      title: c.title,
-      isCommentable: c.is_commentable,
-      isPinned: c.is_pinned,
-      count: c.count,
+      title: c.title || "",
+      isCommentable: Boolean(c.is_commentable),
+      isPinned: Boolean(c.is_pinned),
+      count: +c.count,
       name: c.name,
-      description: c.description,
+      description: c.description || "",
       createdAt: c.created_at
     })),
     files: files.map(file => {
@@ -214,13 +227,13 @@ router.get("/get", async (ctx, next) => {
     participants: participants.map(participant => {
       return {
         id: participant.id,
-        isAdmin: participant.is_admin,
-        state: participant.state,
+        isAdmin: Boolean(participant.is_admin),
+        state: participant.state || 0,
         userId: participant.userId,
         name: participant.name,
-        position: participant.position,
-        roleName: participant.role_name,
-        level: participant.level,
+        position: participant.position || "",
+        roleName: participant.role_name || "",
+        level: participant.level || 0,
         avatar: getUploadFilePath(participant.avatar)
       };
     }),
@@ -337,7 +350,7 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
     isCommentable: !(isNews === "true")
   });
 
-  await models.File.bulkCreate(
+  const createdFiles = await models.File.bulkCreate(
     files.map(file => {
       return {
         userId,
@@ -345,11 +358,12 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
         conversationId: conversation.id,
         size: conversation.size
       };
-    })
+    }),
+    { returning: true }
   );
 
   ctx.body = {
-    id: conversation.id + "",
+    id: conversation.id,
     name: ctx.user.userName,
     title: conversation.title,
     isPinned: false,
@@ -357,7 +371,12 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
     userId: conversation.userId,
     count: 0,
     lastpostdate: null,
-    files: files,
+    files: createdFiles.map(f => ({
+      id: f.id,
+      size: f.size,
+      name: f.file,
+      url: getUploadFilePath(f.file)
+    })),
     isCommentable: conversation.isCommentable,
     createdAt: conversation.createdAt
   };
@@ -370,7 +389,7 @@ router.post("/backgrounds", async ctx => {
 
   ctx.body = result[0].map(r => {
     return {
-      id: r.id + "",
+      id: r.id,
       background: getUploadFilePath(r.file)
     };
   });

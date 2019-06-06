@@ -4,22 +4,27 @@ import Participant from "./Participant";
 import Conversation from "./Conversation";
 import api from "../../api/projectGroups";
 
-const Group = types.model("ProjectGroup", {
-  id: types.identifier,
-  title: types.string,
-  conversationsCount: types.number,
-  isAdmin: types.boolean,
-  state: types.number,
-  isOpen: types.boolean,
-  participant: types.boolean,
-  participantsCount: types.number,
-  description: types.string,
-  shortDescription: types.string,
-  avatar: types.string,
-  participants: types.array(Participant),
-  files: types.array(File),
-  conversations: types.array(Conversation)
-  // currentConversation: types.number
-});
+const Group = types
+  .model("ProjectGroup", {
+    id: types.identifierNumber,
+    title: types.optional(types.string, ""),
+    conversationsCount: types.optional(types.number, 0),
+    isAdmin: types.optional(types.boolean, false),
+    state: types.optional(types.number, 0),
+    isOpen: types.optional(types.boolean, true),
+    participant: types.optional(types.boolean, false),
+    participantsCount: types.optional(types.number, 0),
+    description: types.optional(types.string, ""),
+    shortDescription: types.optional(types.string, ""),
+    avatar: types.optional(types.string, ""),
+    participants: types.optional(types.array(Participant), []),
+    files: types.optional(types.array(File), []),
+    conversations: types.optional(types.array(Conversation), [])
+  })
+  .views(self => ({
+    get pinned() {
+      return self.conversations.filter(conversation => conversation.isPinned);
+    }
+  }));
 
 export default Group;

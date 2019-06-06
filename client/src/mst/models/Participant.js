@@ -1,14 +1,14 @@
 import { types, onSnapshot } from "mobx-state-tree";
 
 const Participant = types.model("Participant", {
-  id: types.identifier,
+  id: types.identifierNumber,
   name: types.string,
   position: types.string,
   roleName: types.string,
   level: types.number,
   avatar: types.string,
   isAdmin: types.boolean,
-  userId: types.number
+  userId: types.maybe(types.number)
 });
 
 export default Participant;
