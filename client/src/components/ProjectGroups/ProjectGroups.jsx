@@ -69,7 +69,7 @@ class ProjectGroups extends Component {
 
   componentDidMount = () => {
     this.props.groupsStore.loadGroups({ page: 1, pageSize: 10 });
-    window.g = this.props.groupsStore;
+    this.props.groupsStore.getBackgrounds();
   };
 
   handleChangePagination = (page, pageSize) => {
