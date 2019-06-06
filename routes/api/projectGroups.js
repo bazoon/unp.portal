@@ -283,18 +283,26 @@ router.post("/subscribe", async ctx => {
 
   const role = await models.ParticipantRole.findOne();
 
-  const participant = await models.Participant.findOrCreate({
+  let participant = await models.Participant.findOne({
     where: {
       ProjectGroupId: groupId,
       UserId: userId
-    },
-    defaults: {
+    }
+  });
+
+  if (!participant) {
+    participant = await models.Participant.create({
       ProjectGroupId: groupId,
       UserId: userId,
       participantRoleId: role.id,
       state: group.isOpen ? 1 : 2
-    }
-  });
+    });
+  } else {
+    participant.update({
+      participantRoleId: role.id,
+      state: group.isOpen ? 1 : 2
+    });
+  }
 
   const notification = await models.NotificationPreference.create({
     type: "Группа",
