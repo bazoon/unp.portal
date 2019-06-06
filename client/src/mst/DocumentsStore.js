@@ -2,8 +2,8 @@ import { types, flow } from "mobx-state-tree";
 import File from "./models/File";
 import api from "../api/docs";
 
-const GroupsStore = types
-  .model("GroupsStore", {
+const DocumentsStore = types
+  .model("DocumentsStore", {
     documents: types.array(File)
   })
   .views(self => {
@@ -36,4 +36,4 @@ const GroupsStore = types
     };
   });
 
-export default GroupsStore;
+export default DocumentsStore;
