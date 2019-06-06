@@ -38,8 +38,6 @@ const createPost = async function createPost({
   const users = await models.sequelize.query(userQuery);
   const user = users[0][0];
 
-  console.log(post);
-
   return {
     id: post.id,
     parentId: post.parentId && post.parentId,

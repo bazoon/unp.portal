@@ -127,8 +127,6 @@ router.post("/postReplyToFeed", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
 
-  console.log(1, file);
-
   if (postId) {
     parentPost = await models.Post.findOne({ where: { id: postId } });
   }
@@ -143,8 +141,6 @@ router.post("/postReplyToFeed", koaBody({ multipart: true }), async ctx => {
   const readyFiles = await models.File.bulkCreate(
     files.map(f => ({ postId: post.id, file: f.name, size: f.size }))
   );
-
-  console.log(2, readyFiles);
 
   const query = `select users.name, users.avatar, positions.name as position
                 from users, positions

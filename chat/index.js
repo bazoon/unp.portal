@@ -58,7 +58,6 @@ class Chat {
   onChannelFileMessage(userName, m, fn) {
     const { channelId, message, type, userId, files, id } = m;
     util.combineFileMessage(channelId, userId, files, id).then(message => {
-      console.log("Emit", message, channelId);
       this.io.to(channelId).emit("channel-message", message);
       fn();
     });

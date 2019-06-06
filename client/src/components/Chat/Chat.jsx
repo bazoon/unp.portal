@@ -100,7 +100,6 @@ class Chat extends Component {
     });
 
     chatSocket.on("channel-message", message => {
-      console.log("Recieved", message);
       Actions.addNewMessage({ message });
     });
   };

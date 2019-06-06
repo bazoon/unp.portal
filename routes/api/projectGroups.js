@@ -141,7 +141,6 @@ router.get("/", async (ctx, next) => {
   });
 
   const g = await Promise.all(groups);
-  console.log(g);
 
   ctx.body = {
     groups: g,

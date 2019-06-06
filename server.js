@@ -12,31 +12,6 @@ const router = new Router();
 const koaBody = require("koa-body");
 const uploadFiles = require("./utils/uploadFiles");
 const models = require("./models");
-const { ApolloServer, gql } = require("apollo-server-koa");
-const {
-  fileLoader,
-  mergeTypes,
-  mergeResolvers
-} = require("merge-graphql-schemas");
-
-const typeDefs = mergeTypes(
-  fileLoader(path.join(__dirname, "./graphql/schema"))
-);
-
-const resolvers = fileLoader(path.join(__dirname, "./graphql/resolvers"));
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: ({ ctx }) => {
-    // get the user token from the headers
-    const token = ctx.request.headers.authorization || "";
-    const tokenOnly = token.split(" ")[1];
-    const user = jwt.verify(tokenOnly, process.env.API_TOKEN);
-    if (!user) throw new AuthorizationError("you must be logged in");
-    return { user };
-  }
-});
 
 const app = new Koa();
 const http = require("http").Server(app.callback());
@@ -82,7 +57,6 @@ app.use(async (ctx, next) => {
   }
 });
 
-server.applyMiddleware({ app });
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 models.sequelize.sync().then(function() {
