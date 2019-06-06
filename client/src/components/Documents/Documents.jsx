@@ -52,6 +52,7 @@ const columns = [
     render: (value, record) => {
       return (
         <ShareIcon
+          style={{ cursor: "pointer" }}
           onClick={() =>
             navigator.clipboard
               .writeText(`${location.origin}${record.url}`)
@@ -65,7 +66,7 @@ const columns = [
   }
 ];
 
-@inject("documents")
+@inject("documentsStore")
 @observer
 class Documents extends Component {
   constructor(props) {
@@ -82,10 +83,11 @@ class Documents extends Component {
       formData.append("file", file);
     });
 
-    return this.props.documents.upload(formData).then(() => {
+    return this.props.documentsStore.upload(formData).then(() => {
       this.setState({
         docs: []
       });
+      message.success("Файлы успешно загружены");
     });
   };
 
@@ -100,7 +102,7 @@ class Documents extends Component {
       <Table
         showHeader={false}
         rowKey="id"
-        dataSource={documents}
+        dataSource={documents.slice()}
         columns={columns}
         pagination={{
           showQuickJumper: true
@@ -110,7 +112,7 @@ class Documents extends Component {
   }
 
   componentDidMount() {
-    this.props.documents.load();
+    this.props.documentsStore.loadAll();
   }
 
   render() {
@@ -129,7 +131,7 @@ class Documents extends Component {
               <Search placeholder="Поиск по файлам" />
             </div>
             <div className="documents">
-              {this.renderDocs(this.props.documents.documents)}
+              {this.renderDocs(this.props.documentsStore.getAll())}
             </div>
           </Col>
           <Col span={8}>

@@ -62,7 +62,7 @@ const GroupsStore = types
       const data = yield api.get(groupId);
       const group = self.groups.find(g => g.id == groupId);
       group.participant = true;
-      group.participants = data;
+      group.participants = data.participants;
       group.state = 1;
       group.participantsCount = +group.participantsCount + 1;
     });
@@ -81,7 +81,7 @@ const GroupsStore = types
       const group = self.groups.find(g => g.id == groupId);
       group.participant = false;
       group.state = 0;
-      group.participants = data;
+      group.participants = data.participants;
       group.isAdmin = false;
       group.participantsCount = +group.participantsCount - 1;
     });

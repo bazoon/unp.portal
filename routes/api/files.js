@@ -23,11 +23,12 @@ router.get("/", async ctx => {
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
+  const files = Array.isArray(file) ? file : [file];
 
-  await uploadFiles(file);
+  await uploadFiles(files);
 
   await models.File.bulkCreate(
-    file.map(f => {
+    files.map(f => {
       return {
         file: f.name,
         size: f.size,
