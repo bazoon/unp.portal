@@ -16,7 +16,7 @@ const { TextArea } = Input;
 
 // @inject("projectGroups")
 @inject("groupsStore")
-@inject("currentUser")
+@inject("currentUserStore")
 @observer
 class Conversation extends Component {
   componentDidMount = () => {
@@ -147,7 +147,7 @@ class Conversation extends Component {
               {conversation.isCommentable && (
                 <Posts
                   posts={postsTree}
-                  avatar={this.props.currentUser.avatar}
+                  avatar={this.props.currentUserStore.avatar}
                   onSend={this.handleSend}
                   onReplySend={this.handleReplySend}
                   showConversationForm

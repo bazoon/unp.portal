@@ -8,13 +8,6 @@ export default {
         password
       })
       .then(({ data }) => {
-        const { token, userName, userId, avatar, isAdmin } = data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("userName", userName);
-        localStorage.setItem("userId", userId);
-        localStorage.setItem("avatar", avatar);
-        localStorage.setItem("isAdmin", isAdmin);
-
         return data;
       });
   },

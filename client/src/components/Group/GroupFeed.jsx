@@ -41,7 +41,7 @@ import GroupButton from "../ProjectGroups/GroupButton";
 const maxDescriptionSentences = 10;
 
 @inject("groupsStore")
-@inject("currentUser")
+@inject("currentUserStore")
 @observer
 class GroupFeed extends Component {
   constructor(props) {
@@ -591,8 +591,8 @@ class GroupFeed extends Component {
             {this.state.isConversationModalVisible && (
               <ConversationForm
                 ref={this.formRef}
-                avatar={this.props.currentUser.avatar}
-                userName={this.props.currentUser.userName}
+                avatar={this.props.currentUserStore.avatar}
+                userName={this.props.currentUserStore.userName}
                 onCancel={this.handleCancel}
                 onOk={this.handleOk}
                 projectGroupId={id}

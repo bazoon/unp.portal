@@ -11,13 +11,13 @@ import { observer, inject } from "mobx-react";
 const { TabPane } = Tabs;
 
 @observer
-@inject("currentUser")
+@inject("currentUserStore")
 class LoginForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const userName = this.props.form.getFieldValue("userName");
     const password = this.props.form.getFieldValue("password");
-    this.props.currentUser.login(userName, password).then(() => {
+    this.props.currentUserStore.login(userName, password).then(() => {
       this.props.onLogin();
     });
   };
@@ -26,14 +26,14 @@ class LoginForm extends Component {
     e.preventDefault();
     const userName = this.props.form.getFieldValue("userName");
     const password = this.props.form.getFieldValue("password");
-    this.props.currentUser.signup(userName, password).then(() => {
+    this.props.currentUserStore.signup(userName, password).then(() => {
       this.props.onLogin();
     });
   };
 
   render() {
     const { getFieldDecorator } = this.props.form;
-    const { loginFailed } = this.props.currentUser;
+    const { loginFailed } = this.props.currentUserStore;
     const className = cn("login-form__wrap", {
       "login-form__wrap-failed": loginFailed
     });

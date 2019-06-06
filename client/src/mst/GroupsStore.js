@@ -7,7 +7,6 @@ import {
 } from "mobx-state-tree";
 import Group from "./models/Group";
 import api from "../api/projectGroups";
-import "@babel/polyfill";
 import Background from "./models/Background";
 import Participant from "./models/Participant";
 import Conversation from "./models/Conversation";

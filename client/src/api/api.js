@@ -1,5 +1,5 @@
 import axios from "axios";
-import currentUser from "../stores/currentUser";
+import currentUserStore from "../mst/CurrentUserStore";
 
 const api = {
   get: (url, params = {}) => {
@@ -11,7 +11,7 @@ const api = {
 
     return axios.get("/" + url, config).catch(e => {
       if (e.request.status === 401) {
-        currentUser.logout();
+        currentUserStore.logout();
       }
     });
   },
@@ -23,7 +23,7 @@ const api = {
 
     return axios.post("/" + url, data, config).catch(e => {
       if (e.request.status === 401) {
-        currentUser.logout();
+        currentUserStore.logout();
       }
     });
   }
