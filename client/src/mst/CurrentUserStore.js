@@ -5,6 +5,7 @@ import api from "../api/login";
 const CurrentUserStore = types
   .model("CurrentUserStore", {
     id: types.identifierNumber,
+    userId: types.maybeNull(types.number),
     token: types.maybeNull(types.string),
     userName: types.maybeNull(types.string),
     avatar: types.maybeNull(types.string),
@@ -25,7 +26,7 @@ const CurrentUserStore = types
       const { token, userName, userId, avatar, isAdmin } = data;
       self.token = token;
       self.userName = userName;
-      self.id = userId;
+      self.userId = userId;
       self.avatar = avatar;
       self.isAdmin = isAdmin;
 
@@ -39,11 +40,11 @@ const CurrentUserStore = types
     const logout = function logout() {
       api.logout();
       setData({
-        token: undefined,
-        userName: undefined,
-        userId: undefined,
-        avatar: undefined,
-        isAdmin: undefined
+        token: "",
+        userName: "",
+        userId: -1,
+        avatar: "",
+        isAdmin: false
       });
     };
 

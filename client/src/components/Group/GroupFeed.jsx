@@ -486,7 +486,7 @@ class GroupFeed extends Component {
 
     const { isShortMode } = this.state;
 
-    const canPost = isAdmin || isOpen || state === 1;
+    const canPost = isAdmin || state === 1;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver

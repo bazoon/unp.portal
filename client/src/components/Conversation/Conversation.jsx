@@ -122,7 +122,6 @@ class Conversation extends Component {
     } = this.props.groupsStore.current || {};
 
     const conversation = this.props.groupsStore.currentConversation || {};
-    console.log(conversation);
     const postsTree = (conversation && conversation.postsTree) || [];
     const conversationTitle = conversation && conversation.title;
     return (
