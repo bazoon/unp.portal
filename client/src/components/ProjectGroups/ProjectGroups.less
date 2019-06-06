@@ -1,5 +1,11 @@
 .project-groups {
   background: #fff;
+  border-radius: 8px;
+
+  &__pagination {
+    margin-left: 26px;
+    padding-bottom: 20px;
+  }
 
   &__form {
     background: #fff;
@@ -96,12 +102,11 @@
 
   &__header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-family: OpenSansBold;
+    font-size: 16px;
+    color: #595959;
     margin-bottom: 16px;
-    margin-bottom: 16px;
-    padding-left: 16px;
-    margin-right: 16px;
+    text-transform: uppercase;
   }
 
   &__title {
@@ -120,6 +125,7 @@
   &__search {
     padding: 24px;
     background-color: #fff;
+    border-radius: 8px;
     margin-bottom: 20px;
   }
 
@@ -130,15 +136,25 @@
 
 .project-group {
   display: flex;
-  padding: 24px;
-  min-height: 80px;
+  padding-bottom: 16px;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 10px;
   background-color: #fff;
   color: #000;
-  border-radius: 8px;
+  padding: 20px 20px 20px 26px;
   border-bottom: solid 1px #d8d8d8;
+
+  &:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+
+  &:nth-last-child(2) {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom: none;
+  }
 
   &__avatar {
     width: 48px;

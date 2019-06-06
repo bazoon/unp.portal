@@ -111,15 +111,28 @@ class ProjectGroups extends Component {
             <div className="project-groups__search">
               <Search placeholder="Поиск по группам" />
             </div>
+          </Col>
+        </Row>
+
+        <Row gutter={27}>
+          <Col span={16}>
+            <div className="project-groups__header">Ваши группы</div>
+          </Col>
+        </Row>
+
+        <Row gutter={27}>
+          <Col span={16}>
             <div className="project-groups">
               {this.renderGroups(this.props.groupsStore.groups)}
+              <div className="project-groups__pagination">
+                <Pagination
+                  showQuickJumper
+                  onChange={this.handleChangePagination}
+                  total={this.props.groupsStore.total}
+                  pageSize={10}
+                />
+              </div>
             </div>
-            <Pagination
-              showQuickJumper
-              onChange={this.handleChangePagination}
-              total={this.props.groupsStore.total}
-              pageSize={10}
-            />
           </Col>
           <Col span={8}>
             <div className="project-groups__side-wrap">
