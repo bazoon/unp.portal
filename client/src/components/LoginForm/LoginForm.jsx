@@ -106,6 +106,7 @@ class LoginForm extends Component {
                     rules: [{ required: true, message: "Логин" }]
                   })(
                     <Input
+                      className="signup"
                       prefix={
                         <Icon
                           type="user"
@@ -122,6 +123,7 @@ class LoginForm extends Component {
                     rules: [{ required: true, message: "Пароль" }]
                   })(
                     <Input
+                      className="signup"
                       prefix={
                         <Icon
                           type="lock"
@@ -143,7 +145,7 @@ class LoginForm extends Component {
                   <Button
                     type="primary"
                     htmlType="submit"
-                    className="login-form-button"
+                    className="signup-form-button"
                   >
                     Войти
                   </Button>

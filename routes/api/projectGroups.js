@@ -233,7 +233,7 @@ router.get("/get", async (ctx, next) => {
         position: participant.position || "",
         roleName: participant.role_name || "",
         level: participant.level || 0,
-        avatar: getUploadFilePath(participant.avatar)
+        avatar: getUploadFilePath(participant.avatar) || ""
       };
     }),
     participant: participant !== null
@@ -293,12 +293,12 @@ router.post("/subscribe", async ctx => {
     participant = await models.Participant.create({
       ProjectGroupId: groupId,
       UserId: userId,
-      participantRoleId: role.id,
+      participantRoleId: role && role.id,
       state: group.isOpen ? 1 : 2
     });
   } else {
     participant.update({
-      participantRoleId: role.id,
+      participantRoleId: role && role.id,
       state: group.isOpen ? 1 : 2
     });
   }

@@ -570,12 +570,14 @@ class GroupFeed extends Component {
             </div>
           </Col>
         </Row>
-        {!isShortMode && files.length > 0 && (
+        {!isShortMode && (
           <Row type="flex">
             {description ? (
               <>
                 <Col span={16}>{this.renderRestDescription(description)}</Col>
-                <Col span={8}>{canPost && this.renderFiles(files)}</Col>
+                {files.length > 0 && (
+                  <Col span={8}>{canPost && this.renderFiles(files)}</Col>
+                )}
               </>
             ) : (
               <Col span={24}>{canPost && this.renderFiles(files)}</Col>

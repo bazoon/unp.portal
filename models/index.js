@@ -10,8 +10,8 @@ const db = {};
 const db_config = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB,
-  host: process.env.HOSY,
+  database: env === "development" ? process.env.DB : process.env.TESTDB,
+  host: process.env.HOST,
   dialect: "postgres",
   define: {
     underscored: true
