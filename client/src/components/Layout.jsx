@@ -65,16 +65,97 @@ class L extends Component {
     const { userId, userName, avatar } = this.props.profile;
     const { isAdmin } = this.props.login;
     return (
-      <BrowserRouter>
-        <div className="outer-container">
-          <ChatIcon onClick={this.handleChatClick} />
+      <>
+        {isChatOpen && (
           <Chat visible={isChatOpen} onClose={this.handleChatClose} />
+        )}
+        <BrowserRouter>
+          <div className="outer-container">
+            <ChatIcon onClick={this.handleChatClick} />
+            <Header className="header">
+              <div className="container">
+                <div className="header__container">
+                  <div className="logo-wrap">
+                    <ColorLogo />
+                    <div className="logo-text-wrap">
+                      <div className="logo-text-main">Электронный бюджет</div>
+                      <div className="logo-text">
+                        Управление национальными проектами
+                      </div>
+                    </div>
+                  </div>
 
-          <Header className="header">
-            <div className="container">
-              <div className="header__container">
+                  <div className="main-menu">
+                    <Route
+                      path="/"
+                      component={props => <MainMenu {...props} />}
+                    />
+                  </div>
+
+                  <div className="header__info">
+                    <div className="header__support">
+                      <PhoneIcon />
+                      <div style={{ marginLeft: "8px" }}>
+                        <div className="header__support-text">
+                          Техническая поддержка
+                        </div>
+                        <div className="header__support-phone">
+                          8-800-350-02-18
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="header__icons">
+                      <Link
+                        to="/profile"
+                        style={{ display: "flex", marginRight: "8px" }}
+                      >
+                        {avatar ? (
+                          <img
+                            src={avatar}
+                            className="header__user-avatar"
+                            alt="avatar"
+                          />
+                        ) : (
+                          <Icon type="user" className="icon__medium" />
+                        )}
+                      </Link>
+
+                      <div className="header__user">
+                        <div>
+                          <Popover
+                            placement="bottom"
+                            content={
+                              <div
+                                style={{ cursor: "pointer" }}
+                                onClick={this.handleLogout}
+                              >
+                                Выйти
+                              </div>
+                            }
+                            trigger="click"
+                          >
+                            <Icon style={{ cursor: "pointer" }} type="down" />
+                          </Popover>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Header>
+
+            <div className="container container_content">
+              <Switch>
+                <Route path="/admin" component={AdminLayout} />
+                <Route path="/" component={UserLayout} />
+              </Switch>
+            </div>
+
+            <Footer className="footer">
+              <div className="container container_footer">
                 <div className="logo-wrap">
-                  <ColorLogo />
+                  <Logo />
                   <div className="logo-text-wrap">
                     <div className="logo-text-main">Электронный бюджет</div>
                     <div className="logo-text">
@@ -82,97 +163,19 @@ class L extends Component {
                     </div>
                   </div>
                 </div>
-
-                <div className="main-menu">
-                  <Route
-                    path="/"
-                    component={props => <MainMenu {...props} />}
-                  />
-                </div>
-
-                <div className="header__info">
-                  <div className="header__support">
-                    <PhoneIcon />
-                    <div style={{ marginLeft: "8px" }}>
-                      <div className="header__support-text">
-                        Техническая поддержка
-                      </div>
-                      <div className="header__support-phone">
-                        8-800-350-02-18
-                      </div>
+                <div className="footer__support">
+                  <div>
+                    <div className="footer__support-text">
+                      Техническая поддержка
                     </div>
-                  </div>
-
-                  <div className="header__icons">
-                    <Link
-                      to="/profile"
-                      style={{ display: "flex", marginRight: "8px" }}
-                    >
-                      {avatar ? (
-                        <img
-                          src={avatar}
-                          className="header__user-avatar"
-                          alt="avatar"
-                        />
-                      ) : (
-                        <Icon type="user" className="icon__medium" />
-                      )}
-                    </Link>
-
-                    <div className="header__user">
-                      <div>
-                        <Popover
-                          placement="bottom"
-                          content={
-                            <div
-                              style={{ cursor: "pointer" }}
-                              onClick={this.handleLogout}
-                            >
-                              Выйти
-                            </div>
-                          }
-                          trigger="click"
-                        >
-                          <Icon style={{ cursor: "pointer" }} type="down" />
-                        </Popover>
-                      </div>
-                    </div>
+                    <div className="footer__support-phone">8-800-350-02-18</div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Header>
-
-          <div className="container container_content">
-            <Switch>
-              <Route path="/admin" component={AdminLayout} />
-              <Route path="/" component={UserLayout} />
-            </Switch>
+            </Footer>
           </div>
-
-          <Footer className="footer">
-            <div className="container container_footer">
-              <div className="logo-wrap">
-                <Logo />
-                <div className="logo-text-wrap">
-                  <div className="logo-text-main">Электронный бюджет</div>
-                  <div className="logo-text">
-                    Управление национальными проектами
-                  </div>
-                </div>
-              </div>
-              <div className="footer__support">
-                <div>
-                  <div className="footer__support-text">
-                    Техническая поддержка
-                  </div>
-                  <div className="footer__support-phone">8-800-350-02-18</div>
-                </div>
-              </div>
-            </div>
-          </Footer>
-        </div>
-      </BrowserRouter>
+        </BrowserRouter>
+      </>
     );
   }
 }

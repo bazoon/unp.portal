@@ -80,6 +80,7 @@ class Chat extends Component {
     Actions.getChannels(this.props.userId);
 
     chatSocket.on("connect", () => {
+      console.log("connect");
       this.setState({
         isSocketConnected: true
       });
@@ -94,6 +95,7 @@ class Chat extends Component {
     });
 
     chatSocket.on("disconnect", () => {
+      console.log("DISconnect");
       this.setState({
         isSocketConnected: false
       });
@@ -498,7 +500,7 @@ class Chat extends Component {
 
   render() {
     const { visible, isLoading, socketError } = this.props;
-    const { isSocketConnected } = this.state;
+    const isSocketConnected = chatSocket.connected;
 
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
