@@ -56,7 +56,7 @@ class UserLayout extends Component {
             />
 
             <Route path="/events/my" component={EventList} />
-            <Route path="/" component={Feed} />
+            <Route path="/" component={() => <Feed />} />
           </Switch>
         </Col>
         {/* <Col span={8}>

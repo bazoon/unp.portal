@@ -45,12 +45,15 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     );
 
     const role = await models.ParticipantRole.findOne();
-    return models.Participant.create({
+    const participant = models.Participant.create({
       ProjectGroupId: group.id,
       UserId: userId,
-      participantRoleId: role.id,
-      state: 1
+      participantRoleId: role && role.id,
+      state: 1,
+      isAdmin: true
     });
+
+    return participant;
   });
   ctx.body = {
     id: group.id

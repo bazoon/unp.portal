@@ -54,7 +54,7 @@ class MainMenu extends Component {
         {isAdmin && (
           <Menu.Item key="/admin/users">
             <NavLink to="/admin/users">
-              <span>Админ</span>
+              <span>Пользователи</span>
             </NavLink>
           </Menu.Item>
         )}

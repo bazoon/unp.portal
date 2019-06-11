@@ -37,6 +37,7 @@ import ChatIcon from "../../../images/chat";
 import { observer, inject } from "mobx-react";
 import projectGroups from "../ProjectGroups/reducer";
 import GroupButton from "../ProjectGroups/GroupButton";
+import Conversation from "./Conversation/Conversation";
 
 const maxDescriptionSentences = 10;
 
@@ -233,14 +234,6 @@ class GroupFeed extends Component {
     );
   };
 
-  handlePin = conversationId => {
-    this.props.groupsStore.pin(conversationId);
-  };
-
-  handleUnpin = conversationId => {
-    this.props.groupsStore.unpin(conversationId);
-  };
-
   renderAddRegion() {
     return (
       <div
@@ -249,25 +242,6 @@ class GroupFeed extends Component {
       >
         Добавить обсуждение в группе
       </div>
-    );
-  }
-
-  renderConversationMenu(id, isPinned) {
-    return (
-      <>
-        {isPinned ? (
-          <div
-            style={{ cursor: "pointer" }}
-            onClick={() => this.handleUnpin(id)}
-          >
-            Открепить
-          </div>
-        ) : (
-          <div style={{ cursor: "pointer" }} onClick={() => this.handlePin(id)}>
-            Закрепить
-          </div>
-        )}
-      </>
     );
   }
 
@@ -285,55 +259,19 @@ class GroupFeed extends Component {
     return (
       <div className="group__conversations">
         {conversations.map(conversation => {
-          const date = moment(conversation.createdAt).fromNow();
-          const link = `${id}/conversation/${conversation.id}`;
-          const className = cn("group__conversation", {
-            group__conversation_news: !conversation.isCommentable
-          });
-
           return (
-            <div key={conversation.id} className={className}>
-              <div className="group__conversation-header">
-                <div style={{ display: "flex" }}>
-                  <div className="group__conversation-user">
-                    Написал &nbsp; {conversation.name}
-                  </div>
-                  <div className="group__conversation-date">{date}</div>
-                </div>
-
-                <Popover
-                  placement="bottom"
-                  content={this.renderConversationMenu(
-                    conversation.id,
-                    conversation.isPinned
-                  )}
-                  trigger="click"
-                >
-                  <div style={{ cursor: "pointer" }}>
-                    <MoreIcon style={{ cursor: "pointer" }} />
-                  </div>
-                </Popover>
-              </div>
-              <div className="group__conversation-title">
-                <Link to={link}>{conversation.title}</Link>
-              </div>
-              <div className="group__conversation-description">
-                {conversation.description}
-              </div>
-              <div className="group__conversation-footer">
-                {conversation.isCommentable && (
-                  <>
-                    <ChatWaitIcon
-                      style={{ marginRight: "8px" }}
-                      className="svg-icon"
-                    />
-                    <Link to={link}>
-                      {pluralizeComments(conversation.count)}
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
+            <Conversation
+              id={conversation.id}
+              showMenu
+              name={conversation.name}
+              createdAt={conversation.createdAt}
+              groupId={id}
+              isPinned={conversation.isPinned}
+              title={conversation.title}
+              description={conversation.description}
+              count={conversation.count}
+              isCommentable={conversation.isCommentable}
+            />
           );
         })}
       </div>
@@ -460,7 +398,7 @@ class GroupFeed extends Component {
                 height: "16px"
               }}
             >
-              <SelectBgIcon />
+              <SelectBgIcon className="bg-select-icon" />
             </div>
           </div>
         </Popover>

@@ -1,5 +1,4 @@
 import api from "./api";
-import { Upload } from "antd";
 
 export default {
   loadAll() {

@@ -76,7 +76,10 @@ class L extends Component {
               <div className="container">
                 <div className="header__container">
                   <div className="logo-wrap">
-                    <ColorLogo />
+                    <Link to="/">
+                      <ColorLogo />
+                    </Link>
+
                     <div className="logo-text-wrap">
                       <div className="logo-text-main">Электронный бюджет</div>
                       <div className="logo-text">

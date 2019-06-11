@@ -1,75 +1,24 @@
 .feed {
-  padding: 10px;
-  &__header {
-    font-weight: 900;
-    font-size: 24px;
+  &__table {
+    background-color: #fff;
   }
 
-  &-message {
-    margin-bottom: 10px;
+  &__calendar {
+    background-color: #fff;
   }
 
-  &-whom {
-    display: flex;
+  &__item-title {
+    font-size: 16px;
+    font-family: OpenSansBold;
   }
 
-  &__item {
-    margin-bottom: 20px;
-    &-who {
-      font-weight: 900;
-      font-size: 16px;
-    }
+  &__item-author {
+    font-size: 14px;
+    color: #909090;
+  }
 
-    &-header {
-      div {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      display: flex;
-      justify-content: space-between;
-    }
-
-    &-footer {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-    }
-
-    &-comments {
-      &-button {
-        margin-left: 20px;
-        cursor: pointer;
-      }
-    }
-
-    &-comment {
-      display: flex;
-      margin-bottom: 10px;
-
-      &-author {
-        font-size: 16px;
-        font-weight: 900;
-        color: #42609b;
-      }
-
-      &-text {
-        font-size: 10px;
-      }
-
-      &-avatar img {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-right: 10px;
-      }
-    }
-
-    &-avatar img {
-      width: 200px;
-      height: 200px;
-      object-fit: cover;
-    }
+  &__item-date {
+    font-size: 14px;
+    color: #909090;
   }
 }
