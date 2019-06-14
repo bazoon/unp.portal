@@ -1,9 +1,12 @@
 const comments = ["коментарий", "коментария", "комментариев"];
+
 const files = [
   "прикрепленный файл",
   "прикрепленных файла",
   "прикрепленных файлов"
 ];
+
+const participants = ["участник", "участника", "участников"];
 
 export function pluralize(count, words) {
   var cases = [2, 0, 1, 1, 1, 2];
@@ -24,4 +27,9 @@ export function pluralizeComments(count) {
 export function pluralizeFiles(count) {
   if (+count === 0) return "нет файлов";
   return pluralize(count, files);
+}
+
+export function pluralizeParticipants(count) {
+  if (+count === 0) return "нет участников";
+  return pluralize(count, participants);
 }

@@ -2,7 +2,6 @@ const moment = require("moment-timezone");
 const Router = require("koa-router");
 const router = new Router();
 const koaBody = require("koa-body");
-
 const fs = require("fs");
 const models = require("../../models");
 const Sequelize = require("sequelize");
@@ -11,63 +10,70 @@ const uploadFiles = require("../../utils/uploadFiles");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const {
-    userId,
-    eventTitle,
-    fromTime,
-    fromDate,
-    toTime,
-    toDate,
-    place,
+    title,
     description,
-    allDay,
-    remindBefore
+    accessType,
+    accessEntitiesIds,
+    date,
+    remind
   } = ctx.request.body;
+
+  const userId = ctx.user.id;
+  const remindAt = remind > 0 ? moment(date).add(+remind, "minutes") : null;
 
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
-  const result = await models.Event.create({
-    userId,
-    title: eventTitle,
-    fromDate: fromDate,
-    toDate: toDate,
-    place,
+  const event = await models.Event.create({
+    title,
     description,
-    allDay,
-    remindBefore
-  }).then(event => {
-    return models.UserEvent.create({
-      UserId: userId,
-      eventId: event.id
-    }).then(() => {
-      return models.EventFile.bulkCreate(
-        files.map(f => ({
-          EventId: event.id,
-          file: f.name,
-          size: f.size
-        }))
-      ).then(() => {
-        return {
-          userId: event.userId,
-          title: event.title,
-          fromDate: event.fromDate,
-          toDate: event.toDate,
-          place: event.place,
-          description: event.description,
-          allDay: event.allDay,
-          remindBefore: event.remindBefore,
-          files: files.map(f => ({ name: f.name, size: f.size }))
-        };
-      });
-    });
+    userId,
+    startDate: date,
+    remindAt,
+    accessType
   });
-  ctx.body = result;
+
+  const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
+  if (accessType == 1) {
+    await models.UserEvent.bulkCreate(
+      accessIds.map(id => {
+        return {
+          eventId: event.id,
+          userId: id
+        };
+      })
+    );
+  } else if (accessType == 2) {
+    const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
+    const users = (await models.sequelize.query(usersQuery))[0];
+    await models.UserEvent.bulkCreate(
+      users.map(u => {
+        return {
+          eventId: event.id,
+          userId: u.user_id
+        };
+      })
+    );
+  }
+
+  await models.UserEvent.findOrCreate({
+    where: {
+      [Op.and]: [{ eventId: event.id }, { userId: userId }]
+    },
+    defaults: {
+      eventId: event.id,
+      userId: userId
+    }
+  });
+
+  ctx.body = event;
 });
 
 router.get("/list", async (ctx, next) => {
-  const { userId, now } = ctx.request.query;
-
+  const { page, pageSize } = ctx.request.query;
+  const userId = ctx.user.id;
+  const now = newDate();
   const from = moment(now);
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
   from.tz("Etc/GMT-0");
@@ -81,50 +87,85 @@ router.get("/list", async (ctx, next) => {
 });
 
 router.get("/list/all", async (ctx, next) => {
+  const { page, pageSize } = ctx.request.query;
   const userId = ctx.user.id;
-  const events = await getEvents(userId, undefined, undefined);
+  const events = await getEvents(userId, undefined, undefined, page, pageSize);
   ctx.body = events;
 });
 
-async function getEvents(userId, from, to, fn) {
-  let query;
+router.get("/upcoming", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const from = moment(new Date());
+  from.tz("Etc/GMT-0");
+
+  const query = `select events.id, title, description, start_date, remind_at
+            from events, user_events
+            where events.id = user_events.event_id and user_events.user_id=${userId}
+            and start_date > '${from}'
+            order by events.start_date asc
+            limit 5`;
+  const events = (await models.sequelize.query(query))[0];
+  ctx.body = await Promise.all(getFullEvents(events));
+});
+
+async function getEvents(userId, from, to, page, pageSize) {
+  let query, countQuery;
+  const offset = (page - 1) * pageSize;
+  const limit = pageSize;
 
   if (from && to) {
-    query = `select events.id, events.title, events.description, events.from_date, events.to_date, events.place, events.user_id
-                from events, user_events
-                where events.id = user_events.event_id and user_events.user_id = ${userId}  and
-                events.from_date BETWEEN '${from}' AND '${to}'
-                order by events.from_date asc`;
-  } else {
-    query = `select events.id, events.title, events.description, events.from_date, events.to_date, events.place, events.user_id
+    countQuery = `select count(events.id)
+                  from events, user_events              
+                  where events.id = user_events.event_id and user_events.user_id=${userId} and
+                  events.start_date BETWEEN '${from}' AND '${to}
+                  `;
+
+    query = `select events.id, title, description, start_date, remind_at
             from events, user_events
-            where events.id = user_events.event_id and user_events.user_id = ${userId}
-            order by events.from_date asc`;
+            where events.id = user_events.event_id and user_events.user_id=${userId} and
+            events.start_date BETWEEN '${from}' AND '${to}'
+            order by events.start_date asc
+            limit ${limit} offset ${offset}`;
+  } else {
+    countQuery = `select count(events.id)
+                  from events, user_events            
+                  where events.id = user_events.event_id and user_events.user_id=${userId}
+                  `;
+
+    query = `select events.id, title, description, start_date, remind_at
+            from events, user_events
+            where events.id = user_events.event_id and user_events.user_id=${userId}
+            order by events.start_date asc
+            limit ${limit} offset ${offset}`;
   }
 
-  const promise = models.sequelize.query(query).then(function(e) {
-    const events = e[0];
+  const events = (await models.sequelize.query(query))[0];
+  const total = +(await models.sequelize.query(countQuery))[0][0].count;
 
-    return events.map(event => {
-      return models.EventFile.findAll({
-        where: { EventId: event.id }
-      }).then(files => {
-        return {
-          id: event.id,
-          userId: event.UserId,
-          title: event.title,
-          fromDate: event.fromDate,
-          toDate: event.toDate,
-          place: event.place,
-          description: event.description,
-          files: files.map(file => ({ name: file.file, size: file.size }))
-        };
-      });
-    });
-  });
+  return {
+    events: await Promise.all(getFullEvents(events)),
+    pagination: {
+      total: total
+    }
+  };
+}
 
-  return promise.then(r => {
-    return Promise.all(r);
+function getFullEvents(events) {
+  return events.map(async event => {
+    const usersQuery = `select count(*) from user_events where event_id = ${
+      event.id
+    }`;
+
+    const count = +(await models.sequelize.query(usersQuery))[0][0].count;
+
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      startDate: event.start_date,
+      remindAt: event.remind_at,
+      usersCount: count
+    };
   });
 }
 

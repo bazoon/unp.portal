@@ -614,4 +614,14 @@ router.post("/participants/remove", async ctx => {
   ctx.body = "ok";
 });
 
+router.get("/user", async ctx => {
+  const userId = ctx.user.id;
+  const query = `select id, title from project_groups 
+            where id in (select participants.project_group_id from participants
+            where user_id = ${userId} and state = 1)`;
+  const result = await models.sequelize.query(query);
+
+  ctx.body = result[0];
+});
+
 module.exports = router;

@@ -15,4 +15,14 @@ router.get("/list/all", async (ctx, next) => {
   });
 });
 
+router.get("/", async (ctx, next) => {
+  const users = await models.User.findAll();
+  ctx.body = users.map(u => {
+    return {
+      id: u.id,
+      name: u.name
+    };
+  });
+});
+
 module.exports = router;

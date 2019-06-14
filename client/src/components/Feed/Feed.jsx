@@ -19,6 +19,7 @@ import { observer, inject } from "mobx-react";
 
 import moment from "moment";
 import { Link } from "react-router-dom";
+import Events from "../Events/Events";
 
 const columns = [
   {
@@ -42,6 +43,7 @@ const columns = [
 ];
 
 @inject("feedStore")
+@inject("eventsStore")
 @observer
 class Feed extends Component {
   constructor(props) {
@@ -52,6 +54,7 @@ class Feed extends Component {
   componentDidMount = () => {
     const { userId } = this.props;
     this.props.feedStore.load();
+    this.props.eventsStore.loadUpcoming();
   };
 
   // RENDERS
@@ -91,6 +94,9 @@ class Feed extends Component {
           <Col span={8}>
             <div className="feed__calendar">
               <Calendar fullscreen={false} />
+            </div>
+            <div className="feed__events">
+              <Events groups={this.props.eventsStore.upcomingGroupedByDays} />
             </div>
           </Col>
         </Row>

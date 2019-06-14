@@ -40,7 +40,7 @@ class L extends Component {
   // дочерних компонентов
   componentDidMount() {
     const { userId } = this.props.login;
-    Actions.getAllEvents({ userId });
+
     Actions.getPreferences(localStorage.getItem("userId"));
   }
 

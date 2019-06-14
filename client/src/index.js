@@ -11,10 +11,12 @@ import GroupsStore from "./mst/GroupsStore";
 import DocumentsStore from "./mst/DocumentsStore";
 import currentUserStore from "./mst/CurrentUserStore";
 import FeedStore from "./mst/FeedStore";
+import EventsStore from "./mst/EventsStore";
 
 const groupsStore = GroupsStore.create();
 const documentsStore = DocumentsStore.create();
 const feedStore = FeedStore.create();
+const eventsStore = EventsStore.create();
 
 ReactDOM.render(
   <MobxProvider
@@ -22,6 +24,7 @@ ReactDOM.render(
     documentsStore={documentsStore}
     currentUserStore={currentUserStore}
     feedStore={feedStore}
+    eventsStore={eventsStore}
   >
     <Provider store={store}>
       <LocaleProvider locale={ruRU}>

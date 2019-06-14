@@ -9,7 +9,9 @@ module.exports = (sequelize, DataTypes) => {
       groupId: DataTypes.INTEGER,
       messageId: DataTypes.INTEGER,
       conversationId: DataTypes.INTEGER,
-      size: DataTypes.INTEGER
+      size: DataTypes.INTEGER,
+      entityId: DataTypes.INTEGER,
+      entityType: DataTypes.INTEGER
     },
     {}
   );

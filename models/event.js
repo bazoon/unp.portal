@@ -3,14 +3,12 @@ module.exports = (sequelize, DataTypes) => {
   const Event = sequelize.define(
     "Event",
     {
-      title: DataTypes.STRING,
-      fromDate: DataTypes.DATE,
-      toDate: DataTypes.DATE,
-      place: DataTypes.STRING,
-      description: DataTypes.TEXT,
       userId: DataTypes.INTEGER,
-      allDay: DataTypes.BOOLEAN,
-      remindBefore: DataTypes.INTEGER
+      title: DataTypes.STRING,
+      description: DataTypes.TEXT,
+      accessType: DataTypes.INTEGER,
+      startDate: DataTypes.DATE,
+      remindAt: DataTypes.DATE
     },
     {}
   );

@@ -23,6 +23,12 @@ module.exports = {
       conversation_id: {
         type: Sequelize.INTEGER
       },
+      entityType: {
+        type: Sequelize.INTEGER
+      },
+      entityId: {
+        type: Sequelize.INTEGER
+      },
       file: {
         type: Sequelize.STRING
       },

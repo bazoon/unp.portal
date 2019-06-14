@@ -3,7 +3,6 @@ import { HashRouter } from "react-router-dom";
 import Layout from "./Layout";
 import LoginForm from "./LoginForm/LoginForm";
 import utils from "../utils";
-import { Actions } from "jumpstate";
 import "moment/locale/ru";
 import { observer, inject } from "mobx-react";
 

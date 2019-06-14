@@ -3,10 +3,19 @@ import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import "./Events.less";
 import moment from "moment";
-import { Icon, Button } from "antd";
+import { Icon, Button, Row, Col, Breadcrumb, Input, Pagination } from "antd";
 import prettyBytes from "pretty-bytes";
 import getFileIcon from "../../utils/getFileIcon";
+import { Link } from "react-router-dom";
+import CreateEventForm from "./CreateEventForm";
+import { inject, observer } from "mobx-react";
+import Events from "./Events";
 
+const { Search } = Input;
+
+@inject("eventsStore")
+@inject("currentUserStore")
+@observer
 class EventList extends Component {
   static defaultProps = {
     events: []
@@ -15,6 +24,7 @@ class EventList extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      isFormVisible: false,
       isFilesVisible: {},
       today: moment(new Date())
     };
@@ -28,7 +38,7 @@ class EventList extends Component {
     const { userId } = this.props;
     const { today } = this.state;
     const now = new Date();
-    Actions.getEvents({ userId, today });
+    this.props.eventsStore.loadAll();
   }
 
   handleToggleFiles = id => {
@@ -59,6 +69,18 @@ class EventList extends Component {
 
     this.setState({
       today: moment(today)
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({
+      isFormVisible: false
+    });
+  };
+
+  handleCreateSuccess = () => {
+    this.setState({
+      isFormVisible: false
     });
   };
 
@@ -139,36 +161,80 @@ class EventList extends Component {
     });
   }
 
-  render() {
-    const { today } = this.state;
-    const currentDate = today.format("LL");
-    const events = this.getTodayEvents();
+  handleAddEvent = () => {
+    this.setState({
+      isFormVisible: true
+    });
+  };
+
+  handleChangePagination = page => {
+    this.props.eventsStore.setPage(page);
+  };
+
+  renderEvents() {
+    const groups = this.props.eventsStore.groupedByDays;
     return (
       <div className="event-list">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>
-            <div className="event-list__header">События</div>
-            <div className="event-list__date">{currentDate}</div>
-          </div>
-          <div>
-            <Icon type="backward" onClick={this.handleBackward} />
-            <Icon type="forward" onClick={this.handleForward} />
-          </div>
-        </div>
-        {events.map(this.renderEvent)}
-        {events.length == 0 && (
-          <div className="event-list__no-events">Нет событий на этот день</div>
-        )}
+        <Events groups={groups} />
+      </div>
+    );
+  }
+
+  render() {
+    const { isFormVisible } = this.state;
+    const { avatar, userName } = this.props.currentUserStore;
+
+    return (
+      <div className="events">
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link to="/">Главная</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>События</Breadcrumb.Item>
+        </Breadcrumb>
+
+        <Row gutter={27}>
+          <Col span={16}>
+            <div className="project-groups__search">
+              <Search placeholder="Поиск по событиям" />
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="side-header">События</div>
+            <Button
+              type="primary"
+              style={{ width: "100%", height: "52px" }}
+              onClick={this.handleAddEvent}
+            >
+              Создать событие
+            </Button>
+          </Col>
+        </Row>
+
+        <Row gutter={27}>
+          <Col span={16}>
+            <div className="project-groups__header">Ваши события</div>
+            {isFormVisible && (
+              <CreateEventForm
+                avatar={avatar}
+                userName={userName}
+                onCancel={this.handleCancel}
+                onSuccess={this.handleCreateSuccess}
+              />
+            )}
+
+            {this.renderEvents()}
+            <Pagination
+              showQuickJumper
+              onChange={this.handleChangePagination}
+              total={this.props.eventsStore.total}
+              pageSize={10}
+            />
+          </Col>
+        </Row>
       </div>
     );
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId,
-    events: state.Events.allEvents
-  };
-};
-
-export default connect(mapStateToProps)(EventList);
+export default EventList;

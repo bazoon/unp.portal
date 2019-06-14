@@ -55,7 +55,7 @@ class UserLayout extends Component {
               component={props => <Documents {...props} />}
             />
 
-            <Route path="/events/my" component={EventList} />
+            <Route path="/events/my" component={() => <EventList />} />
             <Route path="/" component={() => <Feed />} />
           </Switch>
         </Col>

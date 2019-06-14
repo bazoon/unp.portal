@@ -83,5 +83,10 @@ export default {
     return api
       .post("api/projectGroups/conversation/create", payload)
       .then(({ data }) => data);
+  },
+  getUserGroups() {
+    return api.get("api/projectGroups/user").then(({ data }) => {
+      return data;
+    });
   }
 };

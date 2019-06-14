@@ -11,14 +11,11 @@ module.exports = {
       title: {
         type: Sequelize.STRING
       },
-      from_date: {
+      start_date: {
         type: Sequelize.DATE
       },
-      to_date: {
+      remind_at: {
         type: Sequelize.DATE
-      },
-      place: {
-        type: Sequelize.STRING
       },
       description: {
         type: Sequelize.TEXT
@@ -26,10 +23,7 @@ module.exports = {
       user_id: {
         type: Sequelize.INTEGER
       },
-      all_day: {
-        type: Sequelize.BOOLEAN
-      },
-      remind_before: {
+      access_type: {
         type: Sequelize.INTEGER
       },
       created_at: {
