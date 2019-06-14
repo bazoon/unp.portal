@@ -176,6 +176,14 @@ class EventList extends Component {
     return (
       <div className="event-list">
         <Events groups={groups} />
+        <div className="event-list__pagination">
+          <Pagination
+            showQuickJumper
+            onChange={this.handleChangePagination}
+            total={this.props.eventsStore.total}
+            pageSize={10}
+          />
+        </div>
       </div>
     );
   }
@@ -224,12 +232,6 @@ class EventList extends Component {
             )}
 
             {this.renderEvents()}
-            <Pagination
-              showQuickJumper
-              onChange={this.handleChangePagination}
-              total={this.props.eventsStore.total}
-              pageSize={10}
-            />
           </Col>
         </Row>
       </div>

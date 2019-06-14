@@ -20891,6 +20891,9 @@ body {
   padding-top: 24px;
   padding-bottom: 40px;
 }
+.event-list__pagination {
+  padding-left: 24px;
+}
 .event__day-header {
   font-size: 18px;
   color: #a2a2a2;
