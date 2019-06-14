@@ -30,8 +30,7 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
     description,
     userId,
     startDate: date,
-    remindAt,
-    accessType
+    remindAt
   });
 
   const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];

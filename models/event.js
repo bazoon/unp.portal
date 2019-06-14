@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       userId: DataTypes.INTEGER,
       title: DataTypes.STRING,
       description: DataTypes.TEXT,
-      accessType: DataTypes.INTEGER,
       startDate: DataTypes.DATE,
       remindAt: DataTypes.DATE
     },
