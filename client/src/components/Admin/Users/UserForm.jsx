@@ -19,12 +19,16 @@ import {
 } from "antd";
 import PositionForm from "../Positions/PositionsForm";
 import OrganizationForm from "../Organizations/OrganizationForm";
-
+import { observer, inject } from "mobx-react";
 import EditWindow from "../../EditWindow/EditWindow";
 
 const { Option } = Select;
 const { TextArea } = Input;
 
+@inject("usersStore")
+@inject("organizationsStore")
+@inject("positionsStore")
+@observer
 class GroupForm extends Component {
   constructor(props) {
     super(props);
@@ -71,13 +75,14 @@ class GroupForm extends Component {
     ];
 
     this.state = {
-      files: [],
+      avatarFile: [],
       isEditingOrganization: false,
       organizationEditRecord: undefined,
       organizationId: undefined,
       isEditingPosition: false,
       positionId: undefined,
-      positionEditRecord: undefined
+      positionEditRecord: undefined,
+      avatarUrl: undefined
     };
   }
 
@@ -158,10 +163,26 @@ class GroupForm extends Component {
       positionId: id
     });
   };
+  getBase64(img, callback) {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result));
+    reader.readAsDataURL(img);
+  }
+
+  handleChangeAvatar = info => {
+    this.getBase64(info.file, imageUrl =>
+      this.setState({
+        avatarUrl: imageUrl,
+        avatarFile: info.fileList
+      })
+    );
+  };
 
   render() {
     const { getFieldDecorator } = this.props.form;
-    const { name, login, avatar, isAdmin } = this.props.user || {};
+    const { usersStore } = this.props;
+    const user = usersStore.currentUser || {};
+
     const positionId =
       this.state.positionId ||
       (this.props.user &&
@@ -174,115 +195,170 @@ class GroupForm extends Component {
       isEditingOrganization,
       organizationEditRecord,
       isEditingPosition,
-      positionEditRecord
+      positionEditRecord,
+      avatarUrl,
+      avatarFile
     } = this.state;
+
     const organizationId =
       this.state.organizationId ||
       (this.props.user &&
         this.props.user.organization &&
         this.props.user.organization.id);
 
-    return (
-      <Form layout="vertical">
-        <Row type="flex" gutter={20}>
-          <Col span={18}>
-            <Row gutter={10}>
-              <Col span={12}>
-                <Form.Item label="Логин">
-                  {getFieldDecorator("login", {
-                    rules: [{ required: true, message: "Логин" }],
-                    initialValue: login
-                  })(<Input />)}
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item label="Пароль">
-                  {getFieldDecorator("password", {
-                    rules: [{ required: isPaswordRequired, message: "Пароль" }]
-                  })(<Input />)}
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={24}>
-                <Form.Item label="ФИО">
-                  {getFieldDecorator("name", {
-                    rules: [{ required: true, message: "ФИО" }],
-                    initialValue: name
-                  })(<Input />)}
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={24}>
-                <Form.Item label="Организация">
-                  {getFieldDecorator("organizationId", {
-                    rules: [{ required: true, message: "Организация" }],
-                    initialValue: organizationId,
-                    valuePropName: "value"
-                  })(
-                    <EditWindow
-                      title="Организации"
-                      onSelect={this.handleSelectOrganization}
-                      columns={this.organizationColumns}
-                      dataSource={organizations}
-                      onAdd={this.handleAddOrganization}
-                      onEdit={this.handleEditOrganization}
-                      isInEditMode={isEditingOrganization}
-                      editForm={
-                        <OrganizationForm
-                          onOk={this.handleSaveOrganization}
-                          onCancel={this.handleCancelAddOrganization}
-                          visible={isEditingOrganization}
-                          editRecord={organizationEditRecord}
-                        />
-                      }
-                    />
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                <Form.Item label="Должность">
-                  {getFieldDecorator("positionId", {
-                    rules: [{ required: true, message: "Должность" }],
-                    initialValue: positionId
-                  })(
-                    <EditWindow
-                      title="Должности"
-                      onSelect={this.handleSelectPosition}
-                      columns={this.positionColumns}
-                      dataSource={positions}
-                      onAdd={this.handleAddPosition}
-                      onEdit={this.handleEditPosition}
-                      isInEditMode={isEditingPosition}
-                      editForm={
-                        <PositionForm
-                          onOk={this.handleSavePosition}
-                          onCancel={this.handleCancelAddPosition}
-                          visible={isEditingPosition}
-                          editRecord={positionEditRecord}
-                        />
-                      }
-                    />
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                {getFieldDecorator("isAdmin", {
-                  valuePropName: "checked",
-                  initialValue: isAdmin
-                })(<Checkbox>Администратор?</Checkbox>)}
-              </Col>
-            </Row>
-          </Col>
+    const formItemLayout = {
+      labelCol: {
+        span: 5
+      },
+      wrapperCol: {
+        span: 19
+      }
+    };
 
-          <Col span={6}>
-            <Row type="flex" justify="center">
-              <Col span={12}>
-                <Avatar size={128} icon="user" src={avatar} />
-              </Col>
-            </Row>
-          </Col>
+    const tailFormItemLayout = {
+      wrapperCol: {
+        span: 19,
+        offset: 5
+      }
+    };
+
+    return (
+      <Form layout="horizontal" className="user__edit-form">
+        <Row>
+          <Form.Item
+            style={{ display: "flex", alignItems: "center" }}
+            label="Аватар"
+            {...formItemLayout}
+          >
+            {getFieldDecorator("avatar", {})(
+              <Upload
+                fileList={avatarFile}
+                multiple={false}
+                showUploadList={false}
+                beforeUpload={() => false}
+                onChange={this.handleChangeAvatar}
+              >
+                {(user.avatar || avatarUrl) && (
+                  <img
+                    className="user__edit-form-avatar"
+                    src={avatarUrl || user.avatar}
+                  />
+                )}
+                <Button>Заменить</Button>
+              </Upload>
+            )}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Фамилия" {...formItemLayout}>
+            {getFieldDecorator("surName", {
+              rules: [{ required: true, message: "Фамилия" }],
+              initialValue: usersStore.surName
+            })(<Input />)}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Имя" {...formItemLayout}>
+            {getFieldDecorator("firstName", {
+              rules: [{ required: true, message: "Имя" }],
+              initialValue: usersStore.firstName
+            })(<Input />)}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Отчество" {...formItemLayout}>
+            {getFieldDecorator("lastName", {
+              rules: [{ required: true, message: "Отчество" }],
+              initialValue: usersStore.lastName
+            })(<Input />)}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Организация" {...formItemLayout}>
+            {getFieldDecorator("organizationId", {
+              rules: [{ required: true, message: "Организация" }],
+              initialValue: organizationId,
+              valuePropName: "value"
+            })(
+              <EditWindow
+                title="Организации"
+                onSelect={this.handleSelectOrganization}
+                columns={this.organizationColumns}
+                dataSource={this.props.organizationsStore.items.slice()}
+                onAdd={this.handleAddOrganization}
+                onEdit={this.handleEditOrganization}
+                isInEditMode={isEditingOrganization}
+                editForm={
+                  <OrganizationForm
+                    onOk={this.handleSaveOrganization}
+                    onCancel={this.handleCancelAddOrganization}
+                    visible={isEditingOrganization}
+                    editRecord={organizationEditRecord}
+                  />
+                }
+              />
+            )}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Должность" {...formItemLayout}>
+            {getFieldDecorator("positionId", {
+              rules: [{ required: true, message: "Должность" }],
+              initialValue: positionId
+            })(
+              <EditWindow
+                title="Должности"
+                onSelect={this.handleSelectPosition}
+                columns={this.positionColumns}
+                dataSource={this.props.positionsStore.items}
+                onAdd={this.handleAddPosition}
+                onEdit={this.handleEditPosition}
+                isInEditMode={isEditingPosition}
+                editForm={
+                  <PositionForm
+                    onOk={this.handleSavePosition}
+                    onCancel={this.handleCancelAddPosition}
+                    visible={isEditingPosition}
+                    editRecord={positionEditRecord}
+                  />
+                }
+              />
+            )}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Логин" {...formItemLayout}>
+            {getFieldDecorator("login", {
+              rules: [{ required: true, message: "Логин" }],
+              initialValue: user.login
+            })(<Input />)}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Пароль" {...formItemLayout}>
+            {getFieldDecorator("password", {})(<Input />)}
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="Пароль" {...formItemLayout}>
+            {getFieldDecorator("isAdmin", {
+              valuePropName: "checked",
+              initialValue: user.isAdmin
+            })(<Checkbox>Администратор?</Checkbox>)}
+          </Form.Item>
+        </Row>
+
+        <Row>
+          <Form.Item {...tailFormItemLayout}>
+            <Button
+              onClick={this.props.onSave}
+              style={{ marginRight: "8px" }}
+              type="primary"
+            >
+              Сохранить
+            </Button>
+            <Button>Отмена</Button>
+          </Form.Item>
         </Row>
       </Form>
     );

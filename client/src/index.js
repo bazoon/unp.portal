@@ -13,12 +13,16 @@ import currentUserStore from "./mst/CurrentUserStore";
 import FeedStore from "./mst/FeedStore";
 import EventsStore from "./mst/EventsStore";
 import UsersStore from "./mst/UsersStore";
+import OrganizationsStore from "./mst/OrganizationsStore";
+import PositionsStore from "./mst/PositionsStore";
 
 const groupsStore = GroupsStore.create();
 const documentsStore = DocumentsStore.create();
 const feedStore = FeedStore.create();
 const eventsStore = EventsStore.create();
 const usersStore = UsersStore.create();
+const organizationsStore = OrganizationsStore.create();
+const positionsStore = PositionsStore.create();
 
 ReactDOM.render(
   <MobxProvider
@@ -28,6 +32,8 @@ ReactDOM.render(
     feedStore={feedStore}
     eventsStore={eventsStore}
     usersStore={usersStore}
+    organizationsStore={organizationsStore}
+    positionsStore={positionsStore}
   >
     <Provider store={store}>
       <LocaleProvider locale={ruRU}>

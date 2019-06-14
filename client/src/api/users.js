@@ -15,5 +15,10 @@ export default {
     return api.get("admin/api/users/get", { id }).then(({ data }) => {
       return data;
     });
+  },
+  update(payload) {
+    return api.post("admin/api/users/update", payload).then(({ data }) => {
+      return data;
+    });
   }
 };

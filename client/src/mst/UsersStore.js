@@ -40,8 +40,12 @@ const UsersStore = types
       self.users = yield api.loadAllUsers();
     });
 
-    const get = flow(function* load(id) {
+    const get = flow(function* get(id) {
       self.currentUser = yield api.get(id);
+    });
+
+    const updateUser = flow(function* updateUser(payload) {
+      self.currentUser = yield api.update(payload);
     });
 
     const loadUserGroups = flow(function* load(id) {
@@ -63,7 +67,8 @@ const UsersStore = types
       loadAllUsers,
       get,
       loadUserGroups,
-      setGroupsPagionation
+      setGroupsPagionation,
+      updateUser
     };
   });
 

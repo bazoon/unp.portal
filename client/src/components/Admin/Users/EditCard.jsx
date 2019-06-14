@@ -1,9 +1,13 @@
 import React, { Component } from "react";
 import UserForm from "./UserForm";
-import { connect } from "react-redux";
 import { Button } from "antd/lib/radio";
-import { Actions } from "jumpstate";
+import { Row, Col } from "antd";
+import { observer, inject } from "mobx-react";
 
+@inject("usersStore")
+@inject("organizationsStore")
+@inject("positionsStore")
+@observer
 class CreateCard extends Component {
   constructor(props) {
     super(props);
@@ -17,55 +21,67 @@ class CreateCard extends Component {
   }
 
   componentDidMount() {
-    Actions.getOrganizations();
-    Actions.getPositions();
     const { id } = this.props.match.params;
-    const user = this.props.users.find(u => u.id === +id);
-    this.setState({
-      user
-    });
+    this.props.usersStore.get(id);
+    this.props.organizationsStore.loadAll();
+    this.props.positionsStore.loadAll();
   }
 
   handleSave = () => {
     const { id } = this.props.match.params;
     const form = this.formRef.current;
+    const formData = new FormData();
+
     form.validateFields((err, fields) => {
-      const payload = { ...fields, id: +id };
-      if (!err) {
-        Actions.updateUser(payload).then(() => {
-          this.props.history.push("/admin/users");
-        });
+      const keys = Object.keys(fields);
+      const avatar = fields.avatar && fields.avatar.file;
+      delete fields.avatar;
+
+      keys.forEach(key => {
+        if (fields[key]) {
+          formData.append(key, fields[key]);
+        }
+      });
+
+      if (avatar) {
+        formData.append("avatar", avatar);
       }
+
+      formData.append("id", id);
+      this.props.usersStore.updateUser(formData);
+
+      // if (!err) {
+      //   Actions.updateUser(payload).then(() => {
+      //     this.props.history.push("/admin/users");
+      //   });
+      // }
     });
   };
 
   render() {
     return (
       <div>
-        <div className="section-header">
-          <div className="section-title">Пользователи</div>
-          <Button onClick={this.handleSave}>Сохранить</Button>
-        </div>
-        <UserForm
-          ref={this.formRef}
-          onSubmit={() => {}}
-          avatar={this.props.avatar}
-          organizations={this.props.organizations}
-          positions={this.props.positions}
-          user={this.state.user}
-        />
+        <Row>
+          <Col span={16}>
+            <div className="section-header">
+              <div className="section-title">Пользователи</div>
+            </div>
+            <div className="user__edit-card">
+              <UserForm
+                ref={this.formRef}
+                onSubmit={() => {}}
+                avatar={this.props.avatar}
+                organizations={this.props.organizations}
+                positions={this.props.positions}
+                user={this.props.usersStore.currentUser}
+                onSave={this.handleSave}
+              />
+            </div>
+          </Col>
+        </Row>
       </div>
     );
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    avatar: state.Login.avatar,
-    users: state.Admin.users,
-    organizations: state.Admin.organizations,
-    positions: state.Admin.positions
-  };
-};
-
-export default connect(mapStateToProps)(CreateCard);
+export default CreateCard;

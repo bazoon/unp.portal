@@ -17,8 +17,14 @@ class AdminLayout extends Component {
     console.log(this.props);
     return (
       <Switch>
-        <Route path="/admin/users/create" component={CreateUserCard} />
-        <Route path="/admin/users/edit/:id" component={EditUserCard} />
+        <Route
+          path="/admin/users/create"
+          component={props => <CreateUserCard {...props} />}
+        />
+        <Route
+          path="/admin/users/edit/:id"
+          component={props => <EditUserCard {...props} />}
+        />
         <Route
           path="/admin/users/view/:id"
           component={props => <ViewUserCard {...props} />}

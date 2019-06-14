@@ -1,8 +1,10 @@
 const bcrypt = require("bcryptjs");
 const Router = require("koa-router");
+const koaBody = require("koa-body");
 const router = new Router();
 const models = require("../../../models");
 const getUploadFilePath = require("../../../utils/getUploadFilePath");
+const uploadFiles = require("../../../utils/uploadFiles");
 
 router.get("/", async (ctx, next) => {
   const users = await models.User.findAll({
@@ -109,17 +111,24 @@ router.post("/create", async (ctx, next) => {
   };
 });
 
-router.post("/update", async (ctx, next) => {
+router.post("/update", koaBody({ multipart: true }), async (ctx, next) => {
   const {
     id,
-    name,
+    firstName,
+    surName,
+    lastName,
     login,
-    avatar,
     positionId,
     organizationId,
     password,
     isAdmin
   } = ctx.request.body;
+
+  const { avatar } = ctx.request.files;
+  const files = avatar ? (Array.isArray(avatar) ? avatar : [avatar]) : [];
+  await uploadFiles(files);
+
+  const name = `${surName} ${firstName} ${lastName}`;
 
   const newUser = await models.User.findOne({
     where: { id },
@@ -138,7 +147,7 @@ router.post("/update", async (ctx, next) => {
   await newUser.update({
     name,
     login,
-    avatar,
+    avatar: (avatar && avatar.name) || newUser.avatar,
     isAdmin,
     OrganizationId: organizationId,
     PositionId: positionId
