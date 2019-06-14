@@ -15,6 +15,7 @@ const files = require("./api/files");
 const adminUsers = require("./api/admin/users");
 const adminOrganizations = require("./api/admin/organizations");
 const adminPositions = require("./api/admin/positions");
+const adminGroups = require("./api/admin/projectGroups");
 
 router.use("/api/projectGroups", projectGroups.routes());
 router.use("/api/users", users.routes());
@@ -29,5 +30,6 @@ router.use("/api/files", files.routes());
 router.use("/admin/api/users", adminUsers.routes());
 router.use("/admin/api/organizations", adminOrganizations.routes());
 router.use("/admin/api/positions", adminPositions.routes());
+router.use("/admin/api/projectGroups", adminGroups.routes());
 
 module.exports = router;

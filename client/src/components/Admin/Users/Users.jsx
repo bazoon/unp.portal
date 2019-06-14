@@ -1,59 +1,55 @@
 import React, { Component } from "react";
-import { Button, Icon, Input } from "antd";
-import { Actions } from "jumpstate";
-import { Table, Divider, Tag, Popconfirm } from "antd";
-import { connect } from "react-redux";
+import { Button, Icon, Input, Row, Col } from "antd";
+import { Table, Divider, Tag, Popconfirm, Popover, Breadcrumb } from "antd";
+import { observer, inject } from "mobx-react";
+import "./Users.less";
+import MoreIcon from "../../../../images/more";
+import { Link } from "react-router-dom";
 
 const { Search } = Input;
 
-function handleDelete(id) {
-  Actions.deleteUser({ id });
-}
-
-const columns = [
-  {
-    title: "Логин",
-    dataIndex: "login",
-    key: "login"
-  },
-  {
-    title: "ФИО",
-    dataIndex: "name",
-    key: "name"
-  },
-  {
-    title: "Организация",
-    dataIndex: "organization",
-    key: "organization",
-    render: organization => {
-      return organization && organization.name;
-    }
-  },
-  {
-    title: "Должность",
-    dataIndex: "position",
-    key: "position",
-    render: position => {
-      return position && position.name;
-    }
-  },
-  {
-    title: "",
-    dataIndex: "",
-    key: "x",
-    render: (_, record) => {
-      return (
-        <Popconfirm title="Удалить?" onConfirm={() => handleDelete(record.id)}>
-          <Icon type="user-delete" />
-        </Popconfirm>
-      );
-    }
-  }
-];
-
+@inject("usersStore")
+@observer
 class Users extends Component {
+  constructor(props) {
+    super(props);
+    this.columns = [
+      {
+        title: "Логин",
+        dataIndex: "login",
+        key: "login",
+        render: (value, record) => {
+          return (
+            <div className="admin-user">
+              <div className="flex">
+                <div className="admin-user__avatar">
+                  <img src={record.avatar} />
+                </div>
+                <div className="admin-user__info">
+                  <div>{record.name}</div>
+                  <div>{record.position && record.position.name}</div>
+                </div>
+              </div>
+              <div>
+                <Popover
+                  placement="bottom"
+                  content={this.renderOperationsMenu(record)}
+                  trigger="click"
+                >
+                  <div style={{ cursor: "pointer" }}>
+                    <MoreIcon style={{ cursor: "pointer" }} />
+                  </div>
+                </Popover>
+              </div>
+            </div>
+          );
+        }
+      }
+    ];
+  }
+
   componentDidMount() {
-    Actions.getAdminUsers();
+    this.props.usersStore.loadAllUsers();
   }
 
   onDoubleClick = (record, event) => {
@@ -70,30 +66,62 @@ class Users extends Component {
     this.props.history.push("/admin/users/create");
   };
 
+  handleEdit = id => {
+    this.props.history.push(`/admin/users/view/${id}`);
+  };
+
+  renderOperationsMenu(user) {
+    return (
+      <>
+        <div
+          className="admin-user__menu-item"
+          onClick={() => this.handleEdit(user.id)}
+        >
+          Редактировать
+        </div>
+        <div
+          className="admin-user__menu-item"
+          onClick={() => this.handleUnpin(id)}
+        >
+          Удалить
+        </div>
+      </>
+    );
+  }
+
   render() {
     return (
       <>
-        <div className="section-header">
-          <div className="section-title">Пользователи</div>
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link to="/">Главная</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>Пользователи</Breadcrumb.Item>
+        </Breadcrumb>
+        <Row gutter={37}>
+          <Col span={16}>
+            <div>
+              <div className="section-title">Пользователи</div>
 
-          <Search placeholder="Поиск пользователя" style={{ width: "30%" }} />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <Button onClick={this.handleAddUser}>Создать пользователя</Button>
-        </div>
-        <Table
-          rowKey="id"
-          columns={columns}
-          dataSource={this.props.users}
-          onRow={this.onRow}
-        />
+              <div className="project-groups__search">
+                <Search placeholder="Поиск по участникам" />
+              </div>
+            </div>
+            <div className="admin-users">
+              <Table
+                showHeader={false}
+                rowKey="id"
+                columns={this.columns}
+                dataSource={this.props.usersStore.users.slice()}
+                onRow={this.onRow}
+              />
+            </div>
+          </Col>
+          <Col span={8}>Calendar</Col>
+        </Row>
       </>
     );
   }
 }
-const mapStateToProps = state => {
-  return {
-    users: state.Admin.users
-  };
-};
-export default connect(mapStateToProps)(Users);
+
+export default Users;

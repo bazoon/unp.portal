@@ -1,0 +1,109 @@
+.admin-users {
+  background-color: #fff;
+}
+
+.admin-user {
+  display: flex;
+  justify-content: space-between;
+  &__avatar img {
+    margin-right: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: silver;
+    object-fit: cover;
+  }
+  &__menu-item {
+    cursor: pointer;
+  }
+}
+
+.user {
+  &__view-card {
+    background-color: #fff;
+    padding: 16px;
+    margin-bottom: 32px;
+
+    &-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    table {
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    &-row {
+      &_border {
+        border-bottom: solid 1px silver;
+      }
+    }
+
+    td {
+      padding: 16px;
+      &:first-child {
+        width: 140px;
+      }
+    }
+  }
+  &__groups {
+    padding: 24px;
+    padding-top: 8px;
+    background-color: #fff;
+    &-pagination {
+      background-color: #fff;
+      padding-left: 24px;
+      padding-bottom: 40px;
+    }
+  }
+
+  &__group {
+    display: flex;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    border-bottom: solid 1px silver;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &-avatar {
+      width: 60px;
+      height: 60px;
+      background-color: silver;
+      border-radius: 50%;
+      margin-right: 16px;
+      img {
+        width: 60px;
+        height: 60px;
+        background-color: silver;
+        border-radius: 50%;
+      }
+    }
+
+    &-info {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    &-title {
+      margin-bottom: 8px;
+      a {
+        font-family: OpenSansBold;
+        font-size: 14px;
+        color: #5c7ba3;
+      }
+    }
+
+    &-misc {
+      font-size: 14px;
+      color: #909090;
+      letter-spacing: 0;
+      span:first-child {
+        margin-right: 8px;
+      }
+    }
+  }
+}

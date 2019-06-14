@@ -32,6 +32,35 @@ router.get("/", async (ctx, next) => {
   });
 });
 
+router.get("/get", async (ctx, next) => {
+  const id = ctx.query.id;
+  const user = await models.User.findOne({
+    where: {
+      id
+    },
+    include: [
+      {
+        model: models.Position,
+        as: "Position"
+      },
+      {
+        model: models.Organization,
+        as: "Organization"
+      }
+    ]
+  });
+
+  ctx.body = {
+    id: user.id,
+    isAdmin: user.isAdmin,
+    avatar: getUploadFilePath(user.avatar),
+    name: user.name,
+    login: user.login,
+    position: user.Position,
+    organization: user.Organization
+  };
+});
+
 router.post("/create", async (ctx, next) => {
   const {
     name,

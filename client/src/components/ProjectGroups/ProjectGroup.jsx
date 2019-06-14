@@ -2,7 +2,10 @@ import React, { Component } from "react";
 import { Button, Popover, Icon, Breadcrumb } from "antd";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { pluralize } from "../../utils/pluralize";
+import {
+  pluralizeParticipants,
+  pluralizeConversations
+} from "../../utils/pluralize";
 import JoinButton from "./JoinButton";
 import LeaveButton from "./LeaveButton";
 import RequestButton from "./RequestButton";
@@ -53,9 +56,6 @@ class ProjectGroup extends Component {
       state
     } = group;
 
-    const conversationPlurals = ["обсуждение", "обсуждения", "обсуждений"];
-    const participantsPlurals = ["участник", "участника", "участников"];
-
     return (
       <>
         <div className="project-group">
@@ -66,9 +66,9 @@ class ProjectGroup extends Component {
               </div>
               <div className="project-group__footer">
                 <span style={{ marginRight: "8px" }}>
-                  {pluralize(conversationsCount, conversationPlurals)}
+                  {pluralizeConversations(conversationsCount)}
                 </span>
-                <span>{pluralize(participantsCount, participantsPlurals)}</span>
+                <span>{pluralizeParticipants(participantsCount)}</span>
               </div>
             </div>
           </div>

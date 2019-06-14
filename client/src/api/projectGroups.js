@@ -88,5 +88,10 @@ export default {
     return api.get("api/projectGroups/user").then(({ data }) => {
       return data;
     });
+  },
+  getAdminUserGroups(payload) {
+    return api.get("admin/api/projectGroups/user", payload).then(({ data }) => {
+      return data;
+    });
   }
 };

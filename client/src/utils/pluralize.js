@@ -7,6 +7,7 @@ const files = [
 ];
 
 const participants = ["участник", "участника", "участников"];
+const conversations = ["обсуждение", "обсуждения", "обсуждений"];
 
 export function pluralize(count, words) {
   var cases = [2, 0, 1, 1, 1, 2];
@@ -32,4 +33,9 @@ export function pluralizeFiles(count) {
 export function pluralizeParticipants(count) {
   if (+count === 0) return "нет участников";
   return pluralize(count, participants);
+}
+
+export function pluralizeConversations(count) {
+  if (+count === 0) return "нет обсуждений";
+  return pluralize(count, conversations);
 }
