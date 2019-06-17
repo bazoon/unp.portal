@@ -48,9 +48,18 @@ router.post("/login", async ctx => {
 });
 
 router.post("/signup", async ctx => {
-  const { userName, password } = ctx.request.body;
+  const {
+    firstName,
+    surName,
+    lastName,
+    email,
+    login,
+    password
+  } = ctx.request.body;
+  const userName = `${firstName} ${surName} ${lastName}`;
 
   if (!userName || !password) {
+    ctx.status = 500;
     ctx.body = "enter password and username!";
   }
 
@@ -58,11 +67,13 @@ router.post("/signup", async ctx => {
     const [user, created] = await models.User.findOrCreate({
       where: { name: userName }
     });
+
     const hashedPassword = bcrypt.hashSync(password, 8);
 
     const avatar = "";
 
     user.update({ name: userName, password: hashedPassword, avatar });
+
     const token = jwt.sign(
       { userName, id: user.id, isAdmin: user.isAdmin },
       process.env.API_TOKEN,

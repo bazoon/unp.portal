@@ -21,7 +21,7 @@ const GroupsStore = types
     pageSize: types.optional(types.maybeNull(types.number), 10),
     current: types.maybeNull(types.reference(Group)),
     currentConversation: types.maybeNull(types.reference(Conversation)),
-    backgrounds: types.array(Background)
+    backgrounds: types.maybeNull(types.array(Background))
   })
   .views(self => ({
     get all() {
@@ -46,8 +46,10 @@ const GroupsStore = types
           pageSize: self.pageSize
         });
 
-        updateGroups(json.groups);
-        self.total = json.pagination.total;
+        if (json && json.groups) {
+          updateGroups(json.groups);
+          self.total = json.pagination.total;
+        }
       } catch (err) {
         console.error("Failed to load groups ", err);
       }
@@ -119,7 +121,9 @@ const GroupsStore = types
 
     const getBackgrounds = flow(function* getBackgrounds() {
       const data = yield api.getBackgrounds();
-      self.backgrounds = data;
+      if (data) {
+        self.backgrounds = data;
+      }
     });
 
     const pin = flow(function* pin(conversationId) {

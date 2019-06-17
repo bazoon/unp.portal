@@ -25,9 +25,12 @@ import AdminLayout from "./AdminLayout";
 import Logo from "../../images/logo";
 import ColorLogo from "../../images/top-logo";
 import PhoneIcon from "../../images/phone";
+import { observer, inject } from "mobx-react";
 
 const { Header, Sider, Footer } = Layout;
 
+@inject("currentUserStore")
+@observer
 class L extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +42,7 @@ class L extends Component {
   // Тут загрузка данных общих для разных
   // дочерних компонентов
   componentDidMount() {
-    const { userId } = this.props.login;
+    const { userId } = this.props.currentUserStore;
   }
 
   handleChatClick = () => {
@@ -60,8 +63,8 @@ class L extends Component {
 
   render() {
     const { isChatOpen } = this.state;
-    const { userId, userName, avatar } = this.props.profile;
-    const { isAdmin } = this.props.login;
+    const { userId, userName, avatar, isAdmin } = this.props.currentUserStore;
+
     return (
       <>
         {isChatOpen && (
@@ -181,11 +184,4 @@ class L extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    login: state.Login,
-    profile: state.UserProfilePreferences.profile
-  };
-};
-
-export default connect(mapStateToProps)(L);
+export default L;

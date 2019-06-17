@@ -1,165 +1,269 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Form, Icon, Input, Button, Checkbox } from "antd";
-import { Actions } from "jumpstate";
+import { Form, Icon, Input, Button, Checkbox, Modal, Row, Col } from "antd";
 import cn from "classnames";
 import "./loginForm.less";
 import api from "../../api/api";
-import { Tabs } from "antd";
 import { observer, inject } from "mobx-react";
-
-const { TabPane } = Tabs;
 
 @observer
 @inject("currentUserStore")
 class LoginForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoggingIn: true
+    };
+  }
+
   handleSubmit = e => {
     e.preventDefault();
-    const userName = this.props.form.getFieldValue("userName");
-    const password = this.props.form.getFieldValue("password");
-    this.props.currentUserStore.login(userName, password).then(() => {
-      this.props.onLogin();
+    const { form } = this.props;
+    form.validateFields((errors, fields) => {
+      if (!errors) {
+        this.props.currentUserStore.login(fields).then(() => {
+          this.props.onLogin();
+          form.resetFields();
+        });
+      }
     });
   };
 
   handleSignup = e => {
     e.preventDefault();
-    const userName = this.props.form.getFieldValue("userName");
-    const password = this.props.form.getFieldValue("password");
-    this.props.currentUserStore.signup(userName, password).then(() => {
-      this.props.onLogin();
+    const { form } = this.props;
+    form.validateFields((errors, fields) => {
+      if (!errors) {
+        this.props.currentUserStore.signup(fields).then(() => {
+          this.props.onLogin();
+          form.resetFields();
+          this.setState({
+            isLoggingIn: true
+          });
+        });
+      }
     });
   };
+
+  handleToggle = e => {
+    e.preventDefault();
+    this.setState({
+      isLoggingIn: !this.state.isLoggingIn
+    });
+  };
+
+  renderSignup() {
+    const { getFieldDecorator } = this.props.form;
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 }
+      }
+    };
+    const tailFormItemLayout = {
+      wrapperCol: {
+        xs: {
+          span: 24,
+          offset: 0
+        },
+        sm: {
+          span: 16,
+          offset: 8
+        }
+      }
+    };
+
+    return (
+      <Form {...formItemLayout} onSubmit={this.handleSignup}>
+        <Form.Item label="Фамилия">
+          {getFieldDecorator("surName", {
+            rules: [
+              {
+                required: true,
+                message: "Пожалуйста укажите фамилию"
+              }
+            ]
+          })(<Input />)}
+        </Form.Item>
+        <Form.Item label="Имя">
+          {getFieldDecorator("firstName", {
+            rules: [
+              {
+                required: true,
+                message: "Пожалуйста укажите имя"
+              }
+            ]
+          })(<Input />)}
+        </Form.Item>
+        <Form.Item label="Отчество">
+          {getFieldDecorator("lastName", {
+            rules: [
+              {
+                required: true,
+                message: "Пожалуйста укажите отчество"
+              }
+            ]
+          })(<Input />)}
+        </Form.Item>
+        <Form.Item label="E-mail">
+          {getFieldDecorator("email", {
+            rules: [
+              {
+                type: "email",
+                message: "Это не почта!"
+              },
+              {
+                required: true,
+                message: "Пожалуйста укажите электронную почту"
+              }
+            ]
+          })(<Input />)}
+        </Form.Item>
+        <Form.Item label="Password">
+          {getFieldDecorator("password", {
+            rules: [
+              {
+                required: true,
+                message: "Введите пароль"
+              },
+              {
+                validator: this.validateToNextPassword
+              }
+            ]
+          })(<Input.Password />)}
+        </Form.Item>
+        <Form.Item label="Confirm Password">
+          {getFieldDecorator("confirm", {
+            rules: [
+              {
+                required: true,
+                message: "Подтвердите пароль"
+              },
+              {
+                validator: this.compareToFirstPassword
+              }
+            ]
+          })(<Input.Password onBlur={this.handleConfirmBlur} />)}
+        </Form.Item>
+        <Form.Item label={<span>Логин</span>}>
+          {getFieldDecorator("login", {
+            rules: [
+              {
+                required: true,
+                message: "Укажите логин",
+                whitespace: true
+              }
+            ]
+          })(<Input />)}
+        </Form.Item>
+        <Form.Item {...tailFormItemLayout}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="login-form__button"
+          >
+            Зарегистрироваться
+          </Button>
+          <Form.Item>
+            или{" "}
+            <a onClick={this.handleToggle} href="#">
+              войдите
+            </a>
+          </Form.Item>
+        </Form.Item>
+      </Form>
+    );
+  }
+
+  renderLogin(loginFailed) {
+    const { getFieldDecorator } = this.props.form;
+    return (
+      <Form layout="vertical" onSubmit={this.handleSubmit}>
+        <Form.Item key="username" className="login-form__input">
+          {getFieldDecorator("userName", {
+            rules: [{ required: true, message: "Логин" }]
+          })(
+            <Input
+              prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
+              placeholder="Имя"
+            />
+          )}
+        </Form.Item>
+
+        <Form.Item key="password" className="login-form__input">
+          {getFieldDecorator("password", {
+            rules: [{ required: true, message: "Пароль" }]
+          })(
+            <Input
+              prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
+              type="password"
+              placeholder="Пароль"
+            />
+          )}
+        </Form.Item>
+        <Form.Item className="login-form__input_small">
+          {getFieldDecorator("remember", {
+            valuePropName: "checked",
+            initialValue: true
+          })(
+            <Row gutter={8} type="flex" justify="space-between">
+              <Col span={12}>
+                {getFieldDecorator("rememberme")(
+                  <Checkbox>Запомнить меня</Checkbox>
+                )}
+              </Col>
+              <Col
+                span={12}
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <a href="#">Забыли пароль?</a>
+              </Col>
+            </Row>
+          )}
+        </Form.Item>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="login-form__button"
+          >
+            Войти
+          </Button>
+          <Form.Item>
+            или{" "}
+            <a onClick={this.handleToggle} href="#">
+              Зарегистрируйтесь сейчас!
+            </a>
+          </Form.Item>
+        </Form.Item>
+        {loginFailed && (
+          <div className="login-form__failed">Неверный логин или пароль</div>
+        )}
+      </Form>
+    );
+  }
 
   render() {
     const { getFieldDecorator } = this.props.form;
     const { loginFailed } = this.props.currentUserStore;
-    const className = cn("login-form__wrap", {
-      "login-form__wrap-failed": loginFailed
-    });
+    const { isLoggingIn } = this.state;
 
     return (
-      <div className="login-form__container">
-        <div className={className}>
-          <Tabs defaultActiveKey="login">
-            <TabPane tab="Войти" key="login">
-              <Form layout="vertical" onSubmit={this.handleSubmit}>
-                <Form.Item key="username">
-                  {getFieldDecorator("userName", {
-                    rules: [{ required: true, message: "Логин" }]
-                  })(
-                    <Input
-                      prefix={
-                        <Icon
-                          type="user"
-                          style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                      }
-                      placeholder="Имя"
-                    />
-                  )}
-                </Form.Item>
-
-                <Form.Item key="password">
-                  {getFieldDecorator("password", {
-                    rules: [{ required: true, message: "Пароль" }]
-                  })(
-                    <Input
-                      prefix={
-                        <Icon
-                          type="lock"
-                          style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                      }
-                      type="password"
-                      placeholder="Пароль"
-                    />
-                  )}
-                </Form.Item>
-                <Form.Item>
-                  {getFieldDecorator("remember", {
-                    valuePropName: "checked",
-                    initialValue: true
-                  })(<Checkbox>Запомнить меня</Checkbox>)}
-                </Form.Item>
-                <Form.Item style={{ textAlign: "center" }}>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="login-form-button"
-                  >
-                    Войти
-                  </Button>
-                </Form.Item>
-                {loginFailed && (
-                  <div className="login-form__failed">
-                    Неверный логин или пароль
-                  </div>
-                )}
-              </Form>
-            </TabPane>
-
-            <TabPane tab="Зарегестрироваться" key="signup">
-              <Form layout="vertical" onSubmit={this.handleSignup}>
-                <Form.Item key="username">
-                  {getFieldDecorator("userName", {
-                    rules: [{ required: true, message: "Логин" }]
-                  })(
-                    <Input
-                      className="signup"
-                      prefix={
-                        <Icon
-                          type="user"
-                          style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                      }
-                      placeholder="Имя"
-                    />
-                  )}
-                </Form.Item>
-
-                <Form.Item key="password">
-                  {getFieldDecorator("password", {
-                    rules: [{ required: true, message: "Пароль" }]
-                  })(
-                    <Input
-                      className="signup"
-                      prefix={
-                        <Icon
-                          type="lock"
-                          style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                      }
-                      type="password"
-                      placeholder="Пароль"
-                    />
-                  )}
-                </Form.Item>
-                <Form.Item>
-                  {getFieldDecorator("remember", {
-                    valuePropName: "checked",
-                    initialValue: true
-                  })(<Checkbox>Запомнить меня</Checkbox>)}
-                </Form.Item>
-                <Form.Item style={{ textAlign: "center" }}>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="signup-form-button"
-                  >
-                    Войти
-                  </Button>
-                </Form.Item>
-                {loginFailed && (
-                  <div className="login-form__failed">
-                    Неверный логин или пароль
-                  </div>
-                )}
-              </Form>
-            </TabPane>
-          </Tabs>
-        </div>
-      </div>
+      <Modal
+        title="Вход на портал"
+        visible={!this.props.isLoggedIn}
+        footer={null}
+        onOk={this.handleOk}
+        onCancel={this.handleCancel}
+        className="login-form"
+        closable={false}
+        width={800}
+      >
+        {isLoggingIn ? this.renderLogin(loginFailed) : this.renderSignup()}
+      </Modal>
     );
   }
 }

@@ -1,33 +1,51 @@
 .login-form {
-  &__container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #4b6cb7; /* fallback for old browsers */
-    background: -webkit-linear-gradient(
-      to right,
-      #4b6cb7,
-      #182848
-    ); /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #4b6cb7, #182848);
-    height: 100vh;
+  // &__container {
+  //   display: flex;
+  //   justify-content: center;
+  //   align-items: center;
+  //   background: #4b6cb7; /* fallback for old browsers */
+  //   background: -webkit-linear-gradient(
+  //     to right,
+  //     #4b6cb7,
+  //     #182848
+  //   ); /* Chrome 10-25, Safari 5.1-6 */
+  //   background: linear-gradient(to right, #4b6cb7, #182848);
+  //   height: 100vh;
+  // }
+
+  // &__wrap {
+  //   width: 30%;
+  //   padding: 10px;
+  //   border-radius: 10px;
+  //   box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+  //   background: white;
+
+  //   &-failed {
+  //     animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  //   }
+  // }
+
+  // &__failed {
+  //   font-size: 10px;
+  //   color: red;
+  // }
+}
+
+.login-form {
+  .ant-modal-header {
+    border-bottom: none;
   }
+  &__input {
+    margin-bottom: 32px;
 
-  &__wrap {
-    width: 30%;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
-    background: white;
-
-    &-failed {
-      animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    &_small {
+      margin-bottom: 16px;
     }
   }
 
-  &__failed {
-    font-size: 10px;
-    color: red;
+  &__button {
+    width: 100%;
+    margin-bottom: 16px;
   }
 }
 

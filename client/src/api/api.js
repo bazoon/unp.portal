@@ -2,8 +2,14 @@ import axios from "axios";
 import currentUserStore from "../mst/CurrentUserStore";
 
 const api = {
-  get: (url, params = {}) => {
-    const token = `Bearer ${localStorage.getItem("token")}`;
+  get: (url, params = {}, skipTokenCheck) => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
+      return Promise.resolve({ data: null });
+    }
+
+    const token = `Bearer ${storedToken}`;
     const config = {
       headers: { authorization: token },
       params
@@ -15,8 +21,14 @@ const api = {
       }
     });
   },
-  post: (url, data) => {
-    const token = `Bearer ${localStorage.getItem("token")}`;
+  post: (url, data, skipTokenCheck) => {
+    const storedToken = localStorage.getItem("token");
+    if (!skipTokenCheck) {
+      if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
+        return Promise.resolve({ data: null });
+      }
+    }
+    const token = `Bearer ${storedToken}`;
     const config = {
       headers: { authorization: token }
     };

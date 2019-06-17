@@ -29,11 +29,14 @@ class App extends Component {
   render() {
     return (
       <HashRouter>
-        {this.props.currentUserStore.token ? (
+        <div>
           <Layout onLogout={this.handleLogout} />
-        ) : (
-          <LoginForm onLogin={this.handleLogin} />
-        )}
+
+          <LoginForm
+            isLoggedIn={!!this.props.currentUserStore.token}
+            onLogin={this.handleLogin}
+          />
+        </div>
       </HashRouter>
     );
   }

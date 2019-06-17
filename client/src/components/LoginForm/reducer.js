@@ -1,10 +1,10 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
 
-const userToken = localStorage.getItem("token");
-const userName = localStorage.getItem("userName");
-const userAvatar = localStorage.getItem("avatar");
-const isAdmin = JSON.parse(localStorage.getItem("isAdmin"));
+// const userToken = localStorage.getItem("token");
+// const userName = localStorage.getItem("userName");
+// const userAvatar = localStorage.getItem("avatar");
+// const isAdmin = JSON.parse(localStorage.getItem("isAdmin"));
 
 const LoginForm = State({
   initial: {

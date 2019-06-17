@@ -12,13 +12,13 @@ const CurrentUserStore = types
     isAdmin: types.maybeNull(types.boolean)
   })
   .actions(self => {
-    const login = flow(function* login(userName, password) {
-      const data = yield api.login(userName, password);
+    const login = flow(function* login(payload) {
+      const data = yield api.login(payload);
       setData(data);
     });
 
-    const signup = flow(function* signup(userName, password) {
-      const data = yield api.signup(userName, password);
+    const signup = flow(function* signup(payload) {
+      const data = yield api.signup(payload);
       setData(data);
     });
 

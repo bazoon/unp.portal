@@ -8,14 +8,17 @@ import DocIcon from "../../../images/document";
 import EventsIcon from "../../../images/events";
 import UserIcon from "../../../images/user";
 import NotifyIcon from "../../../images/chat_wait";
+import { observer, inject } from "mobx-react";
 
 const { SubMenu } = Menu;
 
+@inject("currentUserStore")
+@observer
 class MainMenu extends Component {
   render() {
     const { location } = this.props;
     const { pathname } = location;
-    const { isAdmin } = this.props.login;
+    const { isAdmin } = this.props.currentUserStore;
 
     return (
       <Menu
