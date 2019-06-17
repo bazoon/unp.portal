@@ -5,6 +5,9 @@ import { connect } from "react-redux";
 import GroupsIcon from "../../../images/card_view";
 import MessagesIcon from "../../../images/chat_wait";
 import DocIcon from "../../../images/document";
+import EventsIcon from "../../../images/events";
+import UserIcon from "../../../images/user";
+import NotifyIcon from "../../../images/chat_wait";
 
 const { SubMenu } = Menu;
 
@@ -29,11 +32,11 @@ class MainMenu extends Component {
             </div>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/messages">
-          <NavLink to="/messages">
+        <Menu.Item key="/events/my">
+          <NavLink to="/events/my">
             <div className="main-menu__item">
-              <MessagesIcon />
-              Собщения
+              <EventsIcon />
+              <span>События</span>
             </div>
           </NavLink>
         </Menu.Item>
@@ -45,16 +48,22 @@ class MainMenu extends Component {
             </div>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/events/my">
-          <NavLink to="/events/my">
-            <span>События</span>
+        <Menu.Item key="/notifications">
+          <NavLink to="/notifications">
+            <div className="main-menu__item">
+              <NotifyIcon />
+              <span>Уведомления</span>
+            </div>
           </NavLink>
         </Menu.Item>
 
         {isAdmin && (
           <Menu.Item key="/admin/users">
             <NavLink to="/admin/users">
-              <span>Пользователи</span>
+              <div className="main-menu__item">
+                <UserIcon />
+                <span>Пользователи</span>
+              </div>
             </NavLink>
           </Menu.Item>
         )}
