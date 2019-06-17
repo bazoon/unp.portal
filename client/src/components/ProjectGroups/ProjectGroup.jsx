@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Popover, Icon, Breadcrumb } from "antd";
+import { Button, Popover, Icon, Breadcrumb, Popconfirm } from "antd";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -13,6 +13,7 @@ import { observer, inject } from "mobx-react";
 import WaitButton from "./WaitButton";
 import GroupButton from "./GroupButton";
 
+@inject("currentUserStore")
 @observer
 class ProjectGroup extends Component {
   static propTypes = {
@@ -56,6 +57,8 @@ class ProjectGroup extends Component {
       state
     } = group;
 
+    const isSuperAdmin = this.props.currentUserStore.isAdmin;
+
     return (
       <>
         <div className="project-group">
@@ -72,6 +75,14 @@ class ProjectGroup extends Component {
               </div>
             </div>
           </div>
+          {(isAdmin || isSuperAdmin) && (
+            <Popconfirm
+              title="Удаление группы приведет к удалению новостей и обсуждений этой группы, а так же документов, использовавшихся в этих группах. Удалить?"
+              onConfirm={() => this.props.onDelete(id)}
+            >
+              <Button type="danger">Удалить группу</Button>
+            </Popconfirm>
+          )}
 
           <GroupButton
             isOpen={isOpen}

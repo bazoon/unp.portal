@@ -10,9 +10,11 @@ export default {
     return api.post("api/ProjectGroups/create", payload);
   },
   unsubscribe(groupId) {
-    return api.post("api/ProjectGroups/unsubscribe", {
-      groupId
-    });
+    return api
+      .post("api/ProjectGroups/unsubscribe", {
+        groupId
+      })
+      .then(({ data }) => data);
   },
   subscribe(groupId) {
     return api.post("api/ProjectGroups/subscribe", {
@@ -93,5 +95,8 @@ export default {
     return api.get("admin/api/projectGroups/user", payload).then(({ data }) => {
       return data;
     });
+  },
+  deleteGroup(id) {
+    return api.post("api/projectGroups/delete", { id });
   }
 };

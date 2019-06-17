@@ -5,6 +5,7 @@ import {
   applySnapshot,
   getSnapshot
 } from "mobx-state-tree";
+import { notification } from "antd";
 import Group from "./models/Group";
 import api from "../api/projectGroups";
 import Background from "./models/Background";
@@ -75,14 +76,23 @@ const GroupsStore = types
     });
 
     const unsubscribe = flow(function* unsubscribe(groupId) {
-      yield api.unsubscribe(groupId);
-      const data = yield api.get(groupId);
-      const group = self.groups.find(g => g.id == groupId);
-      group.participant = false;
-      group.state = 0;
-      group.participants = data.participants;
-      group.isAdmin = false;
-      group.participantsCount = +group.participantsCount - 1;
+      const result = yield api.unsubscribe(groupId);
+      console.log(result);
+
+      if (result.success) {
+        const data = yield api.get(groupId);
+        const group = self.groups.find(g => g.id == groupId);
+        group.participant = false;
+        group.state = 0;
+        group.participants = data.participants;
+        group.isAdmin = false;
+        group.participantsCount = +group.participantsCount - 1;
+      } else {
+        notification.open({
+          message: "Внимание",
+          description: result.message
+        });
+      }
     });
 
     function setCurrentGroup(id) {
@@ -208,6 +218,11 @@ const GroupsStore = types
       }
     });
 
+    const deleteGroup = flow(function* deleteGroup(id) {
+      yield api.deleteGroup(id);
+      self.groups = self.groups.filter(g => g.id !== id);
+    });
+
     return {
       setPage,
       createGroup,
@@ -230,7 +245,8 @@ const GroupsStore = types
       createConversation,
       setCurrentConversation,
       getConversation,
-      sendPost
+      sendPost,
+      deleteGroup
     };
   });
 

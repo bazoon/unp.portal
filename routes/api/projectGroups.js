@@ -60,6 +60,28 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
   };
 });
 
+router.post("/delete", async ctx => {
+  const { id } = ctx.request.body;
+  const userId = ctx.user.id;
+  const isSuperAdmin = ctx.user.isAdmin;
+
+  const participant = await models.Participant.findOne({
+    where: { projectGroupId: id, userId: userId }
+  });
+
+  if ((participant && participant.isAdmin) || isSuperAdmin) {
+    await models.ProjectGroup.destroy({
+      where: {
+        id
+      }
+    });
+    ctx.body = "ok";
+  } else {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+  }
+});
+
 function getGroups(userId, query, countQuery) {
   const promise = models.sequelize.query(query).then(function(groups) {
     return models.sequelize.query(countQuery).then(function(counts) {
@@ -264,23 +286,39 @@ router.post("/links/remove", (req, res) => {
 router.post("/unsubscribe", async ctx => {
   const userId = ctx.user.id;
   const { groupId } = ctx.request.body;
-  const participant = await models.Participant.destroy({
+
+  const participant = await models.Participant.findOne({
     where: {
       [Op.and]: [{ user_id: userId }, { project_group_id: groupId }]
     }
   });
 
-  const notification = await models.NotificationPreference.destroy({
-    where: { user_id: userId, source_id: groupId }
+  const admins = await models.Participant.findAll({
+    where: {
+      project_group_id: groupId,
+      isAdmin: true
+    }
   });
 
-  ctx.body = participant;
+  if (admins.length <= 1) {
+    ctx.body = {
+      success: false,
+      message:
+        "Перед тем, как покинуть группу, нужно назначить администратором другого участника группы"
+    };
+  } else {
+    participant.destroy();
+    ctx.body = { success: true };
+  }
+
+  // const notification = await models.NotificationPreference.destroy({
+  //   where: { user_id: userId, source_id: groupId }
+  // });
 });
 
 router.post("/subscribe", async ctx => {
   const { groupId } = ctx.request.body;
   const userId = ctx.user.id;
-
   const group = await models.ProjectGroup.findOne({ where: { id: groupId } });
 
   const role = await models.ParticipantRole.findOne();

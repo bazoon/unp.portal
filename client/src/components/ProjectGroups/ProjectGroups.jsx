@@ -77,12 +77,17 @@ class ProjectGroups extends Component {
     this.props.groupsStore.loadGroups();
   };
 
+  handleDelete = id => {
+    this.props.groupsStore.deleteGroup(id);
+  };
+
   renderGroups(groups) {
     return groups.map(g => (
       <ProjectGroup
         onUnsubscribe={this.handleUnsubscribe}
         onSubscribe={this.handleSubscribe}
         onRequest={this.handleRequest}
+        onDelete={this.handleDelete}
         key={g.id}
         group={g}
       />
