@@ -12,10 +12,22 @@ module.exports = {
         type: Sequelize.STRING
       },
       conversation_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "conversations",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
       parent_id: {
         type: Sequelize.INTEGER

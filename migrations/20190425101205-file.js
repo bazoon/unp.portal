@@ -9,7 +9,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
       post_id: {
         type: Sequelize.INTEGER
@@ -23,10 +29,10 @@ module.exports = {
       conversation_id: {
         type: Sequelize.INTEGER
       },
-      entityType: {
+      entity_type: {
         type: Sequelize.INTEGER
       },
-      entityId: {
+      entity_id: {
         type: Sequelize.INTEGER
       },
       file: {

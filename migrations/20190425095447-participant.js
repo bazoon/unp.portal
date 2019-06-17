@@ -9,12 +9,33 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       project_group_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "project_groups",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
-      isAdmin: {
+      participant_role_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "participant_roles",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
+      },
+      is_admin: {
         type: Sequelize.BOOLEAN
       },
       state: {

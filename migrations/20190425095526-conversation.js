@@ -15,10 +15,22 @@ module.exports = {
         type: Sequelize.TEXT
       },
       project_group_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "project_groups",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
       is_commentable: {
         type: Sequelize.BOOLEAN

@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('ProjectGroupBackgrounds', {
+    return queryInterface.createTable("project_group_backgrounds", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -9,19 +9,25 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       file_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "files",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('ProjectGroupBackgrounds');
+    return queryInterface.dropTable("project_group_backgrounds");
   }
 };

@@ -1,20 +1,35 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("project_group_links", {
+    return queryInterface.createTable("messages", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      project_group_id: {
-        type: Sequelize.INTEGER
+      channel_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "channels",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
-      link: {
+      user_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
+      },
+      message: {
         type: Sequelize.STRING
       },
-      title: {
+      type: {
         type: Sequelize.STRING
       },
       created_at: {
@@ -28,6 +43,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("project_group_links");
+    return queryInterface.dropTable("messages");
   }
 };

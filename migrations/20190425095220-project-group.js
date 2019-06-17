@@ -27,7 +27,13 @@ module.exports = {
         type: Sequelize.BOOLEAN
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
       created_at: {
         allowNull: false,

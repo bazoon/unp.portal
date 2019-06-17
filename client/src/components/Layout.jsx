@@ -40,8 +40,6 @@ class L extends Component {
   // дочерних компонентов
   componentDidMount() {
     const { userId } = this.props.login;
-
-    Actions.getPreferences(localStorage.getItem("userId"));
   }
 
   handleChatClick = () => {

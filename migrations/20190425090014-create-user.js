@@ -21,15 +21,24 @@ module.exports = {
         type: Sequelize.STRING
       },
       position_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "positions",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
       organization_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: "organizations",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
       },
-      role_id: {
-        type: Sequelize.INTEGER
-      },
-      isAdmin: {
+      is_admin: {
         type: Sequelize.BOOLEAN
       },
       created_at: {

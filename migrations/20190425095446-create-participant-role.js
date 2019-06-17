@@ -1,20 +1,17 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("project_group_media", {
+    return queryInterface.createTable("participant_roles", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      project_group_id: {
-        type: Sequelize.INTEGER
-      },
-      file: {
+      name: {
         type: Sequelize.STRING
       },
-      size: {
+      level: {
         type: Sequelize.INTEGER
       },
       created_at: {
@@ -28,6 +25,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("project_group_media");
+    return queryInterface.dropTable("participant_roles");
   }
 };
