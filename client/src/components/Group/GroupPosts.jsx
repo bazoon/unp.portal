@@ -10,6 +10,7 @@ import cn from "classnames";
 
 import SendIcon from "../../../images/send";
 import UploadIcon from "../../../images/upload";
+import UploadWindow from "../UploadWindow/UploadWindow";
 
 const LEVEL_PADDING = 24;
 
@@ -28,11 +29,37 @@ class GroupPosts extends Component {
       postReplies: {},
       uploadFiles: [],
       replyUploadFiles: {},
-      visiblePosts: {}
+      visiblePosts: {},
+      isUploadVisible: false,
+      isReplyUploadVisible: false
     };
     this.formRef = React.createRef();
     this.replyFormRef = React.createRef();
   }
+
+  handleToggleUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  handleToggleReplyUpload = () => {
+    this.setState({
+      isReplyUploadVisible: true
+    });
+  };
+
+  handleHideReplyUpload = () => {
+    this.setState({
+      isReplyUploadVisible: false
+    });
+  };
 
   handlePostChange = e => {
     this.setState({
@@ -65,17 +92,16 @@ class GroupPosts extends Component {
   };
 
   handleReplyFileUpload = postId => {
-    const form = this.replyFormRef.current;
-    const input = form.querySelector("input[type=file]");
     this.replyPostId = postId;
-    input.click();
+    this.handleToggleReplyUpload();
   };
 
   handleKeyPress = e => {
     const { onSend } = this.props;
     const { uploadFiles } = this.state;
     if (e.charCode === 13) {
-      onSend(e.target.value, uploadFiles).then(() => {
+      const originFiles = uploadFiles.map(f => f.originFileObj);
+      onSend(e.target.value, originFiles).then(() => {
         this.setState({
           currentPost: "",
           uploadFiles: []
@@ -100,10 +126,11 @@ class GroupPosts extends Component {
 
   handleReplyKeyPress = (e, post) => {
     const { onReplySend } = this.props;
-    const files = this.state.replyUploadFiles[post.id];
+    const uploadFiles = this.state.replyUploadFiles[post.id];
 
     if (e.charCode === 13) {
-      onReplySend(e.target.value, post, files).then(() => {
+      const originFiles = uploadFiles.map(f => f.originFileObj);
+      onReplySend(e.target.value, post, originFiles).then(() => {
         const postReplies = { ...this.state.postReplies };
         const replyUploadFiles = { ...this.state.replyUploadFiles };
 
@@ -130,46 +157,22 @@ class GroupPosts extends Component {
     });
   };
 
+  handleChangeUpload = filesList => {
+    this.setState({
+      uploadFiles: filesList
+    });
+  };
+
+  handleChangeReplyUpload = filesList => {
+    const { replyUploadFiles } = this.state;
+    replyUploadFiles[this.replyPostId] = filesList;
+
+    this.setState({
+      replyUploadFiles: { ...replyUploadFiles }
+    });
+  };
+
   // RENDERS
-
-  renderFileForm = () => {
-    return (
-      <form
-        action="/upload"
-        method="post"
-        encType="multipart/form-data"
-        ref={this.formRef}
-        style={{ display: "none" }}
-      >
-        <input
-          multiple
-          type="file"
-          name="file"
-          onChange={this.handleFileChange}
-        />
-      </form>
-    );
-  };
-
-  renderReplyFileForm = () => {
-    return (
-      <form
-        action="/upload"
-        method="post"
-        encType="multipart/form-data"
-        ref={this.replyFormRef}
-        style={{ display: "none" }}
-      >
-        <input
-          multiple
-          type="file"
-          name="file"
-          onChange={this.handleReplyFileChange}
-        />
-      </form>
-    );
-  };
-
   renderUploadFiles() {
     const { uploadFiles } = this.state;
 
@@ -177,7 +180,8 @@ class GroupPosts extends Component {
       <>
         <div className="conversation__upload-files">
           {uploadFiles.map(file => {
-            return <div key={file.name}>{file.name}</div>;
+            const { originFileObj } = file;
+            return <div key={originFileObj.name}>{originFileObj.name}</div>;
           })}
         </div>
       </>
@@ -191,7 +195,8 @@ class GroupPosts extends Component {
       <div className="conversation__upload-files">
         {files &&
           files.map(file => {
-            return <div key={file.name}>{file.name}</div>;
+            const { originFileObj } = file;
+            return <div key={originFileObj.name}>{originFileObj.name}</div>;
           })}
       </div>
     );
@@ -205,22 +210,6 @@ class GroupPosts extends Component {
     return (
       <div className="group__post-form-container">
         <div className="group__post-form">
-          {/* <Icon
-            type="paper-clip"
-            style={{
-              fontSize: "16px",
-              color: "#00ccff",
-              marginRight: "5px",
-              cursor: "pointer"
-            }}
-            onClick={() => this.handleReplyFileUpload(post.id)}
-          />
-          <Input
-            value={reply}
-            placeholder="Написать комментарий"
-            onKeyPress={e => this.handleReplyKeyPress(e, post)}
-            onChange={e => this.handleReplyChange(e, post.id)}
-          /> */}
           <Input
             style={{ marginBottom: "8px" }}
             value={reply}
@@ -253,7 +242,7 @@ class GroupPosts extends Component {
     return (
       <div className="group__post-image-files">
         {imageFiles.map(imageFile => (
-          <div>
+          <div key={imageFile.name}>
             <img className="group__post-image-file" src={imageFile.name} />
           </div>
         ))}
@@ -369,14 +358,13 @@ class GroupPosts extends Component {
             suffix={
               <>
                 <UploadIcon
-                  onClick={this.handleFileUpload}
+                  onClick={this.handleToggleUpload}
                   style={{ marginRight: "12px" }}
                 />
                 <SendIcon />
               </>
             }
           />
-          {this.renderFileForm()}
         </div>
         {this.renderUploadFiles()}
       </div>
@@ -405,12 +393,29 @@ class GroupPosts extends Component {
 
   render() {
     const { posts } = this.props;
+    const {
+      isUploadVisible,
+      uploadFiles,
+      isReplyUploadVisible,
+      replyUploadFiles
+    } = this.state;
 
     return (
       <div className="group__posts">
         {!this.props.hideForm && this.renderConversationForm()}
         {this.renderPosts(posts, 0, undefined, true)}
-        {this.renderReplyFileForm()}
+        <UploadWindow
+          value={uploadFiles}
+          visible={isUploadVisible}
+          onCancel={this.handleHideUpload}
+          onChange={this.handleChangeUpload}
+        />
+        <UploadWindow
+          value={replyUploadFiles[this.replyPostId] || []}
+          visible={isReplyUploadVisible}
+          onCancel={this.handleHideReplyUpload}
+          onChange={this.handleChangeReplyUpload}
+        />
       </div>
     );
   }

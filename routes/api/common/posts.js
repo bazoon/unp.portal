@@ -47,8 +47,9 @@ const createPost = async function createPost({
     userName: user.name,
     position: user.position || "",
     createdAt: post.createdAt,
-    files: files.map(f => ({
-      name: getUploadFilePath(f.name),
+    files: createdFiles.map(f => ({
+      id: f.id,
+      name: getUploadFilePath(f.file),
       size: f.size
     })),
     children: []
@@ -73,6 +74,7 @@ const getPosts = async function getPosts(query) {
       position: post.position,
       createdAt: post.created_at,
       files: files.map(pf => ({
+        id: pf.id,
         name: getUploadFilePath(pf.file),
         size: pf.size
       }))
@@ -87,16 +89,12 @@ const getPosts = async function getPosts(query) {
     postsLookup[post.id] = post;
   });
 
-  console.log(postsLookup);
-
   return extendedPosts.reduce((acc, post) => {
     post.children = post.children || [];
 
     if (post.parentId) {
       const parentPost = postsLookup[post.parentId];
 
-      console.log("=======================");
-      console.log(post.parentId, parentPost);
       parentPost.children = parentPost.children || [];
       parentPost.children.push(post);
       return acc;

@@ -25,10 +25,6 @@ class Conversation extends Component {
     this.props.groupsStore.getCurrent(id).then(() => {
       this.props.groupsStore.getConversation(conversationId);
     });
-
-    // this.props.projectGroups.getCurrent(id).then(() => {
-    //   this.props.projectGroups.currentGroup.loadConversation(conversationId);
-    // });
   };
 
   handleSend = (text, uploadFiles) => {

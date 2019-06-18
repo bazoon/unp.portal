@@ -28,6 +28,7 @@ class UploadForm extends Component {
 
   handleFileNameChange = (e, doc) => {
     doc.originFileObj = new File([doc.originFileObj], e.target.value);
+    this.props.onChange(this.props.value.slice());
   };
 
   handleRemoveFile = doc => {
@@ -43,10 +44,9 @@ class UploadForm extends Component {
   renderFileInputs = docs => {
     return docs.map(doc => {
       return (
-        <div className="upload-form__inputs">
+        <div className="upload-form__inputs" key={doc.name}>
           <Input
             className="upload-form__input"
-            key={doc.name}
             onChange={e => this.handleFileNameChange(e, doc)}
             defaultValue={doc.name}
           />
@@ -92,7 +92,6 @@ class UploadForm extends Component {
         </Form.Item>
         <Form.Item>
           <Upload
-            listType="picture"
             onChange={this.handleDocsChanged}
             fileList={fileList}
             beforeUpload={() => false}
