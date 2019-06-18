@@ -26,7 +26,7 @@ class GroupCreateModal extends Component {
       let docs = [];
 
       if (fields.docs) {
-        docs = fields.docs.fileList.map(f => f.originFileObj);
+        docs = fields.docs.map(f => f.originFileObj);
         delete fields.docs;
       }
 

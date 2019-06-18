@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Actions } from "jumpstate";
 import moment from "moment";
+
 import {
   Calendar,
   Modal,
@@ -21,6 +22,7 @@ import PositionForm from "../Positions/PositionsForm";
 import OrganizationForm from "../Organizations/OrganizationForm";
 import { observer, inject } from "mobx-react";
 import EditWindow from "../../EditWindow/EditWindow";
+import getImageUrlFromFile from "../../../utils/getImageUrlFromFile";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -163,19 +165,14 @@ class GroupForm extends Component {
       positionId: id
     });
   };
-  getBase64(img, callback) {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => callback(reader.result));
-    reader.readAsDataURL(img);
-  }
 
   handleChangeAvatar = info => {
-    this.getBase64(info.file, imageUrl =>
+    getImageUrlFromFile(info.file).then(imageUrl => {
       this.setState({
         avatarUrl: imageUrl,
         avatarFile: info.fileList
-      })
-    );
+      });
+    });
   };
 
   render() {

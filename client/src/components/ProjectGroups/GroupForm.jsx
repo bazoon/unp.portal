@@ -15,10 +15,13 @@ import {
   Upload,
   Radio
 } from "antd";
+import UploadWindow from "../UploadWindow/UploadWindow";
 
 import moment from "moment";
 import { Actions } from "jumpstate";
 import ChooseIcon from "../../../images/success";
+
+import RenderFiles from "./RenderFiles";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -27,7 +30,8 @@ class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      docs: []
+      docs: [],
+      isUploadVisible: false
     };
   }
 
@@ -42,6 +46,18 @@ class GroupForm extends Component {
 
   handleDocsChanged = info => {
     this.props.onDocsChanged(info.fileList);
+  };
+
+  handleToggleUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
   };
 
   renderStep1(step) {
@@ -97,26 +113,26 @@ class GroupForm extends Component {
 
   renderStep2(step) {
     const { getFieldDecorator } = this.props.form;
+    const { isUploadVisible } = this.state;
     const style = step !== 1 ? { display: "none" } : { display: "block" };
 
     return (
       <div style={style}>
         <Row>
           <Col span={24}>
-            {getFieldDecorator("docs", {})(
-              <Upload
-                listType="picture"
-                onChange={this.handleDocsChanged}
-                fileList={this.props.docs}
-                beforeUpload={() => false}
-                multiple
-              >
-                <Button>
-                  <Icon type="upload" />
-                  Загрузить
-                </Button>
-              </Upload>
+            {getFieldDecorator("docs", { initialValue: [] })(
+              <UploadWindow
+                visible={isUploadVisible}
+                onCancel={this.handleHideUpload}
+              />
             )}
+            <Button
+              style={{ marginBottom: "32px" }}
+              onClick={this.handleToggleUpload}
+            >
+              Загрузить
+            </Button>
+            {getFieldDecorator("docs")(<RenderFiles />)}
           </Col>
         </Row>
       </div>

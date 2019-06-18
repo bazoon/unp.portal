@@ -269,3 +269,28 @@
     flex-shrink: 0;
   }
 }
+
+.upload-image {
+  &__container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &__wrap {
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+
+  &__remove {
+    position: absolute;
+    right: 0px;
+    top: -13px;
+    cursor: pointer;
+  }
+
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-right: 8px;
+}
