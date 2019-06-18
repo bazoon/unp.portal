@@ -17,7 +17,10 @@ const DocumentsStore = types
   })
   .actions(self => {
     const loadAll = flow(function* loadAll() {
-      self.documents = yield api.loadAll();
+      const documents = yield api.loadAll();
+      if (documents) {
+        self.documents = documents;
+      }
     });
 
     const upload = flow(function* upload(payload) {

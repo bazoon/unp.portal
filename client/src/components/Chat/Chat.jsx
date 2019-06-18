@@ -80,7 +80,7 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    const userId = this.props.currentUserStore.id;
+    const userId = this.props.currentUserStore.userId;
     Actions.getChannels(userId);
 
     chatSocket.on("connect", () => {
@@ -114,7 +114,8 @@ class Chat extends Component {
   };
 
   handleSend = () => {
-    const userId = this.props.currentUserStore.id;
+    const userId = this.props.currentUserStore.userId;
+
     Actions.sendChatMessage({
       channelId: this.props.activeChannelId,
       message: this.state.currentMessage,
@@ -299,7 +300,7 @@ class Chat extends Component {
   };
 
   handleFileChange = e => {
-    const userId = this.props.currentUserStore.id;
+    const userId = this.props.currentUserStore.userId;
     const { activeChannelId } = this.props;
     const formData = new FormData();
     const files = Array.prototype.map.call(e.target.files, f => f);
@@ -332,7 +333,7 @@ class Chat extends Component {
   handleMessageIntersection = e => {
     const { target } = e;
     const { dataset } = target;
-    const userId = this.props.currentUserStore.id;
+    const userId = this.props.currentUserStore.userId;
 
     const [channelId, messageId, seen] = dataset.id.split("-");
 

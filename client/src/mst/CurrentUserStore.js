@@ -1,6 +1,7 @@
 import { types, flow } from "mobx-state-tree";
 import File from "./models/File";
 import api from "../api/login";
+import chatSocket from "../components/Chat/socket";
 
 const CurrentUserStore = types
   .model("CurrentUserStore", {
@@ -24,11 +25,17 @@ const CurrentUserStore = types
 
     const setData = function setData(data) {
       const { token, userName, userId, avatar, isAdmin } = data;
+
       self.token = token;
       self.userName = userName;
       self.userId = userId;
       self.avatar = avatar;
       self.isAdmin = isAdmin;
+      self.token = token;
+
+      // TODO переделать
+      chatSocket.query.token = `Bearer ${token}`;
+      chatSocket.connect();
 
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
