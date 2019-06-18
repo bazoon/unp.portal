@@ -16,6 +16,8 @@ import {
 import moment from "moment";
 import { observer, inject } from "mobx-react";
 import { Actions } from "jumpstate";
+import UploadWindow from "../../UploadWindow/UploadWindow";
+import RenderFiles from "../../ProjectGroups/RenderFiles";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,9 +28,22 @@ class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      files: []
+      files: [],
+      isUploadVisible: false
     };
   }
+
+  handleToggleUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
 
   handlePublish = () => {
     const { form, projectGroupId } = this.props;
@@ -39,7 +54,7 @@ class GroupForm extends Component {
       let files = [];
 
       if (fields.files) {
-        files = fields.files.fileList.map(f => f.originFileObj);
+        files = fields.files.map(f => f.originFileObj);
         delete fields.files;
       }
 
@@ -77,6 +92,7 @@ class GroupForm extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form;
+    const { isUploadVisible } = this.state;
 
     return (
       <div className="group__conversation-form">
@@ -101,19 +117,18 @@ class GroupForm extends Component {
           </div>
           <div className="form-row form-row_40">
             {getFieldDecorator("files", {})(
-              <Upload
-                onChange={this.handleDocsChanged}
-                onPreview={this.handlePreview}
-                fileList={this.state.files}
-                beforeUpload={() => false}
-                multiple
-              >
-                <Button>
-                  <Icon type="upload" />
-                  Загрузить
-                </Button>
-              </Upload>
+              <UploadWindow
+                visible={isUploadVisible}
+                onCancel={this.handleHideUpload}
+              />
             )}
+            <Button
+              style={{ marginBottom: "32px" }}
+              onClick={this.handleToggleUpload}
+            >
+              Загрузить
+            </Button>
+            {getFieldDecorator("files")(<RenderFiles />)}
           </div>
           <div className="form-row form-row_24">
             {getFieldDecorator("isNews", {
