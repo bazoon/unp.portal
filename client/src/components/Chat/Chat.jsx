@@ -6,6 +6,7 @@ import moment from "moment";
 import { Drawer, Input, Button, Icon, Spin, Popover, Tooltip } from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
+import { observer, inject } from "mobx-react";
 import Observer from "@researchgate/react-intersection-observer";
 import NewChannel from "./NewChannel";
 import NewUser from "./NewUser";
@@ -47,6 +48,8 @@ const colors = [
   Math.floor(Math.random() * 16777215).toString(16)
 ];
 
+@inject("currentUserStore")
+@observer
 class Chat extends Component {
   static propTypes = {
     visible: PropTypes.bool.isRequired,
@@ -77,7 +80,8 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    Actions.getChannels(this.props.userId);
+    const userId = this.props.currentUserStore.id;
+    Actions.getChannels(userId);
 
     chatSocket.on("connect", () => {
       this.setState({
@@ -85,7 +89,7 @@ class Chat extends Component {
       });
 
       // Actions.getAllChannels();
-      Actions.getChannels(this.props.userId).then(() => {
+      Actions.getChannels(userId).then(() => {
         const activeChannel = this.findActiveChannel();
         if (activeChannel) {
           this.loadMessages(activeChannel.id);
@@ -110,11 +114,12 @@ class Chat extends Component {
   };
 
   handleSend = () => {
+    const userId = this.props.currentUserStore.id;
     Actions.sendChatMessage({
       channelId: this.props.activeChannelId,
       message: this.state.currentMessage,
       type: "text",
-      userId: this.props.userId
+      userId
     }).then(() => {
       this.setState({
         currentMessage: ""
@@ -294,7 +299,8 @@ class Chat extends Component {
   };
 
   handleFileChange = e => {
-    const { userId, activeChannelId } = this.props;
+    const userId = this.props.currentUserStore.id;
+    const { activeChannelId } = this.props;
     const formData = new FormData();
     const files = Array.prototype.map.call(e.target.files, f => f);
     formData.append("channelId", activeChannelId);
@@ -326,7 +332,7 @@ class Chat extends Component {
   handleMessageIntersection = e => {
     const { target } = e;
     const { dataset } = target;
-    const { userId } = this.props;
+
     const [channelId, messageId, seen] = dataset.id.split("-");
 
     if (e.isIntersecting && seen !== "true") {
@@ -627,7 +633,6 @@ class Chat extends Component {
 
 const mapStateToProps = state => {
   return {
-    userId: state.Login.userId,
     chat: state.Chat.chat,
     channels: state.Chat.channels,
     activeChannelId: state.Chat.activeChannelId,

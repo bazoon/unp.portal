@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { observer, inject } from "mobx-react";
 import {
   Modal,
   Form,
@@ -15,6 +16,8 @@ import { FlexItem } from "../Form/FlexItem";
 import { Actions } from "jumpstate";
 const { Option } = Select;
 
+@inject("currentUserStore")
+@observer
 class NewChannel extends Component {
   constructor(props) {
     super(props);
@@ -34,7 +37,7 @@ class NewChannel extends Component {
 
   handleOk = () => {
     const { form } = this.props;
-    const { userId } = this.props;
+    const userId = this.props.currentUserStore.id;
 
     form.validateFields((err, fields) => {
       const payload = { ...fields, userId };
@@ -93,7 +96,6 @@ class NewChannel extends Component {
 
 const mapStateToProps = state => {
   return {
-    userId: state.Login.userId,
     users: state.Users.users
   };
 };

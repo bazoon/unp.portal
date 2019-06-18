@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { observer, inject } from "mobx-react";
 import {
   Modal,
   Form,
@@ -13,8 +14,11 @@ import {
 import { FlexRow } from "../Form/FlexRow";
 import { FlexItem } from "../Form/FlexItem";
 import { Actions } from "jumpstate";
+import moment from "moment";
 const { Option } = Select;
 
+@inject("currentUserStore")
+@observer
 class NewChannel extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +36,7 @@ class NewChannel extends Component {
   handleOk = () => {
     const { form } = this.props;
     const formData = new FormData();
-    const { userId } = this.props;
+    const userId = this.props.currentUserStore.id;
 
     formData.append("userId", userId);
 
@@ -101,11 +105,5 @@ class NewChannel extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId
-  };
-};
-
 const WrappedNewChannel = Form.create({ name: "newChannelForm" })(NewChannel);
-export default connect(mapStateToProps)(WrappedNewChannel);
+export default WrappedNewChannel;
