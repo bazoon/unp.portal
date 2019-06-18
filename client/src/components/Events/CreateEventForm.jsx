@@ -19,8 +19,10 @@ import { Actions } from "jumpstate";
 import groupsApi from "../../api/projectGroups";
 import usersApi from "../../api/users";
 import { observer, inject } from "mobx-react";
+import UploadWindow from "../UploadWindow/UploadWindow";
+import RenderFiles from "../ProjectGroups/RenderFiles";
+
 const { Option } = Select;
-const { TextArea } = Input;
 
 @inject("eventsStore")
 @observer
@@ -31,7 +33,8 @@ class CreateEventForm extends Component {
       files: [],
       groups: [],
       users: [],
-      accessType: 0
+      accessType: 0,
+      isUploadVisible: false
     };
   }
 
@@ -57,7 +60,7 @@ class CreateEventForm extends Component {
       let files = [];
 
       if (fields.files) {
-        files = fields.files.fileList.map(f => f.originFileObj);
+        files = fields.files.map(f => f.originFileObj);
         delete fields.files;
       }
 
@@ -78,7 +81,7 @@ class CreateEventForm extends Component {
       });
 
       this.props.eventsStore.create(formData).then(() => {
-        // this.props.onSuccess();
+        this.props.onSuccess();
       });
     });
   };
@@ -99,6 +102,20 @@ class CreateEventForm extends Component {
       accessType
     });
   };
+
+  handleToggleUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  // renders
 
   renderSelectGroups() {
     const { getFieldDecorator } = this.props.form;
@@ -150,6 +167,7 @@ class CreateEventForm extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form;
+    const { isUploadVisible } = this.state;
 
     return (
       <div className="group__conversation-form">
@@ -174,19 +192,16 @@ class CreateEventForm extends Component {
           </div>
           <div className="form-row form-row_40">
             {getFieldDecorator("files", {})(
-              <Upload
-                onChange={this.handleDocsChanged}
-                onPreview={this.handlePreview}
-                fileList={this.state.files}
-                beforeUpload={() => false}
-                multiple
-              >
-                <Button>
-                  <Icon type="upload" />
-                  Загрузить
-                </Button>
-              </Upload>
+              <UploadWindow
+                visible={isUploadVisible}
+                onCancel={this.handleHideUpload}
+              />
             )}
+            <Button onClick={this.handleToggleUpload}>
+              <Icon type="upload" />
+              Загрузить
+            </Button>
+            {getFieldDecorator("files")(<RenderFiles />)}
           </div>
 
           <div className="form-row form-row_24">

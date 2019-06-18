@@ -7,7 +7,10 @@ function getBase64(img, callback) {
 export default function getImageUrlFromFile(file) {
   return new Promise(resolve => {
     getBase64(file, imageUrl => {
-      resolve(imageUrl);
+      resolve({
+        imageUrl,
+        name: file.name
+      });
     });
   });
 }

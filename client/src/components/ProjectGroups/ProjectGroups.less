@@ -272,14 +272,14 @@
 
 .upload-image {
   &__container {
-    display: flex;
-    flex-wrap: wrap;
   }
 
   &__wrap {
-    width: 60px;
-    height: 60px;
+    height: 80px;
     position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
   }
 
   &__remove {
@@ -287,6 +287,10 @@
     right: 0px;
     top: -13px;
     cursor: pointer;
+  }
+
+  &_raw {
+    background: #f1f1f1;
   }
 
   width: 50px;
