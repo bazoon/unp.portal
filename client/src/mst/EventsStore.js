@@ -35,8 +35,11 @@ const CurrentUserStore = types
         page: self.page,
         pageSize: self.pageSize
       });
-      self.events = data.events.slice();
-      self.total = data.pagination.total;
+
+      if (data && data.events) {
+        self.events = data.events;
+        self.total = data.pagination.total;
+      }
     });
 
     const loadUpcoming = flow(function* loadUpcoming() {

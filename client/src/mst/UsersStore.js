@@ -37,7 +37,10 @@ const UsersStore = types
   }))
   .actions(self => {
     const loadAllUsers = flow(function* load() {
-      self.users = yield api.loadAllUsers();
+      const users = yield api.loadAllUsers();
+      if (users) {
+        self.users = users;
+      }
     });
 
     const get = flow(function* get(id) {

@@ -20,6 +20,8 @@ import moment from "moment";
 import prettyBytes from "pretty-bytes";
 import { observer, inject } from "mobx-react";
 import ShareIcon from "../../../images/share";
+import UploadWindow from "../UploadWindow/UploadWindow";
+import RenderFiles from "../ProjectGroups/RenderFiles";
 
 const { Search } = Input;
 
@@ -76,9 +78,22 @@ class Documents extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      docs: []
+      docs: [],
+      isUploadVisible: false
     };
   }
+
+  handleToggleUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
 
   handleSubmit = (file, fileList) => {
     const formData = new FormData();
@@ -95,9 +110,9 @@ class Documents extends Component {
     });
   };
 
-  handleDocsChanged = info => {
+  handleDocsChanged = fileList => {
     this.setState({
-      docs: info.fileList
+      docs: fileList
     });
   };
 
@@ -120,6 +135,7 @@ class Documents extends Component {
   }
 
   render() {
+    const { isUploadVisible } = this.state;
     return (
       <>
         <Breadcrumb>
@@ -143,20 +159,22 @@ class Documents extends Component {
               <div className="documents__side-title">Файлы</div>
               <div className="documents__side-text" />
 
-              <Upload
+              <UploadWindow
+                visible={isUploadVisible}
+                onCancel={this.handleHideUpload}
                 onChange={this.handleDocsChanged}
-                multiple
-                fileList={this.state.docs}
-                beforeUpload={() => false}
+                value={this.state.docs}
+              />
+
+              <Button
+                type="primary"
+                style={{ width: "100%", height: "52px" }}
+                onClick={this.handleToggleUpload}
               >
-                <Button
-                  type="primary"
-                  style={{ width: "100%", height: "52px" }}
-                  onClick={this.handleUploadFiles}
-                >
-                  Загрузить
-                </Button>
-              </Upload>
+                Загрузить
+              </Button>
+              <RenderFiles value={this.state.docs} />
+
               {this.state.docs.length > 0 && (
                 <Button
                   type="primary"

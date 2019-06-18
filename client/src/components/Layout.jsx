@@ -73,7 +73,7 @@ class L extends Component {
         <BrowserRouter>
           <div className="outer-container">
             <ChatIcon onClick={this.handleChatClick} />
-            <Header className="header">
+            <Header className="header top-header">
               <div className="container">
                 <div className="header__container">
                   <div className="logo-wrap">

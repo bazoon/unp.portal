@@ -77,8 +77,8 @@ class LoginForm extends Component {
     };
 
     return (
-      <Form {...formItemLayout} onSubmit={this.handleSignup}>
-        <Form.Item label="Фамилия">
+      <Form onSubmit={this.handleSignup}>
+        <Form.Item label="Фамилия" {...formItemLayout}>
           {getFieldDecorator("surName", {
             rules: [
               {
@@ -88,7 +88,7 @@ class LoginForm extends Component {
             ]
           })(<Input />)}
         </Form.Item>
-        <Form.Item label="Имя">
+        <Form.Item label="Имя" {...formItemLayout}>
           {getFieldDecorator("firstName", {
             rules: [
               {
@@ -98,7 +98,7 @@ class LoginForm extends Component {
             ]
           })(<Input />)}
         </Form.Item>
-        <Form.Item label="Отчество">
+        <Form.Item label="Отчество" {...formItemLayout}>
           {getFieldDecorator("lastName", {
             rules: [
               {
@@ -108,7 +108,7 @@ class LoginForm extends Component {
             ]
           })(<Input />)}
         </Form.Item>
-        <Form.Item label="E-mail">
+        <Form.Item label="E-mail" {...formItemLayout}>
           {getFieldDecorator("email", {
             rules: [
               {
@@ -122,7 +122,7 @@ class LoginForm extends Component {
             ]
           })(<Input />)}
         </Form.Item>
-        <Form.Item label="Password">
+        <Form.Item label="Password" {...formItemLayout}>
           {getFieldDecorator("password", {
             rules: [
               {
@@ -135,7 +135,7 @@ class LoginForm extends Component {
             ]
           })(<Input.Password />)}
         </Form.Item>
-        <Form.Item label="Confirm Password">
+        <Form.Item label="Confirm Password" {...formItemLayout}>
           {getFieldDecorator("confirm", {
             rules: [
               {
@@ -148,7 +148,7 @@ class LoginForm extends Component {
             ]
           })(<Input.Password onBlur={this.handleConfirmBlur} />)}
         </Form.Item>
-        <Form.Item label={<span>Логин</span>}>
+        <Form.Item label={<span>Логин</span>} {...formItemLayout}>
           {getFieldDecorator("login", {
             rules: [
               {
