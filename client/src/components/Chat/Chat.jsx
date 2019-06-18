@@ -332,6 +332,7 @@ class Chat extends Component {
   handleMessageIntersection = e => {
     const { target } = e;
     const { dataset } = target;
+    const userId = this.props.currentUserStore.id;
 
     const [channelId, messageId, seen] = dataset.id.split("-");
 

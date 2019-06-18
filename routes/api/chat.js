@@ -157,9 +157,7 @@ function getMessageFiles(message) {
   if (message.type !== "file") return Promise.resolve([]);
   const filesQuery = `select files.id, files.file, files.size
                       from files
-                      where (files.type = 'message') and files.entity_id = ${
-                        message.id
-                      }`;
+                      where files.entity_id = ${message.id}`;
   return models.sequelize.query(filesQuery).then(function(messageFiles) {
     return messageFiles[0];
   });
