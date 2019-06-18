@@ -14,7 +14,6 @@ const { Sider, Content } = Layout;
 
 class AdminLayout extends Component {
   render() {
-    console.log(this.props);
     return (
       <Switch>
         <Route

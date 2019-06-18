@@ -11,11 +11,16 @@ import "../../fonts/opensans/opensansbold.woff2";
 import "../../fonts/opensans/opensanssemibold.woff2";
 
 @inject("currentUserStore")
+@inject("eventsStore")
 @observer
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+
+  componentDidMount() {
+    this.props.eventsStore.loadAll();
   }
 
   handleLogin = () => {

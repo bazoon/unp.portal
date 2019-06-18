@@ -9,14 +9,13 @@ import {
   Select,
   Row,
   Col,
-  Calendar,
   Table
 } from "antd";
 
 import api from "../../api/api";
 import "./Feed.less";
 import { observer, inject } from "mobx-react";
-
+import Calendar from "../Calendar/Calendar";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import Events from "../Events/Events";
@@ -65,7 +64,7 @@ class Feed extends Component {
         <Table
           showHeader={false}
           rowKey="id"
-          dataSource={this.props.feedStore.items}
+          dataSource={this.props.feedStore.items.slice()}
           columns={columns}
           pagination={{
             showQuickJumper: true

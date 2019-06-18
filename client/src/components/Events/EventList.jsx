@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import CreateEventForm from "./CreateEventForm";
 import { inject, observer } from "mobx-react";
 import Events from "./Events";
+import Calendar from "../Calendar/Calendar";
 
 const { Search } = Input;
 
@@ -28,17 +29,6 @@ class EventList extends Component {
       isFilesVisible: {},
       today: moment(new Date())
     };
-  }
-
-  componentDidMount() {
-    this.loadEvents();
-  }
-
-  loadEvents() {
-    const { userId } = this.props;
-    const { today } = this.state;
-    const now = new Date();
-    this.props.eventsStore.loadAll();
   }
 
   handleToggleFiles = id => {
@@ -232,6 +222,12 @@ class EventList extends Component {
             )}
 
             {this.renderEvents()}
+          </Col>
+
+          <Col span={8}>
+            <div className="event-list__calendar">
+              <Calendar />
+            </div>
           </Col>
         </Row>
       </div>

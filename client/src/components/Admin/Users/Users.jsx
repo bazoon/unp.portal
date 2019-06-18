@@ -6,6 +6,8 @@ import "./Users.less";
 import MoreIcon from "../../../../images/more";
 import { Link } from "react-router-dom";
 
+import Calendar from "../../Calendar/Calendar";
+
 const { Search } = Input;
 
 @inject("usersStore")
@@ -117,7 +119,11 @@ class Users extends Component {
               />
             </div>
           </Col>
-          <Col span={8}>Calendar</Col>
+          <Col span={8}>
+            <div className="admin-users__calendar">
+              <Calendar />
+            </div>
+          </Col>
         </Row>
       </>
     );

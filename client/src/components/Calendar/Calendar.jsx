@@ -2,10 +2,13 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import EventModal from "../Events/EventModal";
 import moment from "moment";
+import { observer, inject } from "mobx-react";
 import "./Calendar.less";
 
 import { Calendar, Button, Input, Icon, Popover } from "antd";
 
+@inject("eventsStore")
+@observer
 class EventCalendar extends Component {
   constructor(props) {
     super(props);
@@ -16,11 +19,11 @@ class EventCalendar extends Component {
 
   dateCellRender = d => {
     const day = d.get("date");
-    const { events } = this.props;
-    let style = {};
+    const events = this.props.eventsStore.events;
 
+    let style = {};
     const eventsOnDay = events.filter(e => {
-      const fromDate = moment(e.fromDate);
+      const fromDate = moment(e.startDate);
 
       return (
         fromDate.get("year") === d.get("year") &&
@@ -55,25 +58,6 @@ class EventCalendar extends Component {
     ) : (
       <div className="calendar-day">{day}</div>
     );
-
-    // return (
-    //   eventsOnDay.length > 0 ? (
-    //   <Popover content={eventsPopup}>
-    //     <div className="calendar-day">
-    //     {day}
-    //     <div className="calendar-day__events">
-    //       {eventsOnDay.map(() => {
-    //         return <div className="calendar-day__event" />;
-    //       })}
-    //     </div>
-    //   </div>
-    //   </Popover>
-    // ) : (
-    //   <div className="calendar-day">
-    //     {day}
-    //   </div>
-    // )
-    // );
   };
 
   handleAddEvent = () => {
@@ -95,25 +79,24 @@ class EventCalendar extends Component {
   };
 
   render() {
+    const l = this.props.eventsStore.events.length;
     return (
       <React.Fragment>
-        <Button icon="plus" onClick={this.handleAddEvent} />
-        <Calendar fullscreen={false} dateFullCellRender={this.dateCellRender} />
-        <EventModal
+        <Calendar
+          // HACK: чтобы заставить календарь перерисоваться при получении
+          // событий
+          l={l}
+          fullscreen={false}
+          dateFullCellRender={this.dateCellRender}
+        />
+        {/* <EventModal
           visible={this.state.isAddModalVisible}
           onCancel={this.handleCancel}
           onOk={this.handleOk}
-        />
+        /> */}
       </React.Fragment>
     );
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId,
-    events: state.Events.allEvents
-  };
-};
-
-export default connect(mapStateToProps)(EventCalendar);
+export default EventCalendar;

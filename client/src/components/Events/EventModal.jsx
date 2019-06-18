@@ -3,7 +3,10 @@ import { connect } from "react-redux";
 import { Modal } from "antd";
 import { Actions } from "jumpstate";
 import EventForm from "./EventForm";
+import { observer, inject } from "mobx-react";
 
+@inject("currentUserStore")
+@observer
 class EventModal extends Component {
   constructor(props) {
     super(props);
@@ -12,7 +15,7 @@ class EventModal extends Component {
 
   handleOk = () => {
     const form = this.formRef.current;
-    const { userId } = this.props;
+    const { userId } = this.props.currentUserStore;
     const { onOk } = this.props;
     const formData = new FormData();
 
@@ -59,10 +62,4 @@ class EventModal extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    userId: state.Login.userId
-  };
-};
-
-export default connect(mapStateToProps)(EventModal);
+export default EventModal;
