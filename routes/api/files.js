@@ -24,6 +24,7 @@ router.get("/", async ctx => {
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
+  const userId = ctx.user.id;
   const files = Array.isArray(file) ? file : [file];
 
   await uploadFiles(files);
@@ -31,6 +32,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   await models.File.bulkCreate(
     files.map(f => {
       return {
+        userId,
         file: f.name,
         size: f.size,
         url: getUploadFilePath(f.name),
