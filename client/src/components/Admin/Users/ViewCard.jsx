@@ -18,6 +18,7 @@ import { observer, inject } from "mobx-react";
 import "./Users.less";
 import MoreIcon from "../../../../images/more";
 import { Link } from "react-router-dom";
+import Calendar from "../../Calendar/Calendar";
 
 import {
   pluralizeParticipants,
@@ -118,40 +119,45 @@ class Users extends Component {
             <div className="section-title">Карточка пользователя</div>
             <div className="user__view-card">
               <table>
-                <tr className="user__view-card-row_border">
-                  <td>Аватар</td>
-                  <td>
-                    <img className="user__view-card-avatar" src={user.avatar} />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Фамилия</td>
-                  <td>{usersStore.surName}</td>
-                </tr>
-                <tr>
-                  <td>Имя</td>
-                  <td>{usersStore.firstName}</td>
-                </tr>
-                <tr className="user__view-card-row_border">
-                  <td>Отчество</td>
-                  <td>{usersStore.lastName}</td>
-                </tr>
-                <tr>
-                  <td>Организация</td>
-                  <td>{usersStore.organization}</td>
-                </tr>
-                <tr className="user__view-card-row_border">
-                  <td>Должность</td>
-                  <td>{usersStore.position}</td>
-                </tr>
-                <tr>
-                  <td>Логин</td>
-                  <td>{user.login}</td>
-                </tr>
-                <tr className="user__view-card-row_border">
-                  <td>Пароль</td>
-                  <td>*******</td>
-                </tr>
+                <tbody>
+                  <tr className="user__view-card-row_border">
+                    <td>Аватар</td>
+                    <td>
+                      <img
+                        className="user__view-card-avatar"
+                        src={user.avatar}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Фамилия</td>
+                    <td>{usersStore.surName}</td>
+                  </tr>
+                  <tr>
+                    <td>Имя</td>
+                    <td>{usersStore.firstName}</td>
+                  </tr>
+                  <tr className="user__view-card-row_border">
+                    <td>Отчество</td>
+                    <td>{usersStore.lastName}</td>
+                  </tr>
+                  <tr>
+                    <td>Организация</td>
+                    <td>{usersStore.organization}</td>
+                  </tr>
+                  <tr className="user__view-card-row_border">
+                    <td>Должность</td>
+                    <td>{usersStore.position}</td>
+                  </tr>
+                  <tr>
+                    <td>Логин</td>
+                    <td>{user.login}</td>
+                  </tr>
+                  <tr className="user__view-card-row_border">
+                    <td>Пароль</td>
+                    <td>*******</td>
+                  </tr>
+                </tbody>
               </table>
               <Button onClick={this.handleEditUser}>Редактировать</Button>
             </div>
@@ -191,7 +197,12 @@ class Users extends Component {
               />
             </div>
           </Col>
-          <Col span={8}>Calendar</Col>
+          <Col span={8}>
+            <div className="section-title">События</div>
+            <div className="side-wrap">
+              <Calendar />
+            </div>
+          </Col>
         </Row>
       </>
     );

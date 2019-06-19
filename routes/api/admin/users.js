@@ -7,6 +7,13 @@ const getUploadFilePath = require("../../../utils/getUploadFilePath");
 const uploadFiles = require("../../../utils/uploadFiles");
 
 router.get("/", async (ctx, next) => {
+  const { isAdmin } = ctx.user;
+  if (!isAdmin) {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+    return;
+  }
+
   const users = await models.User.findAll({
     include: [
       {
@@ -36,7 +43,15 @@ router.get("/", async (ctx, next) => {
 });
 
 router.get("/get", async (ctx, next) => {
+  const { isAdmin } = ctx.user;
   const id = ctx.query.id;
+
+  if (!(isAdmin || id == ctx.user.id)) {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+    return;
+  }
+
   const user = await models.User.findOne({
     where: {
       id
@@ -74,6 +89,14 @@ router.post("/create", async (ctx, next) => {
     password,
     isAdmin
   } = ctx.request.body;
+
+  const id = ctx.query.id;
+
+  if (!ctx.user.isAdmin) {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+    return;
+  }
 
   const hashedPassword = bcrypt.hashSync(password, 8);
 
@@ -125,6 +148,12 @@ router.post("/update", koaBody({ multipart: true }), async (ctx, next) => {
     isAdmin
   } = ctx.request.body;
 
+  if (!(isAdmin || id == ctx.user.id)) {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+    return;
+  }
+
   const { avatar } = ctx.request.files;
   const files = avatar ? (Array.isArray(avatar) ? avatar : [avatar]) : [];
   await uploadFiles(files);
@@ -165,13 +194,19 @@ router.post("/update", koaBody({ multipart: true }), async (ctx, next) => {
     isAdmin: newUser.isAdmin,
     name: newUser.name,
     login: newUser.login,
-    avatar: newUser.avatar,
+    avatar: getUploadFilePath(newUser.avatar),
     organization: newUser.organization,
     position: newUser.position
   };
 });
 
 router.post("/delete", async (ctx, next) => {
+  const { isAdmin } = ctx.user;
+  if (!isAdmin) {
+    ctx.status = 403;
+    ctx.body = "Not authorized!";
+    return;
+  }
   const { id } = ctx.request.body;
   await models.User.destroy({ where: { id } });
   ctx.body = id;

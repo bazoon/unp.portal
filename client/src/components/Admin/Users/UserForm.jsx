@@ -307,7 +307,7 @@ class GroupForm extends Component {
                 title="Должности"
                 onSelect={this.handleSelectPosition}
                 columns={this.positionColumns}
-                dataSource={this.props.positionsStore.items}
+                dataSource={this.props.positionsStore.items.slice()}
                 onAdd={this.handleAddPosition}
                 onEdit={this.handleEditPosition}
                 isInEditMode={isEditingPosition}
@@ -336,14 +336,16 @@ class GroupForm extends Component {
             {getFieldDecorator("password", {})(<Input />)}
           </Form.Item>
         </Row>
-        <Row>
-          <Form.Item label="Пароль" {...formItemLayout}>
-            {getFieldDecorator("isAdmin", {
-              valuePropName: "checked",
-              initialValue: user.isAdmin
-            })(<Checkbox>Администратор?</Checkbox>)}
-          </Form.Item>
-        </Row>
+        {user.isAdmin && (
+          <Row>
+            <Form.Item label="Пароль" {...formItemLayout}>
+              {getFieldDecorator("isAdmin", {
+                valuePropName: "checked",
+                initialValue: user.isAdmin
+              })(<Checkbox>Администратор?</Checkbox>)}
+            </Form.Item>
+          </Row>
+        )}
 
         <Row>
           <Form.Item {...tailFormItemLayout}>

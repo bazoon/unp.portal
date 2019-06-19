@@ -45,15 +45,15 @@ app.use(async (ctx, next) => {
   const tokenOnly = token.split(" ")[1];
   if (tokenOnly) {
     const user = jwt.verify(tokenOnly, process.env.API_TOKEN);
-    const isAdminUrl = ctx.request.url.indexOf("admin/api") > 0;
+    // const isAdminUrl = ctx.request.url.indexOf("admin/api") > 0;
 
-    if (isAdminUrl && !user.isAdmin) {
-      ctx.status = 403;
-      ctx.body = "Not authorized!";
-    } else {
-      ctx.user = user;
-      await next();
-    }
+    // if (isAdminUrl && !user.isAdmin) {
+    //   ctx.status = 403;
+    //   ctx.body = "Not authorized!";
+    // } else {
+    ctx.user = user;
+    await next();
+    // }
   }
 });
 

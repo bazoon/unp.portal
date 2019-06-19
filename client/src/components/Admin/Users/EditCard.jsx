@@ -49,12 +49,6 @@ class CreateCard extends Component {
 
       formData.append("id", id);
       this.props.usersStore.updateUser(formData);
-
-      // if (!err) {
-      //   Actions.updateUser(payload).then(() => {
-      //     this.props.history.push("/admin/users");
-      //   });
-      // }
     });
   };
 
@@ -64,7 +58,7 @@ class CreateCard extends Component {
         <Row>
           <Col span={16}>
             <div className="section-header">
-              <div className="section-title">Пользователи</div>
+              <div className="section-title">Личный кабинет</div>
             </div>
             <div className="user__edit-card">
               <UserForm

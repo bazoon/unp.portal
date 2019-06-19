@@ -111,7 +111,9 @@ class L extends Component {
 
                     <div className="header__icons">
                       <Link
-                        to="/profile"
+                        to={`/admin/users/edit/${
+                          this.props.currentUserStore.id
+                        }`}
                         style={{ display: "flex", marginRight: "8px" }}
                       >
                         {avatar ? (
