@@ -47,6 +47,11 @@ const UsersStore = types
       self.currentUser = yield api.get(id);
     });
 
+    const deleteUser = flow(function* deleteUser(id) {
+      yield api.deleteUser(id);
+      self.users = self.users.filter(u => u.id !== id);
+    });
+
     const updateUser = flow(function* updateUser(payload) {
       self.currentUser = yield api.update(payload);
     });
@@ -71,7 +76,8 @@ const UsersStore = types
       get,
       loadUserGroups,
       setGroupsPagionation,
-      updateUser
+      updateUser,
+      deleteUser
     };
   });
 

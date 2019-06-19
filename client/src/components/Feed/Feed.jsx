@@ -79,12 +79,10 @@ class Feed extends Component {
       <div className="feed">
         <Row type="flex" gutter={37}>
           <Col span={16}>
-            <div className="main-header main-header_margin">
-              Новое на портале
-            </div>
+            <div className="section-title">Новое на портале</div>
           </Col>
           <Col span={8}>
-            <div className="main-header main-header_margin">События</div>
+            <div className="section-title">События</div>
           </Col>
         </Row>
         <Row type="flex" gutter={37}>

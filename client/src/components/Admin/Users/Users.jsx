@@ -28,8 +28,16 @@ class Users extends Component {
                   <img src={record.avatar} />
                 </div>
                 <div className="admin-user__info">
-                  <div>{record.name}</div>
-                  <div>{record.position && record.position.name}</div>
+                  <div className="admin-user__name">
+                    {record.name}
+                    {record.isAdmin && (
+                      <span className="admin-user__admin">Админ</span>
+                    )}
+                  </div>
+
+                  <div className="admin-user__position">
+                    {record.position && record.position.name}
+                  </div>
                 </div>
               </div>
               <div>
@@ -72,6 +80,10 @@ class Users extends Component {
     this.props.history.push(`/admin/users/view/${id}`);
   };
 
+  handleDelete = id => {
+    this.props.usersStore.deleteUser(id);
+  };
+
   renderOperationsMenu(user) {
     return (
       <>
@@ -83,7 +95,7 @@ class Users extends Component {
         </div>
         <div
           className="admin-user__menu-item"
-          onClick={() => this.handleUnpin(id)}
+          onClick={() => this.handleDelete(user.id)}
         >
           Удалить
         </div>
@@ -120,6 +132,7 @@ class Users extends Component {
             </div>
           </Col>
           <Col span={8}>
+            <div className="section-title">События</div>
             <div className="admin-users__calendar">
               <Calendar />
             </div>

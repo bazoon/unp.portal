@@ -121,7 +121,7 @@ class ProjectGroups extends Component {
 
         <Row gutter={27}>
           <Col span={16}>
-            <div className="project-groups__header">Ваши группы</div>
+            <div className="section-title">Ваши группы</div>
           </Col>
         </Row>
 
@@ -140,10 +140,8 @@ class ProjectGroups extends Component {
             </div>
           </Col>
           <Col span={8}>
-            <div className="project-groups__side-wrap">
-              <div className="project-groups__side-title">
-                Группы обсуждений
-              </div>
+            <div className="side-wrap">
+              <div className="section-title">Группы обсуждений</div>
               <div className="project-groups__side-text">
                 Все обсуждения сгруппированы по темам, если вы не нашли группу с
                 интересующим вас обсуждением – можете создать новую группу.

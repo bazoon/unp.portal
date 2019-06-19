@@ -20,5 +20,10 @@ export default {
     return api.post("admin/api/users/update", payload).then(({ data }) => {
       return data;
     });
+  },
+  deleteUser(id) {
+    return api.post("admin/api/users/delete", { id }).then(({ data }) => {
+      return data;
+    });
   }
 };

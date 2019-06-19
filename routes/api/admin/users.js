@@ -17,7 +17,8 @@ router.get("/", async (ctx, next) => {
         model: models.Organization,
         as: "Organization"
       }
-    ]
+    ],
+    order: [["isAdmin", "desc"], ["name", "asc"]]
   });
 
   const u = users[0];

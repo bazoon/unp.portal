@@ -155,8 +155,8 @@ class Documents extends Component {
             </div>
           </Col>
           <Col span={8}>
-            <div className="documents__side-wrap">
-              <div className="documents__side-title">Файлы</div>
+            <div className="side-wrap">
+              <div className="section-title">Файлы</div>
               <div className="documents__side-text" />
 
               <UploadWindow

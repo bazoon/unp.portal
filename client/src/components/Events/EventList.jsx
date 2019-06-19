@@ -196,22 +196,6 @@ class EventList extends Component {
             <div className="project-groups__search">
               <Search placeholder="Поиск по событиям" />
             </div>
-          </Col>
-          <Col span={8}>
-            <div className="side-header">События</div>
-            <Button
-              type="primary"
-              style={{ width: "100%", height: "52px" }}
-              onClick={this.handleAddEvent}
-            >
-              Создать событие
-            </Button>
-          </Col>
-        </Row>
-
-        <Row gutter={27}>
-          <Col span={16}>
-            <div className="project-groups__header">Ваши события</div>
             {isFormVisible && (
               <CreateEventForm
                 avatar={avatar}
@@ -223,8 +207,17 @@ class EventList extends Component {
 
             {this.renderEvents()}
           </Col>
-
           <Col span={8}>
+            <div className="side-wrap">
+              <div className="section-title">События</div>
+              <Button
+                type="primary"
+                style={{ width: "100%", height: "52px" }}
+                onClick={this.handleAddEvent}
+              >
+                Создать событие
+              </Button>
+            </div>
             <div className="event-list__calendar">
               <Calendar />
             </div>
