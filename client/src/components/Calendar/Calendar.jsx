@@ -4,6 +4,7 @@ import EventModal from "../Events/EventModal";
 import moment from "moment";
 import { observer, inject } from "mobx-react";
 import "./Calendar.less";
+import cn from "classnames";
 
 import { Calendar, Button, Input, Icon, Popover } from "antd";
 
@@ -20,6 +21,11 @@ class EventCalendar extends Component {
   dateCellRender = d => {
     const day = d.get("date");
     const events = this.props.eventsStore.events;
+    const today = new Date();
+    const isSame = moment(d).isSame(today, "day");
+    const className = cn("calendar-day", {
+      "calendar-day_selected": isSame
+    });
 
     let style = {};
     const eventsOnDay = events.filter(e => {
@@ -46,7 +52,7 @@ class EventCalendar extends Component {
 
     return eventsOnDay.length > 0 ? (
       <Popover content={eventsPopup}>
-        <div className="calendar-day">
+        <div className={className}>
           {day}
           <div className="calendar-day__events">
             {eventsOnDay.map(event => {
@@ -56,7 +62,7 @@ class EventCalendar extends Component {
         </div>
       </Popover>
     ) : (
-      <div className="calendar-day">{day}</div>
+      <div className={className}>{day}</div>
     );
   };
 
@@ -78,6 +84,10 @@ class EventCalendar extends Component {
     });
   };
 
+  handleChange = date => {
+    this.props.eventsStore.setCurrentDate(date.toDate());
+  };
+
   render() {
     const l = this.props.eventsStore.events.length;
     return (
@@ -88,6 +98,7 @@ class EventCalendar extends Component {
           l={l}
           fullscreen={false}
           dateFullCellRender={this.dateCellRender}
+          onChange={this.handleChange}
         />
         {/* <EventModal
           visible={this.state.isAddModalVisible}

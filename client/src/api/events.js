@@ -21,8 +21,8 @@ export default {
       return data;
     });
   },
-  loadUpcoming() {
-    return api.get("api/events/upcoming").then(({ data }) => {
+  loadUpcoming(date) {
+    return api.get("api/events/upcoming", { date }).then(({ data }) => {
       return data;
     });
   }

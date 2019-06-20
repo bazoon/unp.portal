@@ -99,45 +99,6 @@ router.get("/list", async (ctx, next) => {
   ctx.body = events;
 });
 
-router.get("/:id", async (ctx, next) => {
-  const userId = ctx.user.id;
-  const { id } = ctx.params;
-
-  const event = await models.Event.findOne({
-    id
-  });
-
-  ctx.body = {
-    id: id,
-    userId: event.UserId,
-    description: event.description,
-    remindAt: event.remindAt,
-    startDate: event.startDate,
-    title: event.title
-  };
-});
-
-router.delete("/:id", async (ctx, next) => {
-  const { id } = ctx.params;
-
-  const canEdit = await canEditEvent(id, ctx);
-  if (!canEdit) return;
-
-  await models.Event.destroy({
-    where: {
-      id
-    }
-  });
-
-  await models.UserEvent.destroy({
-    where: {
-      eventId: id
-    }
-  });
-
-  ctx.body = "ok";
-});
-
 router.get("/list/all", async (ctx, next) => {
   const { page, pageSize } = ctx.request.query;
   const userId = ctx.user.id;
@@ -147,16 +108,20 @@ router.get("/list/all", async (ctx, next) => {
 
 router.get("/upcoming", async (ctx, next) => {
   const userId = ctx.user.id;
-  const from = moment(new Date());
+  const { date } = ctx.request.query;
+  const from = (date && moment(date)) || moment(new Date());
   from.tz("Etc/GMT-0");
+  from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
   const query = `select events.id, title, description, start_date, remind_at
-            from events, user_events
-            where events.id = user_events.event_id and user_events.user_id=${userId}
-            and start_date > '${from}'
-            order by events.start_date asc
-            limit 5`;
+          from events, user_events
+          where events.id = user_events.event_id and user_events.user_id=${userId}
+          and start_date >= '${from}'
+          order by events.start_date asc
+          limit 5`;
+
   const events = (await models.sequelize.query(query))[0];
+
   ctx.body = await Promise.all(getFullEvents(events));
 });
 
@@ -209,7 +174,7 @@ function getFullEvents(events) {
     }`;
 
     const count = +(await models.sequelize.query(usersQuery))[0][0].count;
-
+    console.log(events);
     return {
       id: event.id,
       title: event.title,
@@ -220,6 +185,47 @@ function getFullEvents(events) {
     };
   });
 }
+
+router.get("/:id", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const { id } = ctx.params;
+
+  const event = await models.Event.findOne({
+    where: {
+      id
+    }
+  });
+
+  ctx.body = {
+    id: id,
+    userId: event.UserId,
+    description: event.description,
+    remindAt: event.remindAt,
+    startDate: event.startDate,
+    title: event.title
+  };
+});
+
+router.delete("/:id", async (ctx, next) => {
+  const { id } = ctx.params;
+
+  const canEdit = await canEditEvent(id, ctx);
+  if (!canEdit) return;
+
+  await models.Event.destroy({
+    where: {
+      id
+    }
+  });
+
+  await models.UserEvent.destroy({
+    where: {
+      eventId: id
+    }
+  });
+
+  ctx.body = "ok";
+});
 
 module.exports = router;
 

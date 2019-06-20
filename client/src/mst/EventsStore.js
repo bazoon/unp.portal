@@ -10,7 +10,8 @@ const CurrentUserStore = types
     upcoming: types.array(Event),
     total: types.maybeNull(types.number),
     page: types.optional(types.maybeNull(types.number), 1),
-    pageSize: types.optional(types.maybeNull(types.number), 10)
+    pageSize: types.optional(types.maybeNull(types.number), 10),
+    currentDate: types.maybeNull(types.Date)
   })
   .views(self => ({
     get groupedByDays() {
@@ -57,12 +58,20 @@ const CurrentUserStore = types
       self.loadAll();
     };
 
+    const setCurrentDate = flow(function* setCurrentDate(date) {
+      debugger;
+      self.currentDate = date;
+      const events = yield api.loadUpcoming(date);
+      self.upcoming = events;
+    });
+
     return {
       create,
       loadAll,
       setPage,
       loadUpcoming,
-      deleteEvent
+      deleteEvent,
+      setCurrentDate
     };
   });
 
