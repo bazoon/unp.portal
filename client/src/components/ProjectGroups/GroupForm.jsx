@@ -36,7 +36,6 @@ class GroupForm extends Component {
   }
 
   componentDidMount() {
-    Actions.getProjectGroupsBackgrounds();
     this.props.onSubmit(this.handleSubmit);
   }
 

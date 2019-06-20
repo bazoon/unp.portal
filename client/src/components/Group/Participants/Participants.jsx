@@ -56,6 +56,7 @@ class Participants extends Component {
         title: "",
         dataIndex: "commands",
         key: "commands",
+        align: "right",
         render: (value, record) => {
           const canEdit =
             this.props.groupsStore.current.isAdmin ||
@@ -72,9 +73,7 @@ class Participants extends Component {
                 )}
                 trigger="click"
               >
-                <div style={{ cursor: "pointer" }}>
-                  <MoreIcon style={{ cursor: "pointer" }} />
-                </div>
+                <MoreIcon style={{ cursor: "pointer" }} />
               </Popover>
             )
           );

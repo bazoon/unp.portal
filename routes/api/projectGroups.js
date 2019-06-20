@@ -12,7 +12,7 @@ const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 const notificationService = require("../../utils/notifications");
 
-router.post("/create", koaBody({ multipart: true }), async ctx => {
+router.post("/", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
   const {
     title,
@@ -68,8 +68,53 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
   };
 });
 
-router.post("/delete", async ctx => {
-  const { id } = ctx.request.body;
+router.get("/backgrounds", async ctx => {
+  const query = `select project_group_backgrounds.id, file from files, project_group_backgrounds 
+                where files.id = project_group_backgrounds.file_id`;
+  const result = await models.sequelize.query(query);
+
+  ctx.body = result[0].map(r => {
+    return {
+      id: r.id,
+      background: getUploadFilePath(r.file)
+    };
+  });
+});
+
+router.put("/backgrounds", async ctx => {
+  const { groupId, backgroundId } = ctx.request.body;
+  const userId = ctx.user.id;
+  const query = `select file
+              from project_groups 
+              left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
+              left join files on project_group_backgrounds.file_id = files.id 
+              where project_groups.id = ${groupId}`;
+
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: groupId
+    }
+  });
+
+  const canEdit = await canEditGroup(groupId, ctx);
+  if (!canEdit) return;
+
+  group.update({
+    backgroundId
+  });
+
+  await snotificationServiceotificationService.groupAvatarChanged({
+    userId,
+    title: group.title,
+    groupId
+  });
+
+  const file = await models.sequelize.query(query);
+  ctx.body = file && getUploadFilePath(file[0][0].file);
+});
+
+router.delete("/:id", async ctx => {
+  const { id } = ctx.params;
   const userId = ctx.user.id;
 
   const canEdit = await canEditGroup(id, ctx);
@@ -176,8 +221,8 @@ router.get("/", async (ctx, next) => {
   };
 });
 
-router.get("/get", async (ctx, next) => {
-  const { id } = ctx.request.query;
+router.get("/:id", async (ctx, next) => {
+  const { id } = ctx.params;
   const userId = ctx.user.id;
 
   const query = `select title, file, project_groups.id, is_open, description, short_description, project_groups.user_id 
@@ -266,9 +311,10 @@ router.get("/get", async (ctx, next) => {
   };
 });
 
-router.post("/unsubscribe", async ctx => {
+// unsubscribe
+router.delete("/:id/participants", async ctx => {
   const userId = ctx.user.id;
-  const { groupId } = ctx.request.body;
+  const groupId = ctx.params.id;
 
   const participant = await models.Participant.findOne({
     where: {
@@ -295,9 +341,12 @@ router.post("/unsubscribe", async ctx => {
   }
 });
 
-router.post("/subscribe", async ctx => {
-  const { groupId } = ctx.request.body;
+// subscribe
+router.post("/:id/participants", async ctx => {
+  const groupId = ctx.params.id;
   const userId = ctx.user.id;
+
+  // notification setup
   const group = await models.ProjectGroup.findOne({ where: { id: groupId } });
   const adminsIds = await models.Participant.findAll({
     where: {
@@ -326,6 +375,8 @@ router.post("/subscribe", async ctx => {
     applicantName: user.name,
     recipientsIds: adminsIds
   });
+
+  //end
 
   const role = await models.ParticipantRole.findOne();
 
@@ -362,8 +413,9 @@ router.post("/subscribe", async ctx => {
   ctx.body = participant;
 });
 
-router.get("/get/posts", async (ctx, next) => {
-  const { id } = ctx.request.query;
+// TODO где оно?
+router.get("/:id/posts", async (ctx, next) => {
+  const { id } = ctx.params;
 
   const query = `select posts.id, posts.parent_id, text, users.name, 
                 users.avatar, users.position_id, positions.name as position, posts.created_at
@@ -374,8 +426,9 @@ router.get("/get/posts", async (ctx, next) => {
   ctx.body = await getPosts({ query });
 });
 
-router.post("/post/post", koaBody({ multipart: true }), async ctx => {
-  const { text, groupId, userId, postId } = ctx.request.body;
+router.post("/:id/posts", koaBody({ multipart: true }), async ctx => {
+  const { text, userId, postId } = ctx.request.body;
+  const groupId = ctx.params.id;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
 
@@ -388,8 +441,8 @@ router.post("/post/post", koaBody({ multipart: true }), async ctx => {
   });
 });
 
-router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
-  const { projectGroupId, title, description, isNews } = ctx.request.body;
+router.post("/conversations", koaBody({ multipart: true }), async ctx => {
+  const { title, projectGroupId, description, isNews } = ctx.request.body;
   const userId = ctx.user.id;
   const { file } = ctx.request.files;
 
@@ -461,53 +514,10 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
   };
 });
 
-router.post("/backgrounds", async ctx => {
-  const query = `select project_group_backgrounds.id, file from files, project_group_backgrounds 
-                where files.id = project_group_backgrounds.file_id`;
-  const result = await models.sequelize.query(query);
+router.put("/:id/title", async ctx => {
+  const { title } = ctx.request.body;
+  const groupId = ctx.params.id;
 
-  ctx.body = result[0].map(r => {
-    return {
-      id: r.id,
-      background: getUploadFilePath(r.file)
-    };
-  });
-});
-
-router.post("/backgrounds/update", async ctx => {
-  const { groupId, backgroundId } = ctx.request.body;
-  const userId = ctx.user.id;
-  const query = `select file
-              from project_groups 
-              left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
-              left join files on project_group_backgrounds.file_id = files.id 
-              where project_groups.id = ${groupId}`;
-
-  const group = await models.ProjectGroup.findOne({
-    where: {
-      id: groupId
-    }
-  });
-
-  const canEdit = await canEditGroup(groupId, ctx);
-  if (!canEdit) return;
-
-  group.update({
-    backgroundId
-  });
-
-  await snotificationServiceotificationService.groupAvatarChanged({
-    userId,
-    title: group.title,
-    groupId
-  });
-
-  const file = await models.sequelize.query(query);
-  ctx.body = file && getUploadFilePath(file[0][0].file);
-});
-
-router.post("/update/title", async ctx => {
-  const { groupId, title } = ctx.request.body;
   const userId = ctx.user.id;
   const isAdmin = ctx.user.isAdmin;
 
@@ -538,8 +548,9 @@ router.post("/update/title", async ctx => {
   ctx.body = "ok";
 });
 
-router.post("/update/shortDescription", async ctx => {
-  const { groupId, shortDescription } = ctx.request.body;
+router.put("/:id/shortDescription", async ctx => {
+  const { shortDescription } = ctx.request.body;
+  const groupId = ctx.params.id;
   const userId = ctx.user.id;
 
   const canEdit = await canEditGroup(groupId, ctx);
@@ -564,7 +575,7 @@ router.post("/update/shortDescription", async ctx => {
   ctx.body = "ok";
 });
 
-router.post("/conversation/pin", async ctx => {
+router.post("/conversations/pins", async ctx => {
   const { conversationId } = ctx.request.body;
 
   const conversation = await models.Conversation.findOne({
@@ -583,8 +594,8 @@ router.post("/conversation/pin", async ctx => {
   ctx.body = "ok";
 });
 
-router.post("/conversation/unpin", async ctx => {
-  const { conversationId } = ctx.request.body;
+router.delete("/conversations/pins", async ctx => {
+  const { conversationId } = ctx.request.query;
 
   const conversation = await models.Conversation.findOne({
     where: {
@@ -622,7 +633,7 @@ router.post("/conversation/unpin", async ctx => {
 //   });
 // });
 
-router.post("/participants/makeAdmin", async ctx => {
+router.post("/admins", async ctx => {
   const { id, userId } = ctx.request.body;
   const currentUserId = ctx.user.id;
 
@@ -674,8 +685,8 @@ router.post("/participants/makeAdmin", async ctx => {
   ctx.body = { id: participant.id };
 });
 
-router.post("/participants/removeAdmin", async ctx => {
-  const { id, userId } = ctx.request.body;
+router.delete("/admins", async ctx => {
+  const { id, userId } = ctx.request.query;
   const currentUserId = ctx.user.id;
 
   const participant = await models.Participant.findOne({ where: { id } });
@@ -699,7 +710,7 @@ router.post("/participants/removeAdmin", async ctx => {
   ctx.body = { id: participant.id };
 });
 
-router.post("/participants/approve", async ctx => {
+router.post("/requests", async ctx => {
   const { id } = ctx.request.body;
   const userId = ctx.user.id;
 
@@ -716,10 +727,6 @@ router.post("/participants/approve", async ctx => {
       ]
     }
   });
-
-  if (!currentParticipant.isAdmin) {
-    throw new Error("Unauthorized!");
-  }
 
   await participant.update({
     state: 1
@@ -762,7 +769,7 @@ router.post("/participants/remove", async ctx => {
   ctx.body = "ok";
 });
 
-router.get("/user", async ctx => {
+router.get("/userGroups", async ctx => {
   const userId = ctx.user.id;
   const query = `select id, title from project_groups 
             where id in (select participants.project_group_id from participants

@@ -2,33 +2,29 @@ import api from "./api";
 
 export default {
   getAll(payload) {
-    return api.get("api/projectGroups/", payload).then(({ data }) => {
+    return api.get("api/projectGroups", payload).then(({ data }) => {
       return data;
     });
   },
   create(payload) {
-    return api.post("api/ProjectGroups/create", payload);
+    return api.post("api/ProjectGroups", payload);
   },
   unsubscribe(groupId) {
     return api
-      .post("api/ProjectGroups/unsubscribe", {
-        groupId
-      })
+      .delete(`api/ProjectGroups/${groupId}/participants`)
       .then(({ data }) => data);
   },
   subscribe(groupId) {
-    return api.post("api/ProjectGroups/subscribe", {
-      groupId
-    });
+    return api.post(`api/ProjectGroups/${groupId}/participants`);
   },
   getBackgrounds() {
-    return api.post("api/projectGroups/backgrounds").then(({ data }) => {
+    return api.get("api/projectGroups/backgrounds").then(({ data }) => {
       return data;
     });
   },
   // Distinct group
   get(id) {
-    return api.get("api/projectGroups/get", { id }).then(({ data }) => {
+    return api.get(`api/projectGroups/${id}`).then(({ data }) => {
       return data;
     });
   },
@@ -41,34 +37,36 @@ export default {
     });
   },
   pin(conversationId) {
-    return api.post("api/projectGroups/conversation/pin", { conversationId });
+    return api.post("api/projectGroups/conversations/pins", { conversationId });
   },
   unpin(conversationId) {
-    return api.post("api/projectGroups/conversation/unpin", { conversationId });
+    return api.delete("api/projectGroups/conversations/pins", {
+      conversationId
+    });
   },
   updateBackground(payload) {
     return api
-      .post("api/projectGroups/backgrounds/update", payload)
+      .put("api/projectGroups/backgrounds", payload)
       .then(({ data }) => data);
   },
   updateGroupTitle(payload) {
     return api
-      .post("api/projectGroups/update/title", payload)
+      .post(`api/projectGroups/${payload.groupId}/title`, payload)
       .then(({ data }) => data);
   },
   updateGroupShortDescription(payload) {
     return api
-      .post("api/projectGroups/update/shortDescription", payload)
+      .post(`api/projectGroups/${payload.groupId}/shortDescription`, payload)
       .then(({ data }) => data);
   },
   makeAdmin(payload) {
     return api
-      .post("api/projectGroups/participants/makeAdmin", payload)
+      .post("api/projectGroups/admins", payload)
       .then(({ data }) => data.id);
   },
   removeAdmin(payload) {
     return api
-      .post("api/projectGroups/participants/removeAdmin", payload)
+      .delete("api/projectGroups/admins", payload)
       .then(({ data }) => data.id);
   },
   removeFromGroup(payload) {
@@ -78,16 +76,16 @@ export default {
   },
   approve(payload) {
     return api
-      .post("api/projectGroups/participants/approve", payload)
+      .post("api/projectGroups/requests", payload)
       .then(({ data }) => data.id);
   },
   createConversation(payload) {
     return api
-      .post("api/projectGroups/conversation/create", payload)
+      .post(`api/projectGroups/conversations`, payload)
       .then(({ data }) => data);
   },
   getUserGroups() {
-    return api.get("api/projectGroups/user").then(({ data }) => {
+    return api.get("api/projectGroups/userGroups").then(({ data }) => {
       return data;
     });
   },
@@ -97,6 +95,6 @@ export default {
     });
   },
   deleteGroup(id) {
-    return api.post("api/projectGroups/delete", { id });
+    return api.delete(`api/projectGroups/${id}`);
   }
 };
