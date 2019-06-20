@@ -20,6 +20,7 @@ import { observer, inject } from "mobx-react";
 import "./Participants.less";
 
 @inject("groupsStore")
+@inject("currentUserStore")
 @observer
 class Participants extends Component {
   constructor(props) {
@@ -56,8 +57,12 @@ class Participants extends Component {
         dataIndex: "commands",
         key: "commands",
         render: (value, record) => {
+          const canEdit =
+            this.props.groupsStore.current.isAdmin ||
+            this.props.currentUserStore.isAdmin;
+
           return (
-            this.props.groupsStore.current.isAdmin && (
+            canEdit && (
               <Popover
                 placement="bottom"
                 content={this.renderMenu(
@@ -136,16 +141,16 @@ class Participants extends Component {
   }
 
   render() {
-    const { title, participants, avatar, isAdmin, isOpen, isMember } =
+    const { title, participants = [], avatar, isAdmin, isOpen, isMember } =
       this.props.groupsStore.current || {};
 
+    const isSuperAdmin = this.props.currentUserStore.isAdmin;
+
     const { id } = this.props.match.params;
-    const canView = isAdmin || isOpen || isMember;
+    const canView = isSuperAdmin || isAdmin || isOpen || isMember;
     if (!canView) {
       return <div>Нет доступа</div>;
     }
-
-    console.log(participants);
 
     return (
       <>

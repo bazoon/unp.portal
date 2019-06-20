@@ -283,7 +283,7 @@ router.post("/unsubscribe", async ctx => {
     }
   });
 
-  if (admins.length <= 1) {
+  if (participant.isAdmin && admins.length <= 1) {
     ctx.body = {
       success: false,
       message:
@@ -572,7 +572,6 @@ router.post("/conversation/pin", async ctx => {
       id: conversationId
     }
   });
-  console.log(conversation);
 
   const canEdit = await canEditGroup(conversation.projectGroupId, ctx);
   if (!canEdit) return;
@@ -632,6 +631,33 @@ router.post("/participants/makeAdmin", async ctx => {
   const canEdit = await canEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
+  // notifications
+
+  const user = await models.User.findOne({
+    where: {
+      id: participant.userId
+    }
+  });
+
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: participant.projectGroupId
+    }
+  });
+
+  const participants = models.Participant.findAll();
+
+  notificationService.groupAdminAssigned({
+    userId: currentUserId,
+    adminName: user.name,
+    adminId: user.id,
+    groupTitle: group.title,
+    groupId: group.id,
+    recipientsIds: participants.map(p => p.userId)
+  });
+
+  //
+
   const currentParticipant = await models.Participant.findOne({
     where: {
       [Op.and]: [
@@ -640,10 +666,6 @@ router.post("/participants/makeAdmin", async ctx => {
       ]
     }
   });
-
-  if (!currentParticipant.isAdmin) {
-    throw new Error("Unauthorized!");
-  }
 
   await participant.update({
     isAdmin: true
@@ -669,10 +691,6 @@ router.post("/participants/removeAdmin", async ctx => {
       ]
     }
   });
-
-  if (!currentParticipant.isAdmin) {
-    throw new Error("Unauthorized!");
-  }
 
   await participant.update({
     isAdmin: false

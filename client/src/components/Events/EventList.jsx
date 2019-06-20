@@ -161,14 +161,28 @@ class EventList extends Component {
     this.props.eventsStore.setPage(page);
   };
 
+  handleEdit = id => {
+    this.props.history.push(`/events/${id}`);
+  };
+
+  handleDelete = id => {
+    this.props.eventsStore.deleteEvent(id);
+  };
+
+  // renders
+
   renderEvents() {
     const groups = this.props.eventsStore.groupedByDays;
     return (
       <div className="event-list">
-        <Events groups={groups} />
+        <Events
+          groups={groups}
+          onEdit={this.handleEdit}
+          onDelete={this.handleDelete}
+        />
         <div className="event-list__pagination">
           <Pagination
-            showQuickJumper
+            showQuickJumperevents
             onChange={this.handleChangePagination}
             total={this.props.eventsStore.total}
             pageSize={10}
@@ -181,6 +195,7 @@ class EventList extends Component {
   render() {
     const { isFormVisible } = this.state;
     const { avatar, userName } = this.props.currentUserStore;
+    const { events } = this.props.eventsStore;
 
     return (
       <div className="events">
@@ -193,9 +208,16 @@ class EventList extends Component {
 
         <Row gutter={27}>
           <Col span={16}>
-            <div className="project-groups__search">
-              <Search placeholder="Поиск по событиям" />
-            </div>
+            {events.length > 0 && !isFormVisible ? (
+              <>
+                <div className="project-groups__search">
+                  <Search placeholder="Поиск по событиям" />
+                </div>
+                {this.renderEvents()}
+              </>
+            ) : (
+              <div className="empty-text">Событий пока нет</div>
+            )}
             {isFormVisible && (
               <CreateEventForm
                 avatar={avatar}
@@ -204,8 +226,6 @@ class EventList extends Component {
                 onSuccess={this.handleCreateSuccess}
               />
             )}
-
-            {this.renderEvents()}
           </Col>
           <Col span={8}>
             <div className="side-wrap">

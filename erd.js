@@ -8,7 +8,6 @@
   // });
 
   const db = require("./models");
-  console.log(db.sequelize);
   const svg = await sequelizeErd({ source: db.sequelize });
   // writeFileSync("./erd.svg", svg);
 

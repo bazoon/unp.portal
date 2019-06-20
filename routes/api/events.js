@@ -66,7 +66,7 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
       userId,
       title: event.title,
       eventId: event.id,
-      recipientsIds: users.map((u = u.id)).concat([userId])
+      recipientsIds: users.map(u => u.id).concat([userId])
     });
   }
 
@@ -97,6 +97,45 @@ router.get("/list", async (ctx, next) => {
 
   const events = await getEvents(userId, from, to);
   ctx.body = events;
+});
+
+router.get("/:id", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const { id } = ctx.params;
+
+  const event = await models.Event.findOne({
+    id
+  });
+
+  ctx.body = {
+    id: id,
+    userId: event.UserId,
+    description: event.description,
+    remindAt: event.remindAt,
+    startDate: event.startDate,
+    title: event.title
+  };
+});
+
+router.delete("/:id", async (ctx, next) => {
+  const { id } = ctx.params;
+
+  const canEdit = await canEditEvent(id, ctx);
+  if (!canEdit) return;
+
+  await models.Event.destroy({
+    where: {
+      id
+    }
+  });
+
+  await models.UserEvent.destroy({
+    where: {
+      eventId: id
+    }
+  });
+
+  ctx.body = "ok";
 });
 
 router.get("/list/all", async (ctx, next) => {
@@ -183,3 +222,27 @@ function getFullEvents(events) {
 }
 
 module.exports = router;
+
+async function canEditEvent(eventId, ctx) {
+  const userId = ctx.user.id;
+
+  const user = await models.User.findOne({
+    where: {
+      id: userId
+    }
+  });
+
+  const event = await models.Event.findOne({
+    where: {
+      id: eventId
+    }
+  });
+
+  if (!(user.isAdmin || event.userId === userId)) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return false;
+  }
+
+  return true;
+}

@@ -15,7 +15,8 @@ const db_config = {
   dialect: "postgres",
   define: {
     underscored: true
-  }
+  },
+  logging: false
 };
 
 let sequelize = new Sequelize(

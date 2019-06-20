@@ -10,7 +10,6 @@ const expiresIn = 60 * 60 * 24;
 
 async function login(userName, password) {
   const user = await models.User.findOne({ where: { name: userName } });
-  console.log(user, userName);
   const token = jwt.sign(
     { userName, id: user.id, isAdmin: user.isAdmin },
     process.env.API_TOKEN,

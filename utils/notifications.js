@@ -72,6 +72,20 @@ module.exports = {
       constants.notifications.type.common
     );
   },
+  groupAdminAssigned: function(config) {
+    const {
+      userId,
+      recipientsIds,
+      groupId,
+      groupTitle,
+      adminId,
+      adminName
+    } = config;
+    const description = `В группу #${groupTitle}:group:${groupId}# 
+                        назначен новый администратор - #${adminName}:user:${adminId}`;
+
+    return createForRecipients(userId, description, recipientsIds);
+  },
   eventCreated: function(config) {
     const { userId, title, eventId, recipientsIds } = config;
     const description = `Создано событие #${title}:event:${eventId}#`;
@@ -89,13 +103,18 @@ function createNotification(userId, description, type, recipientId) {
 }
 
 function createForRecipients(userId, description, recipientsIds) {
-  const promises = recipientsIds.map(recipientId => {
-    return createNotification(
+  // Тут нечто странное
+  // выглядит как-будто должен вернуться array промисов
+  // но возвращается один промис, как-будто кто-то вызвал для них Promise.all
+  return recipientsIds.map(recipientId => {
+    return Promise.resolve(1);
+    const p = createNotification(
       userId,
       description,
       constants.notifications.type.private,
       recipientId
     );
+
+    return p;
   });
-  return Promise.all(promises);
 }

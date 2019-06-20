@@ -18,6 +18,7 @@ import GroupFeed from "./Group/GroupFeed";
 import Documents from "./Documents/Documents";
 import Participants from "./Group/Participants/Participants";
 import Notifications from "./Notifications/Notifications";
+import EditEventForm from "./Events/EditEventForm";
 
 const { Sider, Content } = Layout;
 
@@ -61,7 +62,16 @@ class UserLayout extends Component {
               component={props => <Notifications {...props} />}
             />
 
-            <Route path="/events/my" component={() => <EventList />} />
+            <Route
+              path="/events/my"
+              component={props => <EventList {...props} />}
+            />
+
+            <Route
+              path="/events/:id"
+              component={props => <EditEventForm {...props} />}
+            />
+
             <Route path="/" component={() => <Feed />} />
           </Switch>
         </Col>

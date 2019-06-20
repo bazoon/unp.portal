@@ -80,7 +80,6 @@ const GroupsStore = types
 
     const unsubscribe = flow(function* unsubscribe(groupId) {
       const result = yield api.unsubscribe(groupId);
-      console.log(result);
 
       if (result.success) {
         const data = yield api.get(groupId);

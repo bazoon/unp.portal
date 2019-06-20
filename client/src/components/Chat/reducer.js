@@ -42,7 +42,6 @@ const Chat = State({
     return { ...newState, channels };
   },
   addNewMessage(state, { message }) {
-    console.log(message, 11);
     const newState = { ...state };
     const channels = state.channels.map(channel => channel);
     const channel = channels.find(c => c.id == message.channelId);

@@ -47,6 +47,11 @@ const CurrentUserStore = types
       self.upcoming = events;
     });
 
+    const deleteEvent = flow(function* deleteEvent(id) {
+      yield api.deleteEvent(id);
+      self.events = self.events.filter(event => event.id !== id);
+    });
+
     const setPage = function setPage(page) {
       self.page = page;
       self.loadAll();
@@ -56,7 +61,8 @@ const CurrentUserStore = types
       create,
       loadAll,
       setPage,
-      loadUpcoming
+      loadUpcoming,
+      deleteEvent
     };
   });
 

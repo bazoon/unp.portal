@@ -10,7 +10,6 @@ class Chat {
   }
 
   verifyToken(socket, next) {
-    console.log(9999);
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
 
@@ -21,28 +20,23 @@ class Chat {
         next();
       });
     } else {
-      console.log("ERR");
       next();
     }
   }
 
   onConnection(socket) {
-    console.log("onConnection");
     let userName;
     let decoded;
 
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
-    console.log(tokenOnly, 999);
     try {
       decoded = jwt.verify(tokenOnly, process.env.API_TOKEN);
     } catch (e) {
-      console.log("Err", e);
       socket.disconnect(true);
       return;
     }
 
-    console.log("Settingup");
     socket.on("disconnect", this.onDisconnect.bind(this));
 
     socket.on("join", rooms => {

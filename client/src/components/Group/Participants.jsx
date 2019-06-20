@@ -45,12 +45,16 @@ class Participants extends Component {
                 </div>
               );
             })}
-            {rest.length > 0 && (
+            {rest.length > 0 ? (
               <div className="group__participants-more">
                 <Link to={`${projectGroupId}/participants`}>
                   И еще {rest.length}
                 </Link>
               </div>
+            ) : (
+              <Link to={`${projectGroupId}/participants`}>
+                Всего {participants.length}
+              </Link>
             )}
           </div>
         </div>

@@ -1,8 +1,29 @@
 import React, { Component } from "react";
 import moment from "moment";
 import { pluralizeParticipants } from "../../utils/pluralize";
+import MoreIcon from "../../../images/more";
+import { Popover } from "antd";
 
 class Events extends Component {
+  renderOperationsMenu(event) {
+    return (
+      <>
+        {/* <div
+          className="admin-user__menu-item"
+          onClick={() => this.props.onEdit(event.id)}
+        >
+          Редактировать
+        </div> */}
+        <div
+          className="admin-user__menu-item"
+          onClick={() => this.props.onDelete(event.id)}
+        >
+          Удалить
+        </div>
+      </>
+    );
+  }
+
   renderEvents(groups) {
     const days = Object.keys(groups);
 
@@ -18,13 +39,22 @@ class Events extends Component {
                   const time = moment(event.startDate).format("HH:mm");
                   return (
                     <div key={event.id} className="event__day-item">
-                      <div className="event__day-time">{time}</div>
                       <div>
-                        <div className="event__day-title">{event.title}</div>
-                        <div className="event__day-users-count">
-                          {pluralizeParticipants(event.usersCount)}
+                        <div className="event__day-time">{time}</div>
+                        <div>
+                          <div className="event__day-title">{event.title}</div>
+                          <div className="event__day-users-count">
+                            {pluralizeParticipants(event.usersCount)}
+                          </div>
                         </div>
                       </div>
+                      <Popover
+                        placement="bottom"
+                        content={this.renderOperationsMenu(event)}
+                        trigger="click"
+                      >
+                        <MoreIcon style={{ cursor: "pointer" }} />
+                      </Popover>
                     </div>
                   );
                 })}

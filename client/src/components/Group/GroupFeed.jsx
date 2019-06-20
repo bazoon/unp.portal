@@ -251,7 +251,7 @@ class GroupFeed extends Component {
     if (!conversations || conversations.length === 0) {
       return (
         <div className="group__conversations">
-          <div className="group__conversations-empty">Записей пока нет</div>
+          <div className="empty-text">Записей пока нет</div>
         </div>
       );
     }

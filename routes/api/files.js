@@ -9,7 +9,6 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 
 router.get("/", async ctx => {
-  console.log("FILES");
   const files = await models.File.findAll();
   ctx.body = files.map(file => {
     return {
