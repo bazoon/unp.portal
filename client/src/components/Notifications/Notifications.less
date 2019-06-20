@@ -21,3 +21,41 @@
     border-radius: 50%;
   }
 }
+
+.top-notification__view-all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  a {
+    font-size: 16px;
+    color: #5c7ba3;
+  }
+}
+
+.notification {
+  &__user {
+    display: flex;
+    justify-content: space-between;
+    &-avatar img {
+      margin-right: 16px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: silver;
+      object-fit: cover;
+    }
+  }
+  &__description {
+    font-size: 14px;
+    a {
+      color: #5c7ba3;
+      font-family: OpenSansSemiBold;
+    }
+  }
+  &__date {
+    font-size: 14px;
+    color: #909090;
+  }
+}

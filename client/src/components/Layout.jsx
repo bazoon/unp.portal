@@ -25,10 +25,14 @@ import AdminLayout from "./AdminLayout";
 import Logo from "../../images/logo";
 import ColorLogo from "../../images/top-logo";
 import PhoneIcon from "../../images/phone";
+import BellIcon from "../../images/bell";
+
 import { observer, inject } from "mobx-react";
+import TopNotifications from "./Notifications/TopNotifications";
 
 const { Header, Sider, Footer } = Layout;
 
+@inject("notificationsStore")
 @inject("currentUserStore")
 @observer
 class L extends Component {
@@ -110,11 +114,32 @@ class L extends Component {
                     </div>
 
                     <div className="header__icons">
+                      <Popover
+                        placement="bottom"
+                        content={
+                          <TopNotifications
+                            notifications={this.props.notificationsStore.unseen}
+                          />
+                        }
+                        trigger="click"
+                      >
+                        <Badge
+                          count={this.props.notificationsStore.items.length}
+                          className="notification-badge"
+                        >
+                          <BellIcon />
+                        </Badge>
+                      </Popover>
+
                       <Link
                         to={`/admin/users/edit/${
                           this.props.currentUserStore.id
                         }`}
-                        style={{ display: "flex", marginRight: "8px" }}
+                        style={{
+                          display: "flex",
+                          marginLeft: "32px",
+                          marginRight: "8px"
+                        }}
                       >
                         {avatar ? (
                           <img
@@ -126,7 +151,6 @@ class L extends Component {
                           <Icon type="user" className="icon__medium" />
                         )}
                       </Link>
-
                       <div className="header__user">
                         <div>
                           <Popover

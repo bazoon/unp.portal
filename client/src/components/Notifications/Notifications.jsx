@@ -1,50 +1,28 @@
 import React, { Component } from "react";
 import "./Notifications.less";
+import { observer, inject } from "mobx-react";
+import { Row, Col, Table } from "antd";
+import Calendar from "../Calendar/Calendar";
+import NotificationsList from "./NotificationsList";
 
+@inject("notificationsStore")
+@observer
 class Notifications extends Component {
   render() {
+    const { items } = this.props.notificationsStore;
     return (
-      <div className="notifications">
-        <div className="notifications__title">Новые</div>
-        <div className="notifications__items">
-          <div className="notifications__item">
-            <div className="notifications__avatar">
-              <img src="https://fakeimg.pl/50x50" alt="logo" />
-            </div>
-            <div className="notifications__text">
-              <b>Иванов Петр</b>
-              сделал новую публикацию в группе
-              <b>Национальные проекты</b>
-            </div>
-            <hr />
+      <Row gutter={17}>
+        <Col span={16}>
+          <div className="section-title">Уведомления</div>
+          <NotificationsList notifications={items.slice()} />
+        </Col>
+        <Col span={8}>
+          <div className="section-title">События</div>
+          <div className="side-wrap">
+            <Calendar />
           </div>
-          <div className="notifications__item">
-            <div className="notifications__avatar">
-              <img src="https://fakeimg.pl/50x50" alt="logo" />
-            </div>
-            <div className="notifications__text">
-              <b>Петров Иван</b>
-              сделал новую публикацию в группе
-              <b>Региональные проекты</b>
-            </div>
-            <hr />
-          </div>
-        </div>
-        <div className="notifications__title">Предыдущее</div>
-        <div className="notifications__items">
-          <div className="notifications__item">
-            <div className="notifications__avatar">
-              <img src="https://fakeimg.pl/50x50" alt="logo" />
-            </div>
-            <div className="notifications__text">
-              <b>Петров Иван</b>
-              сделал новую публикацию в группе
-              <b>Региональные проекты</b>
-            </div>
-            <hr />
-          </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 }

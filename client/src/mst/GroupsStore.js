@@ -3,7 +3,8 @@ import {
   onSnapshot,
   flow,
   applySnapshot,
-  getSnapshot
+  getSnapshot,
+  clone
 } from "mobx-state-tree";
 import { notification } from "antd";
 import Group from "./models/Group";
@@ -188,12 +189,14 @@ const GroupsStore = types
       yield api.approve(payload);
       const participants = self.current.participants.map(p => {
         if (p.id == payload.id) {
+          // TODO разобраться нужен ли isMember вообще
           p.isMember = true;
-          return p.clone();
+          p.state = 1;
+          return Participant.create(getSnapshot(p));
         }
         return p;
-        self.current.participants = participants;
       });
+      self.current.participants = participants;
     });
 
     const removeFromGroup = flow(function* removeFromGroup(payload) {

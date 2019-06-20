@@ -7,6 +7,7 @@ const models = require("../../models");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const uploadFiles = require("../../utils/uploadFiles");
+const notificationService = require("../../utils/notifications");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const {
@@ -43,6 +44,13 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
         };
       })
     );
+
+    await notificationService.eventCreated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: accessIds.concat([userId])
+    });
   } else if (accessType == 2) {
     const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
     const users = (await models.sequelize.query(usersQuery))[0];
@@ -54,6 +62,12 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
         };
       })
     );
+    await notificationService.eventCreated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: users.map((u = u.id)).concat([userId])
+    });
   }
 
   await models.UserEvent.findOrCreate({

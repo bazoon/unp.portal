@@ -1,5 +1,6 @@
 import axios from "axios";
 import currentUserStore from "../mst/CurrentUserStore";
+import { notification } from "antd";
 
 const api = {
   get: (url, params = {}, skipTokenCheck) => {
@@ -19,6 +20,10 @@ const api = {
       if (e.request.status === 401) {
         currentUserStore.logout();
       }
+      notification.error({
+        message: JSON.stringify(e.message)
+      });
+      throw e;
     });
   },
   post: (url, data, skipTokenCheck) => {
@@ -37,6 +42,11 @@ const api = {
       if (e.request.status === 401) {
         currentUserStore.logout();
       }
+
+      notification.error({
+        message: JSON.stringify(e.message)
+      });
+      throw e;
     });
   }
 };

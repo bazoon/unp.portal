@@ -40,7 +40,12 @@ class Participants extends Component {
         render: (value, record) => {
           return (
             <div>
-              <div>{record.name}</div>
+              <div>
+                {record.name}
+                {record.isAdmin && (
+                  <span className="admin-user__admin">Админ</span>
+                )}
+              </div>
               <div>{record.position}</div>
             </div>
           );
@@ -50,22 +55,25 @@ class Participants extends Component {
         title: "",
         dataIndex: "commands",
         key: "commands",
-        render: (value, record) =>
-          this.props.groupsStore.current.isAdmin && (
-            <Popover
-              placement="bottom"
-              content={this.renderMenu(
-                record.id,
-                record.isAdmin,
-                record.isMember
-              )}
-              trigger="click"
-            >
-              <div style={{ cursor: "pointer" }}>
-                <MoreIcon style={{ cursor: "pointer" }} />
-              </div>
-            </Popover>
-          )
+        render: (value, record) => {
+          return (
+            this.props.groupsStore.current.isAdmin && (
+              <Popover
+                placement="bottom"
+                content={this.renderMenu(
+                  record.id,
+                  record.isAdmin,
+                  record.state
+                )}
+                trigger="click"
+              >
+                <div style={{ cursor: "pointer" }}>
+                  <MoreIcon style={{ cursor: "pointer" }} />
+                </div>
+              </Popover>
+            )
+          );
+        }
       }
     ];
   }
@@ -86,7 +94,7 @@ class Participants extends Component {
     this.props.groupsStore.approve({ id });
   };
 
-  renderMenu(id, isAdmin, isMember) {
+  renderMenu(id, isAdmin, state) {
     return (
       <div>
         <div
@@ -110,8 +118,13 @@ class Participants extends Component {
             Назначить админом
           </div>
         )}
-        {isMember === false && (
-          <div onClick={() => this.handleApprove(id)}>Одобрить заявку</div>
+        {state === 2 && (
+          <div
+            className="page-participants__link"
+            onClick={() => this.handleApprove(id)}
+          >
+            Одобрить заявку
+          </div>
         )}
       </div>
     );
@@ -131,6 +144,8 @@ class Participants extends Component {
     if (!canView) {
       return <div>Нет доступа</div>;
     }
+
+    console.log(participants);
 
     return (
       <>
@@ -153,7 +168,7 @@ class Participants extends Component {
               <Table
                 rowKey="id"
                 showHeader={false}
-                dataSource={participants}
+                dataSource={participants.slice()}
                 columns={this.columns}
                 pagination={{
                   showQuickJumper: true

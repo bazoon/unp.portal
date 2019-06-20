@@ -245,10 +245,10 @@ class GroupFeed extends Component {
     );
   }
 
-  renderConversations(conversations) {
+  renderConversations(conversations = []) {
     const { id } = this.props.match.params;
 
-    if (conversations.length === 0) {
+    if (!conversations || conversations.length === 0) {
       return (
         <div className="group__conversations">
           <div className="group__conversations-empty">Записей пока нет</div>
@@ -292,6 +292,7 @@ class GroupFeed extends Component {
   }
 
   renderPinnedConversations = group => {
+    if (!group) return null;
     const { id } = group;
     const { pinned } = group;
 
@@ -423,8 +424,10 @@ class GroupFeed extends Component {
     } = currentGroup;
 
     const { isShortMode } = this.state;
+    const isSuperAdmin = this.props.currentUserStore.isAdmin;
 
-    const canPost = isAdmin || state === 1;
+    const canPost = isSuperAdmin || isAdmin || state === 1;
+    const canEdit = isSuperAdmin || isAdmin;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -456,10 +459,10 @@ class GroupFeed extends Component {
                   onMouseLeave={this.handleTitleOut}
                   className={titleCls}
                 >
-                  {isAdmin ? this.renderTitleEditControls(title) : title}
+                  {canEdit ? this.renderTitleEditControls(title) : title}
                 </div>
                 <div className="group__feed-description">
-                  {isAdmin
+                  {canEdit
                     ? this.renderShortDescriptionControls(shortDescription)
                     : shortDescription}
                 </div>
@@ -541,7 +544,8 @@ class GroupFeed extends Component {
             {canPost &&
               !this.state.isConversationModalVisible &&
               this.renderConversations(
-                this.props.groupsStore.current.conversations
+                this.props.groupsStore.current &&
+                  this.props.groupsStore.current.conversations
               )}
           </Col>
           <Col span={8}>

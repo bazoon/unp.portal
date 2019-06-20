@@ -10,6 +10,7 @@ const Op = Sequelize.Op;
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
+const notificationService = require("../../utils/notifications");
 
 router.post("/create", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
@@ -53,8 +54,15 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
       isAdmin: true
     });
 
+    await notificationService.groupCreated({
+      userId,
+      title: group.title,
+      groupId: group.id
+    });
+
     return participant;
   });
+
   ctx.body = {
     id: group.id
   };
@@ -63,23 +71,16 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
 router.post("/delete", async ctx => {
   const { id } = ctx.request.body;
   const userId = ctx.user.id;
-  const isSuperAdmin = ctx.user.isAdmin;
 
-  const participant = await models.Participant.findOne({
-    where: { projectGroupId: id, userId: userId }
+  const canEdit = await canEditGroup(id, ctx);
+  if (!canEdit) return;
+
+  await models.ProjectGroup.destroy({
+    where: {
+      id
+    }
   });
-
-  if ((participant && participant.isAdmin) || isSuperAdmin) {
-    await models.ProjectGroup.destroy({
-      where: {
-        id
-      }
-    });
-    ctx.body = "ok";
-  } else {
-    ctx.status = 403;
-    ctx.body = "Not authorized!";
-  }
+  ctx.body = "ok";
 });
 
 function getGroups(userId, query, countQuery) {
@@ -265,24 +266,6 @@ router.get("/get", async (ctx, next) => {
   };
 });
 
-router.post("/links/post", (req, res) => {
-  const { link, title, id } = req.body;
-  models.ProjectGroupLink.create({
-    ProjectGroupId: id,
-    link,
-    title
-  }).then(projectLink => {
-    res.json(projectLink);
-  });
-});
-
-router.post("/links/remove", (req, res) => {
-  const { id } = req.body;
-  models.ProjectGroupLink.destroy({ where: { id } }).then(() => {
-    res.json({});
-  });
-});
-
 router.post("/unsubscribe", async ctx => {
   const userId = ctx.user.id;
   const { groupId } = ctx.request.body;
@@ -310,16 +293,39 @@ router.post("/unsubscribe", async ctx => {
     participant.destroy();
     ctx.body = { success: true };
   }
-
-  // const notification = await models.NotificationPreference.destroy({
-  //   where: { user_id: userId, source_id: groupId }
-  // });
 });
 
 router.post("/subscribe", async ctx => {
   const { groupId } = ctx.request.body;
   const userId = ctx.user.id;
   const group = await models.ProjectGroup.findOne({ where: { id: groupId } });
+  const adminsIds = await models.Participant.findAll({
+    where: {
+      [Op.and]: [
+        {
+          projectGroupId: group.id
+        },
+        {
+          isAdmin: true
+        }
+      ]
+    }
+  }).map(a => a.userId);
+
+  const user = await models.User.findOne({
+    where: {
+      id: userId
+    }
+  });
+
+  await notificationService.groupRequestApplied({
+    userId,
+    title: group.title,
+    groupId: group.id,
+    applicantId: userId,
+    applicantName: user.name,
+    recipientsIds: adminsIds
+  });
 
   const role = await models.ParticipantRole.findOne();
 
@@ -387,6 +393,9 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
   const { file } = ctx.request.files;
 
+  const canEdit = await canEditGroup(projectGroupId, ctx);
+  if (!canEdit) return;
+
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
@@ -409,6 +418,28 @@ router.post("/conversation/create", koaBody({ multipart: true }), async ctx => {
     }),
     { returning: true }
   );
+
+  // Notification setup
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: projectGroupId
+    }
+  });
+
+  const participantsQuery = `select users.id from participants, users
+                          where participants.project_group_id=${projectGroupId} and participants.user_id=users.id`;
+  const participants = (await models.sequelize.query(participantsQuery))[0];
+
+  notificationService.conversationCreated({
+    userId,
+    groupId: projectGroupId,
+    groupTitle: group.title,
+    conversationTitle: conversation.title,
+    conversationId: conversation.id,
+    recipientsIds: participants.map(p => p.id)
+  });
+
+  // end notification setup
 
   ctx.body = {
     id: conversation.id,
@@ -445,22 +476,31 @@ router.post("/backgrounds", async ctx => {
 
 router.post("/backgrounds/update", async ctx => {
   const { groupId, backgroundId } = ctx.request.body;
+  const userId = ctx.user.id;
   const query = `select file
               from project_groups 
               left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
               left join files on project_group_backgrounds.file_id = files.id 
               where project_groups.id = ${groupId}`;
 
-  await models.ProjectGroup.update(
-    {
-      backgroundId
-    },
-    {
-      where: {
-        id: groupId
-      }
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: groupId
     }
-  );
+  });
+
+  const canEdit = await canEditGroup(groupId, ctx);
+  if (!canEdit) return;
+
+  group.update({
+    backgroundId
+  });
+
+  await snotificationServiceotificationService.groupAvatarChanged({
+    userId,
+    title: group.title,
+    groupId
+  });
 
   const file = await models.sequelize.query(query);
   ctx.body = file && getUploadFilePath(file[0][0].file);
@@ -468,34 +508,58 @@ router.post("/backgrounds/update", async ctx => {
 
 router.post("/update/title", async ctx => {
   const { groupId, title } = ctx.request.body;
+  const userId = ctx.user.id;
+  const isAdmin = ctx.user.isAdmin;
 
-  await models.ProjectGroup.update(
-    {
-      title
-    },
-    {
-      where: {
-        id: groupId
-      }
+  const canEdit = await canEditGroup(groupId, ctx);
+  if (!canEdit) return;
+
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: groupId
     }
-  );
+  });
+
+  const oldTitle = group.title;
+
+  await group.update({
+    title
+  });
+
+  // notification
+  await notificationService.groupNameChanged({
+    userId,
+    oldTitle,
+    title,
+    groupId
+  });
+  // end
 
   ctx.body = "ok";
 });
 
 router.post("/update/shortDescription", async ctx => {
   const { groupId, shortDescription } = ctx.request.body;
+  const userId = ctx.user.id;
 
-  await models.ProjectGroup.update(
-    {
-      shortDescription
-    },
-    {
-      where: {
-        id: groupId
-      }
+  const canEdit = await canEditGroup(groupId, ctx);
+  if (!canEdit) return;
+
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: groupId
     }
-  );
+  });
+
+  group.update({
+    shortDescription
+  });
+
+  await notificationService.groupDescriptionChanged({
+    userId,
+    title: group.title,
+    groupId
+  });
 
   ctx.body = "ok";
 });
@@ -503,16 +567,19 @@ router.post("/update/shortDescription", async ctx => {
 router.post("/conversation/pin", async ctx => {
   const { conversationId } = ctx.request.body;
 
-  await models.Conversation.update(
-    {
-      isPinned: true
-    },
-    {
-      where: {
-        id: conversationId
-      }
+  const conversation = await models.Conversation.findOne({
+    where: {
+      id: conversationId
     }
-  );
+  });
+  console.log(conversation);
+
+  const canEdit = await canEditGroup(conversation.projectGroupId, ctx);
+  if (!canEdit) return;
+
+  await conversation.update({
+    isPinned: true
+  });
 
   ctx.body = "ok";
 });
@@ -520,16 +587,18 @@ router.post("/conversation/pin", async ctx => {
 router.post("/conversation/unpin", async ctx => {
   const { conversationId } = ctx.request.body;
 
-  await models.Conversation.update(
-    {
-      isPinned: false
-    },
-    {
-      where: {
-        id: conversationId
-      }
+  const conversation = await models.Conversation.findOne({
+    where: {
+      id: conversationId
     }
-  );
+  });
+
+  const canEdit = await canEditGroup(conversation.projectGroupId, ctx);
+  if (!canEdit) return;
+
+  await conversation.update({
+    isPinned: false
+  });
 
   ctx.body = "ok";
 });
@@ -560,6 +629,9 @@ router.post("/participants/makeAdmin", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
+  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  if (!canEdit) return;
+
   const currentParticipant = await models.Participant.findOne({
     where: {
       [Op.and]: [
@@ -586,6 +658,9 @@ router.post("/participants/removeAdmin", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
+  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  if (!canEdit) return;
+
   const currentParticipant = await models.Participant.findOne({
     where: {
       [Op.and]: [
@@ -607,15 +682,18 @@ router.post("/participants/removeAdmin", async ctx => {
 });
 
 router.post("/participants/approve", async ctx => {
-  const { id, userId } = ctx.request.body;
-  const currentUserId = ctx.user.id;
+  const { id } = ctx.request.body;
+  const userId = ctx.user.id;
 
   const participant = await models.Participant.findOne({ where: { id } });
+
+  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  if (!canEdit) return;
 
   const currentParticipant = await models.Participant.findOne({
     where: {
       [Op.and]: [
-        { userId: currentUserId },
+        { userId: userId },
         { projectGroupId: participant.projectGroupId }
       ]
     }
@@ -628,6 +706,21 @@ router.post("/participants/approve", async ctx => {
   await participant.update({
     state: 1
   });
+
+  // Notification setup
+
+  const group = await models.ProjectGroup.findOne({
+    id: participant.projectGroupId
+  });
+
+  notificationService.groupRequestApproved({
+    userId,
+    recipientId: participant.userId,
+    groupId: group.id,
+    groupTitle: group.title
+  });
+
+  // end
 
   ctx.body = { id: participant.id };
 });
@@ -642,9 +735,8 @@ router.post("/participants/remove", async ctx => {
     }
   });
 
-  if (!currentParticipant.isAdmin) {
-    throw new Error("Unauthorized!");
-  }
+  const canEdit = await canEditGroup(id, ctx);
+  if (!canEdit) return;
 
   await models.Participant.destroy({
     where: { id: userId }
@@ -663,3 +755,34 @@ router.get("/user", async ctx => {
 });
 
 module.exports = router;
+
+async function canEditGroup(groupId, ctx) {
+  const userId = ctx.user.id;
+
+  const user = await models.User.findOne({
+    where: {
+      id: userId
+    }
+  });
+
+  const participant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [
+        {
+          projectGroupId: groupId
+        },
+        {
+          userId
+        }
+      ]
+    }
+  });
+
+  if (!(user.isAdmin || participant.isAdmin)) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return false;
+  }
+
+  return true;
+}

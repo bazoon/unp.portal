@@ -10,6 +10,7 @@ const conversations = require("./api/conversations");
 const events = require("./api/events");
 const users = require("./api/users");
 const files = require("./api/files");
+const notifications = require("./api/notifications");
 
 // Admin
 const adminUsers = require("./api/admin/users");
@@ -26,11 +27,11 @@ router.use("/api/chat", chat.routes());
 router.use("/api/conversations", conversations.routes());
 router.use("/api/events", events.routes());
 router.use("/api/files", files.routes());
+router.use("/api/notifications", notifications.routes());
 
 router.use("/admin/api/users", adminUsers.routes());
 router.use("/admin/api/organizations", adminOrganizations.routes());
 router.use("/admin/api/positions", adminPositions.routes());
 router.use("/admin/api/projectGroups", adminGroups.routes());
-                   
 
 http: module.exports = router;

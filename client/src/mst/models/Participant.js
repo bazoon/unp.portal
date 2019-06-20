@@ -8,7 +8,8 @@ const Participant = types.model("Participant", {
   level: types.number,
   avatar: types.string,
   isAdmin: types.boolean,
-  userId: types.maybe(types.number)
+  userId: types.maybe(types.number),
+  state: types.maybeNull(types.number)
 });
 
 export default Participant;

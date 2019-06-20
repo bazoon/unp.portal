@@ -47,7 +47,7 @@ class Conversation extends Component {
     const groupId = this.props.groupId;
     const { showMenu } = this.props;
     const date = moment(this.props.createdAt).fromNow();
-    const link = `/groups/${groupId}/conversation/${this.props.id}`;
+    const link = `/groups/${groupId}/conversations/${this.props.id}`;
     const className = cn("group__conversation", {
       group__conversation_news: !this.props.isCommentable
     });

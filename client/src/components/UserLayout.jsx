@@ -17,6 +17,7 @@ import EventList from "./Events/EventList";
 import GroupFeed from "./Group/GroupFeed";
 import Documents from "./Documents/Documents";
 import Participants from "./Group/Participants/Participants";
+import Notifications from "./Notifications/Notifications";
 
 const { Sider, Content } = Layout;
 
@@ -35,7 +36,7 @@ class UserLayout extends Component {
             <Route path="/profile" component={() => <UserProfile />} />
             <Route
               exact
-              path="/groups/:id/conversation/:conversationId"
+              path="/groups/:id/conversations/:conversationId"
               component={props => (
                 <>
                   <Conversation {...props} />
@@ -53,6 +54,11 @@ class UserLayout extends Component {
             <Route
               path="/docs/"
               component={props => <Documents {...props} />}
+            />
+
+            <Route
+              path="/notifications/"
+              component={props => <Notifications {...props} />}
             />
 
             <Route path="/events/my" component={() => <EventList />} />

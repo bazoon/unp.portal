@@ -15,18 +15,18 @@ const CurrentUserStore = types
   .actions(self => {
     const login = flow(function* login(payload) {
       const data = yield api.login(payload);
-      setData(data);
+      self.setData(data);
     });
 
     const signup = flow(function* signup(payload) {
       const data = yield api.signup(payload);
-      setData(data);
+      self.setData(data);
     });
 
     const setData = function setData(data) {
       const { token, userName, userId, avatar, isAdmin } = data;
 
-      self.id = userId;
+      // self.id = userId;
       self.userId = userId;
       self.token = token;
       self.userName = userName;
@@ -48,7 +48,7 @@ const CurrentUserStore = types
 
     const logout = function logout() {
       api.logout();
-      setData({
+      self.setData({
         token: "",
         userName: "",
         userId: -1,
@@ -60,7 +60,8 @@ const CurrentUserStore = types
     return {
       login,
       signup,
-      logout
+      logout,
+      setData
     };
   });
 

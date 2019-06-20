@@ -9,7 +9,9 @@ import { observer, inject } from "mobx-react";
 import "../../fonts/opensans/opensans.woff2";
 import "../../fonts/opensans/opensansbold.woff2";
 import "../../fonts/opensans/opensanssemibold.woff2";
+import { addMiddleware } from "mobx-state-tree";
 
+@inject("notificationsStore")
 @inject("currentUserStore")
 @inject("eventsStore")
 @observer
@@ -21,6 +23,24 @@ class App extends Component {
 
   componentDidMount() {
     this.props.eventsStore.loadAll();
+    this.props.notificationsStore.load();
+
+    this.removeMiddlware = addMiddleware(
+      // Если произошел релогин то перезагружаем данные пользователя
+      this.props.currentUserStore,
+      (call, next) => {
+        if (call.name === "setData") {
+          this.props.eventsStore.loadAll();
+          this.props.notificationsStore.load();
+        }
+
+        next(call);
+      }
+    );
+  }
+
+  componentWillUnmount() {
+    this.removeMiddlware();
   }
 
   handleLogin = () => {
