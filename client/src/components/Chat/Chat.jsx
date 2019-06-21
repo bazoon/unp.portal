@@ -11,6 +11,7 @@ import Observer from "@researchgate/react-intersection-observer";
 import NewChannel from "./NewChannel";
 import NewUser from "./NewUser";
 import JoinChannel from "./JoinChannel";
+import "./Chat.less";
 
 import {
   List,

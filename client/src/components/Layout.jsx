@@ -11,7 +11,7 @@ import Group from "./Group/Group";
 import GroupSidebar from "./Group/GroupSidebar";
 import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
-import ChatIcon from "./Chat/ChatIcon";
+import ChatIcon from "../../images/newChat";
 import Chat from "./Chat/Chat";
 import "antd/dist/antd.less";
 import logo from "./top-logo.svg";
@@ -76,7 +76,7 @@ class L extends Component {
         )}
         <BrowserRouter>
           <div className="outer-container">
-            <ChatIcon onClick={this.handleChatClick} />
+            <ChatIcon className="chat__icon" onClick={this.handleChatClick} />
             <Header className="header top-header">
               <div className="container">
                 <div className="header__container">
