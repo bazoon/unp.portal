@@ -3,7 +3,16 @@ import { connect } from "react-redux";
 import { Actions } from "jumpstate";
 import cn from "classnames";
 import moment from "moment";
-import { Drawer, Input, Button, Icon, Spin, Popover, Tooltip } from "antd";
+import {
+  Drawer,
+  Input,
+  Button,
+  Icon,
+  Spin,
+  Popover,
+  Tooltip,
+  Checkbox
+} from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
 import { observer, inject } from "mobx-react";
@@ -12,6 +21,9 @@ import NewChannel from "./NewChannel";
 import NewUser from "./NewUser";
 import JoinChannel from "./JoinChannel";
 import "./Chat.less";
+import ChatChannelsIcon from "../../../images/chatChannels";
+import AddChatIcon from "../../../images/addChat";
+import ChatUserIcon from "../../../images/chatUser";
 
 import {
   List,
@@ -49,7 +61,13 @@ const colors = [
   Math.floor(Math.random() * 16777215).toString(16)
 ];
 
+const chatStates = {
+  chat: 0,
+  createGroup: 1
+};
+
 @inject("currentUserStore")
+@inject("usersStore")
 @observer
 class Chat extends Component {
   static propTypes = {
@@ -72,7 +90,8 @@ class Chat extends Component {
       isSocketConnected: false,
       isNewChannelWindowOpen: false,
       isNewUserWindowOpen: false,
-      isJoinWindowOpen: false
+      isJoinWindowOpen: false,
+      rightPanelState: chatStates.chat
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -107,6 +126,8 @@ class Chat extends Component {
     chatSocket.on("channel-message", message => {
       Actions.addNewMessage({ message });
     });
+
+    this.props.usersStore.loadAllUsers();
   };
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -224,6 +245,13 @@ class Chat extends Component {
       activeChannel.messages.map(m => (
         <React.Fragment key={m.id}>
           <Observer {...options}>{this.renderMessage(m)}</Observer>
+          <div className="chat__talk-down">
+            <Button
+              size="large"
+              icon="down-circle"
+              onClick={this.handleScrollDown}
+            />
+          </div>
         </React.Fragment>
       ))
     );
@@ -473,6 +501,20 @@ class Chat extends Component {
     );
   }
 
+  handleViewMessages = () => {
+    this.setState({
+      rightPanelState: chatStates.chat
+    });
+  };
+
+  handleCreateGroup = () => {
+    this.setState({
+      rightPanelState: chatStates.createGroup
+    });
+  };
+
+  // renders
+
   renderChatChanels() {
     const { activeChannelId } = this.props;
     const { channels } = this.props;
@@ -484,8 +526,8 @@ class Chat extends Component {
     );
 
     return channels.map(channel => {
-      const className = cn("chat__chanels-item", {
-        "chat__chanels-item_active": activeChannelId === channel.id
+      const className = cn("chat__channels-item", {
+        "chat__channels-item_active": activeChannelId === channel.id
       });
 
       return (
@@ -494,20 +536,55 @@ class Chat extends Component {
           className={className}
           onClick={() => this.handleChangeChanel(channel.id)}
         >
-          <div className="chat__chanels-avatar">
+          <div className="chat__channels-avatar">
             <Popover content={content} trigger="contextMenu">
               {this.renderChannelAvatar(channel.avatar)}
             </Popover>
           </div>
-          <div className="chat__chanels-title">{channel.name}</div>
+          <div className="chat__channels-title">{channel.name}</div>
         </div>
       );
     });
   }
 
+  renderGroupCreation = () => {
+    return (
+      <div className="chat__group-creation">
+        <div className="chat__group-creation-header">
+          <div>
+            <div className="chat__group-creation-title">Групповой чат</div>
+            <div className="chat__group-creation-title chat__group-creation-title_sub">
+              Добавление пользователей
+            </div>
+          </div>
+          <Button type="primary">Создать</Button>
+        </div>
+        <div className="chat__group-creation-users">
+          {this.props.usersStore.users.map(user => {
+            return (
+              <div className="chat__group-creation-user">
+                <div className="chat__group-creation-user-wrap">
+                  <img
+                    className="chat__group-creation-user-avatar"
+                    src={user.avatar}
+                  />
+                  <div className="chat__group-creation-user-name">
+                    {user.name}
+                  </div>
+                </div>
+                <Checkbox />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   render() {
     const { visible, isLoading, socketError } = this.props;
     const isSocketConnected = chatSocket.connected;
+    const { rightPanelState } = this.state;
 
     const activeChannel = this.findActiveChannel();
     const messages = (activeChannel && activeChannel.messages) || [];
@@ -515,11 +592,74 @@ class Chat extends Component {
       chat__indicator_connected: isSocketConnected
     });
 
-    const cache = new CellMeasurerCache({
-      fixedWidth: true,
-      defaultHeight: 50
-    });
-    this.cache = cache;
+    return (
+      <Drawer
+        className="chat"
+        placement="right"
+        visible={visible}
+        onClose={this.props.onClose}
+        width={720}
+        closable={false}
+      >
+        <div className="chat__container">
+          <div className="chat__left-panel">
+            <div className="chat__search">
+              <Input.Search
+                placeholder="Поиск по чату"
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div className="chat__channels">{this.renderChatChanels()}</div>
+            <div className="chat__footer-controls">
+              <ChatChannelsIcon isActive onClick={this.handleViewMessages} />
+              <AddChatIcon onClick={this.handleCreateGroup} />
+              <ChatUserIcon />
+            </div>
+          </div>
+          <div className="chat__right-panel">
+            <div
+              className="chat__talk"
+              ref={this.chatTalkRef}
+              // onScroll={this.handleChatScroll}
+            >
+              <div className="chat__talk-spin">{isLoading && <Spin />}</div>
+
+              {/* <div className="chat__search-controls">
+                <Tooltip placement="bottom" title="Создать канал">
+                  <Button icon="plus" onClick={this.handleAddChannel} />
+                </Tooltip>
+                <Tooltip placement="bottom" title="Присоединится к каналу">
+                  <Button icon="link" onClick={this.handleJoinChannel} />
+                </Tooltip>
+                <Tooltip placement="bottom" title="Создать приватный чат">
+                  <Button icon="user-add" onClick={this.handleAddNewUser} />
+                </Tooltip>
+
+                <Button icon="more" onClick={this.handleLoadMore} />
+              </div> */}
+              {rightPanelState === chatStates.chat
+                ? this.renderMessages()
+                : this.renderGroupCreation()}
+            </div>
+          </div>
+        </div>
+        <NewChannel
+          isOpen={this.state.isNewChannelWindowOpen}
+          onOk={this.handleNewChannelOk}
+          onCancel={this.handleNewChannelCancel}
+        />
+        <NewUser
+          isOpen={this.state.isNewUserWindowOpen}
+          onOk={this.handleNewUserOk}
+          onCancel={this.handleNewUserCancel}
+        />
+        <JoinChannel
+          isOpen={this.state.isJoinWindowOpen}
+          onOk={this.handleJoinChannelOk}
+          onCancel={this.handleJoinChannelCancel}
+        />
+      </Drawer>
+    );
 
     return (
       <div>
@@ -576,23 +716,6 @@ class Chat extends Component {
                 </div>
 
                 {this.renderMessages()}
-                {/* <AutoSizer>
-                  {({ width, height }) => {
-                    return (
-                      <List
-                        ref={this.listRef}
-                        overscanRowCount={20}
-                        onScroll={this.handleListScroll}
-                        rowCount={messages.length}
-                        width={width}
-                        height={height}
-                        deferredMeasurementCache={this.cache}
-                        rowHeight={this.cache.rowHeight}
-                        rowRenderer={this.renderRow}
-                      />
-                    );
-                  }}
-                </AutoSizer> */}
               </div>
             </div>
             <div className="chat__controls">
@@ -614,21 +737,6 @@ class Chat extends Component {
             </div>
           </div>
         </Drawer>
-        <NewChannel
-          isOpen={this.state.isNewChannelWindowOpen}
-          onOk={this.handleNewChannelOk}
-          onCancel={this.handleNewChannelCancel}
-        />
-        <NewUser
-          isOpen={this.state.isNewUserWindowOpen}
-          onOk={this.handleNewUserOk}
-          onCancel={this.handleNewUserCancel}
-        />
-        <JoinChannel
-          isOpen={this.state.isJoinWindowOpen}
-          onOk={this.handleJoinChannelOk}
-          onCancel={this.handleJoinChannelCancel}
-        />
       </div>
     );
   }

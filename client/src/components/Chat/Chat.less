@@ -1,12 +1,76 @@
 .chat {
+  &__group-creation {
+    height: 100%;
+
+    &-header {
+      height: 60px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    &-title {
+      font-size: 12px;
+      &_sub {
+        font-size: 10;
+        color: #ebebeb;
+      }
+    }
+
+    &-users {
+      overflow-y: auto;
+      height: calc(100% - 60px);
+    }
+
+    &-user {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      padding-bottom: 16px;
+      padding-right: 24px;
+      border-bottom: solid 1px #ebebeb;
+
+      &-wrap {
+        display: flex;
+        align-items: center;
+      }
+
+      &-avatar {
+        width: 32px;
+        height: 32px;
+        margin-right: 16px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      &-name {
+        font-size: 12px;
+      }
+    }
+  }
+
   &__icon {
     width: 50px;
     height: 50px;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1;
     cursor: pointer;
+
+    &-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 64px;
+      height: 64px;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1;
+      background: #ffffff;
+      box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.12);
+      border-radius: 50%;
+      font-family: OpenSansBold;
+      font-size: 12px;
+      color: #ffffff;
+    }
   }
 
   &__indicator {
@@ -66,8 +130,8 @@
     display: flex;
     justify-content: space-between;
     padding: 10px;
-    background: #ebebeb;
     height: 52px;
+    margin-bottom: 8px;
 
     &-controls * {
       margin-right: 5px;
@@ -85,8 +149,18 @@
 
   &__container {
     display: flex;
-    flex-direction: column;
     height: 100%;
+  }
+
+  &__left-panel {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    border-right: solid 1px #ebebeb;
+  }
+
+  &__right-panel {
+    flex: 1;
   }
 
   &__talks {
@@ -95,39 +169,58 @@
     position: relative;
   }
 
-  &__chanels {
-    background: #ebebeb;
-    flex: 1.5;
+  &__footer {
+    &-controls {
+      border-top: solid 1px #d8d8d8;
+      display: flex;
+      height: 50px;
+      justify-content: space-around;
+      align-items: center;
+      svg {
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__channels {
+    flex: 1;
     overflow-y: auto;
+
+    &-title {
+      font-size: 14px;
+      letter-spacing: 0;
+      text-align: left;
+    }
 
     &-item {
       padding: 10px;
       display: flex;
       cursor: pointer;
       align-items: center;
-      margin-bottom: 10px;
+      margin-left: 10px;
       &_active {
-        background: #fff;
+        background: #ebebeb;
       }
       &:last-child {
         margin-bottom: 0px;
       }
+      border-bottom: solid 1px #d8d8d8;
     }
 
     &-avatar img {
       border-radius: 50%;
-      margin-right: 5px;
-      width: 50px;
-      height: 50px;
+      margin-right: 16px;
+      width: 40px;
+      height: 40px;
       object-fit: cover;
     }
 
     &-avatar .placeholder {
-      border: solid 1px silver;
+      background-color: #d8d8d8;
       border-radius: 50%;
-      margin-right: 5px;
-      width: 50px;
-      height: 50px;
+      margin-right: 16px;
+      width: 40px;
+      height: 40px;
       object-fit: cover;
     }
   }
@@ -135,8 +228,8 @@
   &__talk {
     flex: 3;
     padding: 10px 10px 0 10px;
-    overflow-y: auto;
-    // position: relative;
+    height: 100%;
+
     &-spin {
       position: absolute;
       left: 50%;
