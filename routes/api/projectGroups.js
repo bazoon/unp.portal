@@ -113,6 +113,44 @@ router.put("/backgrounds", async ctx => {
   ctx.body = file && getUploadFilePath(file[0][0].file);
 });
 
+// router.get("/participants", async ctx => {
+//   const { groupId } = ctx.request.body;
+//   const query = `select participants.id, users."name" as userName, positions."name" as position, participants.is_admin from participants
+//                 left join users on participants.user_id = users.id
+//                 left join positions on positions.id = users.position_id
+//                 where project_group_id = ${groupId}
+//                 `;
+
+//   const participants = await models.sequelize.query(query);
+
+//   ctx.body = participant[0].map(p => {
+//     return {
+//       id: p.id,
+//       userName: p.userName,
+//       position: p.position,
+//       isAdmin: p.isAdmin
+//     };
+//   });
+// });
+
+router.delete("/participants", async ctx => {
+  const { id } = ctx.request.query;
+
+  const participant = await models.Participant.findOne({
+    where: {
+      id
+    }
+  });
+
+  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  if (!canEdit) return;
+
+  await models.Participant.destroy({
+    where: { id }
+  });
+  ctx.body = "ok";
+});
+
 router.delete("/:id", async ctx => {
   const { id } = ctx.params;
   const userId = ctx.user.id;
@@ -312,7 +350,7 @@ router.get("/:id", async (ctx, next) => {
 });
 
 // unsubscribe
-router.delete("/:id/participants", async ctx => {
+router.delete("/:id/subscriptions", async ctx => {
   const userId = ctx.user.id;
   const groupId = ctx.params.id;
 
@@ -342,7 +380,7 @@ router.delete("/:id/participants", async ctx => {
 });
 
 // subscribe
-router.post("/:id/participants", async ctx => {
+router.post("/:id/subscriptions", async ctx => {
   const groupId = ctx.params.id;
   const userId = ctx.user.id;
 
@@ -613,26 +651,6 @@ router.delete("/conversations/pins", async ctx => {
   ctx.body = "ok";
 });
 
-// router.get("/participants", async ctx => {
-//   const { groupId } = ctx.request.body;
-//   const query = `select participants.id, users."name" as userName, positions."name" as position, participants.is_admin from participants
-//                 left join users on participants.user_id = users.id
-//                 left join positions on positions.id = users.position_id
-//                 where project_group_id = ${groupId}
-//                 `;
-
-//   const participants = await models.sequelize.query(query);
-
-//   ctx.body = participant[0].map(p => {
-//     return {
-//       id: p.id,
-//       userName: p.userName,
-//       position: p.position,
-//       isAdmin: p.isAdmin
-//     };
-//   });
-// });
-
 router.post("/admins", async ctx => {
   const { id, userId } = ctx.request.body;
   const currentUserId = ctx.user.id;
@@ -748,25 +766,6 @@ router.post("/requests", async ctx => {
   // end
 
   ctx.body = { id: participant.id };
-});
-
-router.post("/participants/remove", async ctx => {
-  const { id, userId } = ctx.request.body;
-  const currentUserId = ctx.user.id;
-
-  const currentParticipant = await models.Participant.findOne({
-    where: {
-      [Op.and]: [{ userId: currentUserId }, { projectGroupId: id }]
-    }
-  });
-
-  const canEdit = await canEditGroup(id, ctx);
-  if (!canEdit) return;
-
-  await models.Participant.destroy({
-    where: { id: userId }
-  });
-  ctx.body = "ok";
 });
 
 router.get("/userGroups", async ctx => {

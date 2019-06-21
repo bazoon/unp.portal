@@ -200,6 +200,9 @@ const GroupsStore = types
 
     const removeFromGroup = flow(function* removeFromGroup(payload) {
       yield api.removeFromGroup(payload);
+      self.current.participants = self.current.participants.filter(
+        p => p.id !== payload.id
+      );
     });
 
     const createConversation = flow(function* createConversation(payload) {

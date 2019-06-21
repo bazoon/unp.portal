@@ -11,11 +11,11 @@ export default {
   },
   unsubscribe(groupId) {
     return api
-      .delete(`api/ProjectGroups/${groupId}/participants`)
+      .delete(`api/ProjectGroups/${groupId}/subscriptions`)
       .then(({ data }) => data);
   },
   subscribe(groupId) {
-    return api.post(`api/ProjectGroups/${groupId}/participants`);
+    return api.post(`api/ProjectGroups/${groupId}/subscriptions`);
   },
   getBackgrounds() {
     return api.get("api/projectGroups/backgrounds").then(({ data }) => {
@@ -71,7 +71,7 @@ export default {
   },
   removeFromGroup(payload) {
     return api
-      .post("api/projectGroups/participants/remove", payload)
+      .delete("api/projectGroups/participants", payload)
       .then(({ data }) => data.id);
   },
   approve(payload) {

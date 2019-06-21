@@ -90,8 +90,8 @@ class Participants extends Component {
     this.props.groupsStore.removeAdmin({ id });
   };
 
-  handleRemoveFromGroup = (id, userId) => {
-    this.props.groupsStore.removeFromGroup({ id, userId });
+  handleRemoveFromGroup = id => {
+    this.props.groupsStore.removeFromGroup({ id });
   };
 
   handleApprove = id => {
