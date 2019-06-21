@@ -259,6 +259,16 @@ router.get("/", async (ctx, next) => {
   };
 });
 
+router.get("/userGroups", async ctx => {
+  const userId = ctx.user.id;
+  const query = `select id, title from project_groups 
+            where id in (select participants.project_group_id from participants
+            where user_id = ${userId} and state = 1)`;
+  const result = await models.sequelize.query(query);
+
+  ctx.body = result[0];
+});
+
 router.get("/:id", async (ctx, next) => {
   const { id } = ctx.params;
   const userId = ctx.user.id;
@@ -766,16 +776,6 @@ router.post("/requests", async ctx => {
   // end
 
   ctx.body = { id: participant.id };
-});
-
-router.get("/userGroups", async ctx => {
-  const userId = ctx.user.id;
-  const query = `select id, title from project_groups 
-            where id in (select participants.project_group_id from participants
-            where user_id = ${userId} and state = 1)`;
-  const result = await models.sequelize.query(query);
-
-  ctx.body = result[0];
 });
 
 module.exports = router;

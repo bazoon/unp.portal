@@ -29,10 +29,10 @@ export default {
     });
   },
   getConversation(id) {
-    return api.get("api/conversations/get", { id }).then(({ data }) => data);
+    return api.get(`api/conversations/${id}`).then(({ data }) => data);
   },
   sendPost(payload) {
-    return api.post("api/conversations/post", payload).then(({ data }) => {
+    return api.post("api/conversations/posts", payload).then(({ data }) => {
       return data;
     });
   },

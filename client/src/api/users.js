@@ -12,17 +12,17 @@ export default {
     });
   },
   get(id) {
-    return api.get("admin/api/users/get", { id }).then(({ data }) => {
+    return api.get(`admin/api/users/${id}`).then(({ data }) => {
       return data;
     });
   },
   update(payload) {
-    return api.post("admin/api/users/update", payload).then(({ data }) => {
+    return api.put("admin/api/users", payload).then(({ data }) => {
       return data;
     });
   },
   deleteUser(id) {
-    return api.post("admin/api/users/delete", { id }).then(({ data }) => {
+    return api.delete("admin/api/users", { id }).then(({ data }) => {
       return data;
     });
   }

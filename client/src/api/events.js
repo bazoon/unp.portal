@@ -2,7 +2,7 @@ import api from "./api";
 
 export default {
   loadAll(payload) {
-    return api.get("api/events/list/all", payload).then(({ data }) => {
+    return api.get("api/events", payload).then(({ data }) => {
       return data;
     });
   },
@@ -17,7 +17,7 @@ export default {
     });
   },
   create(payload) {
-    return api.post("api/events/create", payload).then(({ data }) => {
+    return api.post("api/events", payload).then(({ data }) => {
       return data;
     });
   },

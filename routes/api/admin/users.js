@@ -42,9 +42,9 @@ router.get("/", async (ctx, next) => {
   });
 });
 
-router.get("/get", async (ctx, next) => {
+router.get("/:id", async (ctx, next) => {
   const { isAdmin } = ctx.user;
-  const id = ctx.query.id;
+  const { id } = ctx.params;
 
   if (!(isAdmin || id == ctx.user.id)) {
     ctx.status = 403;
@@ -79,7 +79,7 @@ router.get("/get", async (ctx, next) => {
   };
 });
 
-router.post("/create", async (ctx, next) => {
+router.post("/", async (ctx, next) => {
   const {
     name,
     login,
@@ -135,7 +135,7 @@ router.post("/create", async (ctx, next) => {
   };
 });
 
-router.post("/update", koaBody({ multipart: true }), async (ctx, next) => {
+router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
   const {
     id,
     firstName,
@@ -148,7 +148,9 @@ router.post("/update", koaBody({ multipart: true }), async (ctx, next) => {
     isAdmin
   } = ctx.request.body;
 
-  if (!(isAdmin || id == ctx.user.id)) {
+  const isSuperAdmin = ctx.user.isAdmin;
+
+  if (!(isSuperAdmin || id == ctx.user.id)) {
     ctx.status = 403;
     ctx.body = "Not authorized!";
     return;
@@ -207,7 +209,7 @@ router.post("/delete", async (ctx, next) => {
     ctx.body = "Not authorized!";
     return;
   }
-  const { id } = ctx.request.body;
+  const { id } = ctx.request.query;
   await models.User.destroy({ where: { id } });
   ctx.body = id;
 });

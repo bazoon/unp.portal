@@ -9,7 +9,7 @@ const Op = Sequelize.Op;
 const uploadFiles = require("../../utils/uploadFiles");
 const notificationService = require("../../utils/notifications");
 
-router.post("/create", koaBody({ multipart: true }), async ctx => {
+router.post("/", koaBody({ multipart: true }), async ctx => {
   const {
     title,
     description,
@@ -83,23 +83,23 @@ router.post("/create", koaBody({ multipart: true }), async ctx => {
   ctx.body = event;
 });
 
-router.get("/list", async (ctx, next) => {
-  const { page, pageSize } = ctx.request.query;
-  const userId = ctx.user.id;
-  const now = newDate();
-  const from = moment(now);
-  from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-  from.tz("Etc/GMT-0");
+// router.get("/list", async (ctx, next) => {
+//   const { page, pageSize } = ctx.request.query;
+//   const userId = ctx.user.id;
+//   const now = newDate();
+//   const from = moment(now);
+//   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+//   from.tz("Etc/GMT-0");
 
-  const to = moment(now).endOf("month");
-  to.set({ hour: 23, minute: 59, second: 59, millisecond: 999 });
-  to.tz("Etc/GMT-0");
+//   const to = moment(now).endOf("month");
+//   to.set({ hour: 23, minute: 59, second: 59, millisecond: 999 });
+//   to.tz("Etc/GMT-0");
 
-  const events = await getEvents(userId, from, to);
-  ctx.body = events;
-});
+//   const events = await getEvents(userId, from, to);
+//   ctx.body = events;
+// });
 
-router.get("/list/all", async (ctx, next) => {
+router.get("/", async (ctx, next) => {
   const { page, pageSize } = ctx.request.query;
   const userId = ctx.user.id;
   const events = await getEvents(userId, undefined, undefined, page, pageSize);

@@ -63,16 +63,55 @@ const api = {
       headers: { authorization: token }
     };
 
-    return axios.post("/" + url, data, config).catch(e => {
-      if (e.request.status === 401) {
-        currentUserStore.logout();
-      }
+    return axios
+      .post("/" + url, data, config)
+      .then(data => {
+        notification.success({
+          message: "Запись успешно создана"
+        });
+        return data;
+      })
+      .catch(e => {
+        if (e.request.status === 401) {
+          currentUserStore.logout();
+        }
 
-      notification.error({
-        message: JSON.stringify(e.message)
+        notification.error({
+          message: JSON.stringify(e.message)
+        });
+        throw e;
       });
-      throw e;
-    });
+  },
+  put: (url, data, skipTokenCheck) => {
+    const storedToken = localStorage.getItem("token");
+    if (!skipTokenCheck) {
+      if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
+        return Promise.resolve({ data: null });
+      }
+    }
+    const token = `Bearer ${storedToken}`;
+    const config = {
+      headers: { authorization: token }
+    };
+
+    return axios
+      .put("/" + url, data, config)
+      .then(data => {
+        notification.success({
+          message: "Данные успешно обновлены"
+        });
+        return data;
+      })
+      .catch(e => {
+        if (e.request.status === 401) {
+          currentUserStore.logout();
+        }
+
+        notification.error({
+          message: JSON.stringify(e.message)
+        });
+        throw e;
+      });
   }
 };
 window.api = api;

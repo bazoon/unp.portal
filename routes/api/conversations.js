@@ -7,9 +7,8 @@ const koaBody = require("koa-body");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 
-router.get("/get", async (ctx, next) => {
-  const { id } = ctx.request.query;
-
+router.get("/:id", async (ctx, next) => {
+  const { id } = ctx.params;
   const conversation = await models.Conversation.findOne({ where: { id: id } });
   const user = await models.User.findOne({
     where: { id: conversation.userId }
@@ -42,7 +41,7 @@ router.get("/get", async (ctx, next) => {
   };
 });
 
-router.post("/post", koaBody({ multipart: true }), async ctx => {
+router.post("/posts", koaBody({ multipart: true }), async ctx => {
   const { text, conversationId, postId } = ctx.request.body;
   const userId = ctx.user.id;
   const { file } = ctx.request.files;
