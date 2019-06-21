@@ -174,7 +174,6 @@ function getFullEvents(events) {
     }`;
 
     const count = +(await models.sequelize.query(usersQuery))[0][0].count;
-    console.log(events);
     return {
       id: event.id,
       title: event.title,
@@ -196,6 +195,12 @@ router.get("/:id", async (ctx, next) => {
     }
   });
 
+  if (!event) {
+    ctx.code = 404;
+    ctx.body = "not found";
+    return;
+  }
+
   ctx.body = {
     id: id,
     userId: event.UserId,
@@ -208,9 +213,33 @@ router.get("/:id", async (ctx, next) => {
 
 router.delete("/:id", async (ctx, next) => {
   const { id } = ctx.params;
+  const userId = ctx.user.id;
 
   const canEdit = await canEditEvent(id, ctx);
   if (!canEdit) return;
+
+  // Notifications
+
+  const event = await models.Event.findOne({
+    where: {
+      id
+    }
+  });
+
+  const recipientsIds = await models.UserEvent.findAll({
+    where: {
+      eventId: id
+    }
+  }).map(e => e.userId);
+
+  await notificationService.eventRemoved({
+    userId,
+    title: event.title,
+    eventId: event.id,
+    recipientsIds: recipientsIds
+  });
+
+  // end
 
   await models.Event.destroy({
     where: {

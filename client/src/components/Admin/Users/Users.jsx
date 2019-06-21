@@ -133,9 +133,7 @@ class Users extends Component {
           </Col>
           <Col span={8}>
             <div className="section-title">События</div>
-            <div className="admin-users__calendar">
-              <Calendar />
-            </div>
+            <Calendar />
           </Col>
         </Row>
       </>

@@ -18,7 +18,6 @@ import { observer, inject } from "mobx-react";
 import Calendar from "../Calendar/Calendar";
 import moment from "moment";
 import { Link } from "react-router-dom";
-import Events from "../Events/Events";
 
 const columns = [
   {
@@ -89,12 +88,7 @@ class Feed extends Component {
           <Col span={16}>{this.renderConversations()}</Col>
 
           <Col span={8}>
-            <div className="feed__calendar">
-              <Calendar fullscreen={false} />
-            </div>
-            <div className="feed__events">
-              <Events groups={this.props.eventsStore.upcomingGroupedByDays} />
-            </div>
+            <Calendar fullscreen={false} />
           </Col>
         </Row>
       </div>

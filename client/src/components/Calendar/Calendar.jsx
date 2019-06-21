@@ -5,6 +5,7 @@ import moment from "moment";
 import { observer, inject } from "mobx-react";
 import "./Calendar.less";
 import cn from "classnames";
+import Events from "../Events/Events";
 
 import { Calendar, Button, Input, Icon, Popover } from "antd";
 
@@ -20,8 +21,8 @@ class EventCalendar extends Component {
 
   dateCellRender = d => {
     const day = d.get("date");
-    const events = this.props.eventsStore.events;
-    const today = new Date();
+    const { events, currentDate } = this.props.eventsStore;
+    const today = currentDate || new Date();
     const isSame = moment(d).isSame(today, "day");
     const className = cn("calendar-day", {
       "calendar-day_selected": isSame
@@ -92,14 +93,19 @@ class EventCalendar extends Component {
     const l = this.props.eventsStore.events.length;
     return (
       <React.Fragment>
-        <Calendar
-          // HACK: чтобы заставить календарь перерисоваться при получении
-          // событий
-          l={l}
-          fullscreen={false}
-          dateFullCellRender={this.dateCellRender}
-          onChange={this.handleChange}
-        />
+        <div className="feed__calendar">
+          <Calendar
+            // HACK: чтобы заставить календарь перерисоваться при получении
+            // событий
+            l={l}
+            fullscreen={false}
+            dateFullCellRender={this.dateCellRender}
+            onChange={this.handleChange}
+          />
+        </div>
+        <div className="feed__events">
+          <Events groups={this.props.eventsStore.upcomingGroupedByDays} />
+        </div>
         {/* <EventModal
           visible={this.state.isAddModalVisible}
           onCancel={this.handleCancel}

@@ -483,7 +483,7 @@ class GroupFeed extends Component {
                       </span>
                     )}
                   </div>
-                  {isAdmin ? (
+                  {canEdit ? (
                     this.renderBgSelect()
                   ) : (
                     <div className="group__feed-files-info">

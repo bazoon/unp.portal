@@ -69,7 +69,8 @@ module.exports = {
     return createNotification(
       userId,
       description,
-      constants.notifications.type.common
+      constants.notifications.type.private,
+      recipientId
     );
   },
   groupAdminAssigned: function(config) {
@@ -83,12 +84,41 @@ module.exports = {
     } = config;
     const description = `В группу #${groupTitle}:group:${groupId}# 
                         назначен новый администратор - #${adminName}:user:${adminId}`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  groupAdminRemoved: function(config) {
+    const {
+      userId,
+      recipientsIds,
+      groupId,
+      groupTitle,
+      adminId,
+      adminName
+    } = config;
+    const description = `С пользователя #${adminName}:user:${adminId}# сняты полномочия админа группы #${groupTitle}:group:${groupId}#`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  participantRemoved: function(config) {
+    const {
+      userId,
+      groupId,
+      groupTitle,
+      participantUserId,
+      participantName,
+      recipientsIds
+    } = config;
+    const description = `Пользователь #${participantName}:user:${participantUserId}# исключен из группы #${groupTitle}:group:${groupId}#`;
 
     return createForRecipients(userId, description, recipientsIds);
   },
   eventCreated: function(config) {
     const { userId, title, eventId, recipientsIds } = config;
     const description = `Создано событие #${title}:event:${eventId}#`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  eventRemoved: function(config) {
+    const { userId, title, eventId, recipientsIds } = config;
+    const description = `Удалено событие ${title}`;
     return createForRecipients(userId, description, recipientsIds);
   }
 };
@@ -107,7 +137,6 @@ function createForRecipients(userId, description, recipientsIds) {
   // выглядит как-будто должен вернуться array промисов
   // но возвращается один промис, как-будто кто-то вызвал для них Promise.all
   return recipientsIds.map(recipientId => {
-    return Promise.resolve(1);
     const p = createNotification(
       userId,
       description,

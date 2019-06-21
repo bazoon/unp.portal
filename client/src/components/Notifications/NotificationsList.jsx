@@ -35,7 +35,7 @@ class NotificationsList extends Component {
 
   render() {
     return (
-      <div className="admin-users">
+      <div className="notifications-list">
         <Table
           showHeader={false}
           rowKey="id"
