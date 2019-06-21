@@ -75,24 +75,35 @@ class ProjectGroup extends Component {
               </div>
             </div>
           </div>
-          {(isAdmin || isSuperAdmin) && (
-            <Popconfirm
-              title="Удаление группы приведет к удалению новостей и обсуждений этой группы, а так же документов, использовавшихся в этих группах. Удалить?"
-              onConfirm={() => this.props.onDelete(id)}
-            >
-              <Button type="danger">Удалить группу</Button>
-            </Popconfirm>
-          )}
 
-          <GroupButton
-            isOpen={isOpen}
-            isAdmin={isAdmin}
-            state={state}
-            participant={participant}
-            onJoin={this.handleSubscribe}
-            onLeave={this.handleUnsubscribe}
-            onRequest={this.handleRequest}
-          />
+          <div>
+            {(isAdmin || isSuperAdmin) && (
+              <Popconfirm
+                title={
+                  <div style={{ width: "300px" }}>
+                    Удаление группы приведет к удалению новостей и обсуждений
+                    этой группы, а так же документов, использовавшихся в этих
+                    группах. Удалить?
+                  </div>
+                }
+                onConfirm={() => this.props.onDelete(id)}
+              >
+                <Button style={{ marginBottom: "4px" }} type="danger">
+                  Удалить группу
+                </Button>
+              </Popconfirm>
+            )}
+
+            <GroupButton
+              isOpen={isOpen}
+              isAdmin={isAdmin}
+              state={state}
+              participant={participant}
+              onJoin={this.handleSubscribe}
+              onLeave={this.handleUnsubscribe}
+              onRequest={this.handleRequest}
+            />
+          </div>
         </div>
       </>
     );

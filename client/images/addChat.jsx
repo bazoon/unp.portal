@@ -13,7 +13,7 @@ export default props => {
         viewBox="0 0 16 16"
         version="1.1"
         xmlnsXlink="http://www.w3.org/1999/xlink"
-        {...props}
+        onClick={props.onClick}
       >
         <defs>
           <path

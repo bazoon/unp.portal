@@ -7,7 +7,7 @@ export default {
     });
   },
   loadAllUsers() {
-    return api.get("admin/api/users").then(({ data }) => {
+    return api.get("api/users").then(({ data }) => {
       return data;
     });
   },

@@ -562,7 +562,7 @@ class Chat extends Component {
         <div className="chat__group-creation-users">
           {this.props.usersStore.users.map(user => {
             return (
-              <div className="chat__group-creation-user">
+              <div key={user.id} className="chat__group-creation-user">
                 <div className="chat__group-creation-user-wrap">
                   <img
                     className="chat__group-creation-user-avatar"
@@ -611,8 +611,14 @@ class Chat extends Component {
             </div>
             <div className="chat__channels">{this.renderChatChanels()}</div>
             <div className="chat__footer-controls">
-              <ChatChannelsIcon isActive onClick={this.handleViewMessages} />
-              <AddChatIcon onClick={this.handleCreateGroup} />
+              <ChatChannelsIcon
+                isActive={rightPanelState === chatStates.chat}
+                onClick={this.handleViewMessages}
+              />
+              <AddChatIcon
+                isActive={rightPanelState === chatStates.createGroup}
+                onClick={this.handleCreateGroup}
+              />
               <ChatUserIcon />
             </div>
           </div>

@@ -19,6 +19,10 @@ class EventCalendar extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.eventsStore.setCurrentDate(this.props.eventsStore.currentDate);
+  }
+
   dateCellRender = d => {
     const day = d.get("date");
     const { events, currentDate } = this.props.eventsStore;

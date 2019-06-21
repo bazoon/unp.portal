@@ -18,9 +18,8 @@ class Notifications extends Component {
         </Col>
         <Col span={8}>
           <div className="section-title">События</div>
-          <div className="side-wrap">
-            <Calendar />
-          </div>
+
+          <Calendar />
         </Col>
       </Row>
     );

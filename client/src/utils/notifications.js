@@ -8,13 +8,28 @@ function formatContent(content) {
 function createLink(entity, entityId, content) {
   const formattedContent = formatContent(content);
   const links = {
-    group: <Link to={`/groups/${entityId}`}>{formattedContent}</Link>,
-    event: <Link to={`/events/${entityId}`}>{formattedContent}</Link>,
-    user: <Link to={`/users/view/${entityId}`}>{formattedContent}</Link>,
+    group: (
+      <Link key={content} to={`/groups/${entityId}`}>
+        {formattedContent}
+      </Link>
+    ),
+    event: (
+      <Link key={content} to={`/events/${entityId}`}>
+        {formattedContent}
+      </Link>
+    ),
+    user: (
+      <Link key={content} to={`/users/view/${entityId}`}>
+        {formattedContent}
+      </Link>
+    ),
     conversation: () => {
       const [groupId, conversationId] = entityId.split("-");
       return (
-        <Link to={`/groups/${groupId}/conversations/${conversationId}`}>
+        <Link
+          key={entityId}
+          to={`/groups/${groupId}/conversations/${conversationId}`}
+        >
           {formattedContent}
         </Link>
       );
@@ -39,7 +54,7 @@ export default {
         const [_, content, entity, entityId] = tagMatch;
         return createLink(entity, entityId, content);
       }
-      return <span>{part}</span>;
+      return <span key={part}>{part}</span>;
     });
   }
 };

@@ -29,19 +29,17 @@ router.get("/", async (ctx, next) => {
   });
 
   const u = users[0];
-  ctx.body = users
-    .map(u => {
-      return {
-        id: u.id,
-        isAdmin: u.isAdmin,
-        avatar: getUploadFilePath(u.avatar),
-        name: u.name,
-        login: u.login,
-        position: u.Position,
-        organization: u.Organization
-      };
-    })
-    .slice(0, 5);
+  ctx.body = users.map(u => {
+    return {
+      id: u.id,
+      isAdmin: u.isAdmin,
+      avatar: getUploadFilePath(u.avatar),
+      name: u.name,
+      login: u.login,
+      position: u.Position,
+      organization: u.Organization
+    };
+  });
 });
 
 router.get("/:id", async (ctx, next) => {

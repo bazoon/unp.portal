@@ -26,7 +26,7 @@ const columns = [
     key: "title",
     render: (value, record) => {
       const date = moment(record.createdAt).fromNow();
-      const url = `/groups/${record.groupId}/conversation/${record.id}`;
+      const url = `/groups/${record.groupId}/conversations/${record.id}`;
       return (
         <div className="feed__table-row">
           <span className="feed__item-author">{record.userName}</span>, &nbsp;

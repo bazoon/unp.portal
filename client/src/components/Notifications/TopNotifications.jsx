@@ -13,7 +13,7 @@ class TopNotifications extends Component {
     const { unseen } = this.props.notificationsStore;
     return (
       <>
-        <div style={{ maxWidth: "345px" }}>
+        <div style={{ maxWidth: "300px" }}>
           <NotificationsList pagination={false} notifications={unseen} />
         </div>
         <div className="top-notification__view-all">

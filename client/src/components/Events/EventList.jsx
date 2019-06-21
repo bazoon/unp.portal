@@ -238,9 +238,8 @@ class EventList extends Component {
                 Создать событие
               </Button>
             </div>
-            <div className="event-list__calendar">
-              <Calendar />
-            </div>
+
+            <Calendar />
           </Col>
         </Row>
       </div>

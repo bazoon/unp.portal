@@ -16,11 +16,30 @@ router.get("/list/all", async (ctx, next) => {
 });
 
 router.get("/", async (ctx, next) => {
-  const users = await models.User.findAll();
+  const users = await models.User.findAll({
+    include: [
+      {
+        model: models.Position,
+        as: "Position"
+      },
+      {
+        model: models.Organization,
+        as: "Organization"
+      }
+    ],
+    order: [["name", "asc"]]
+  });
+
+  const u = users[0];
   ctx.body = users.map(u => {
     return {
       id: u.id,
-      name: u.name
+      isAdmin: u.isAdmin,
+      avatar: getUploadFilePath(u.avatar),
+      name: u.name,
+      login: u.login,
+      position: u.Position,
+      organization: u.Organization
     };
   });
 });

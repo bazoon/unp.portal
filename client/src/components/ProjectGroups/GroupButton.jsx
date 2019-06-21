@@ -15,7 +15,7 @@ class GroupButton extends Component {
       onRequest,
       participant
     } = this.props;
-    const style = { width: "100%" };
+    const style = {};
     const canJoin = isOpen && state === 0;
     const canRequest = !isOpen && state === 0;
     const canLeave = state === 1;

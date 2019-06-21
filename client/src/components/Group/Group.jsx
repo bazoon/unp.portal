@@ -82,7 +82,7 @@ class Group extends Component {
       conversation.lastpostdate &&
       moment(conversation.lastpostdate).format("DD MMM YYYY HH:mm");
 
-    const link = `${id}/conversation/${conversation.id}`;
+    const link = `${id}/conversations/${conversation.id}`;
     return (
       <div className="group__conversation" key={conversation.id}>
         <div className="group__conversation-header">

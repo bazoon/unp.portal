@@ -51,12 +51,12 @@ export default {
   },
   updateGroupTitle(payload) {
     return api
-      .post(`api/projectGroups/${payload.groupId}/title`, payload)
+      .put(`api/projectGroups/${payload.groupId}/title`, payload)
       .then(({ data }) => data);
   },
   updateGroupShortDescription(payload) {
     return api
-      .post(`api/projectGroups/${payload.groupId}/shortDescription`, payload)
+      .put(`api/projectGroups/${payload.groupId}/shortDescription`, payload)
       .then(({ data }) => data);
   },
   makeAdmin(payload) {
