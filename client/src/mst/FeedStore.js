@@ -4,7 +4,7 @@ import api from "../api/feed";
 
 const FeedStore = types
   .model("FeedStore", {
-    items: types.array(FeedItem)
+    items: types.optional(types.array(FeedItem), [])
   })
   .views(self => {
     function getAll() {
@@ -17,7 +17,10 @@ const FeedStore = types
   })
   .actions(self => {
     const load = flow(function* load() {
-      self.items = yield api.load();
+      const items = yield api.load();
+      if (items) {
+        self.items = items;
+      }
     });
 
     return {

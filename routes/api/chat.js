@@ -38,7 +38,7 @@ router.get("/channels", async (ctx, next) => {
 
   const [channels] = await models.sequelize.query(query);
 
-  const promises = channels.map(channel => {
+  const promises = channels.map(async channel => {
     if (channel.firstUserId && channel.secondUserId) {
       if (channel.firstUserId == userId) {
         return models.User.findOne({
@@ -63,10 +63,17 @@ router.get("/channels", async (ctx, next) => {
       }
     }
 
+    const messageQuery = `select message from messages 
+                          where channel_id=${channel.id} 
+                          order by created_at desc
+                          limit 1`;
+    const message = (await models.sequelize.query(messageQuery))[0][0].message;
+
     return Promise.resolve({
       id: channel.id,
       name: channel.name,
-      avatar: getUploadFilePath(channel.avatar)
+      avatar: getUploadFilePath(channel.avatar),
+      lastMessage: message
     });
   });
 
@@ -166,7 +173,7 @@ function getMessageFiles(message) {
 router.get("/messages", async ctx => {
   const { channelId, currentPage, lastMessageId } = ctx.request.query;
 
-  const limit = 5;
+  const limit = 20;
   const offset = limit * (currentPage - 1);
 
   let query;
@@ -205,7 +212,8 @@ router.get("/messages", async ctx => {
           seen: message.seen,
           files: messageFiles.map(f => ({
             id: f.id,
-            file: getUploadFilePath(f.file),
+            url: getUploadFilePath(f.file),
+            name: f.file,
             size: f.size
           }))
         };

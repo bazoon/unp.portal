@@ -16,6 +16,7 @@ import UsersStore from "./mst/UsersStore";
 import OrganizationsStore from "./mst/OrganizationsStore";
 import PositionsStore from "./mst/PositionsStore";
 import NotificationsStore from "./mst/NotificationsStore";
+import ChatStore from "./mst/ChatStore";
 
 const groupsStore = GroupsStore.create();
 const documentsStore = DocumentsStore.create();
@@ -25,6 +26,7 @@ const usersStore = UsersStore.create();
 const organizationsStore = OrganizationsStore.create();
 const positionsStore = PositionsStore.create();
 const notificationsStore = NotificationsStore.create();
+const chatStore = ChatStore.create();
 
 ReactDOM.render(
   <MobxProvider
@@ -37,6 +39,7 @@ ReactDOM.render(
     organizationsStore={organizationsStore}
     positionsStore={positionsStore}
     notificationsStore={notificationsStore}
+    chatStore={chatStore}
   >
     <Provider store={store}>
       <LocaleProvider locale={ruRU}>

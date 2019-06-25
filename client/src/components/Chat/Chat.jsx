@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Actions } from "jumpstate";
 import cn from "classnames";
 import moment from "moment";
 import {
@@ -24,6 +22,7 @@ import "./Chat.less";
 import ChatChannelsIcon from "../../../images/chatChannels";
 import AddChatIcon from "../../../images/addChat";
 import ChatUserIcon from "../../../images/chatUser";
+import UploadWindow from "../UploadWindow/UploadWindow";
 
 import {
   List,
@@ -68,6 +67,7 @@ const chatStates = {
 
 @inject("currentUserStore")
 @inject("usersStore")
+@inject("chatStore")
 @observer
 class Chat extends Component {
   static propTypes = {
@@ -91,7 +91,9 @@ class Chat extends Component {
       isNewChannelWindowOpen: false,
       isNewUserWindowOpen: false,
       isJoinWindowOpen: false,
-      rightPanelState: chatStates.chat
+      rightPanelState: chatStates.chat,
+      isUploadVisible: false,
+      files: []
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -101,52 +103,23 @@ class Chat extends Component {
 
   componentDidMount = () => {
     const userId = this.props.currentUserStore.userId;
-    Actions.getChannels(userId);
-
-    chatSocket.on("connect", () => {
-      this.setState({
-        isSocketConnected: true
-      });
-
-      // Actions.getAllChannels();
-      Actions.getChannels(userId).then(() => {
-        const activeChannel = this.findActiveChannel();
-        if (activeChannel) {
-          this.loadMessages(activeChannel.id);
-        }
-      });
-    });
-
-    chatSocket.on("disconnect", () => {
-      this.setState({
-        isSocketConnected: false
-      });
-    });
-
-    chatSocket.on("channel-message", message => {
-      Actions.addNewMessage({ message });
-    });
-
+    this.props.chatStore.getChannels();
     this.props.usersStore.loadAllUsers();
   };
 
   componentDidUpdate = (prevProps, prevState) => {
     // this.scrollChatTalk();
-    this.inputRef.current && this.inputRef.current.focus();
+    // this.inputRef.current && this.inputRef.current.focus();
   };
 
   handleSend = () => {
     const userId = this.props.currentUserStore.userId;
 
-    Actions.sendChatMessage({
-      channelId: this.props.activeChannelId,
-      message: this.state.currentMessage,
+    this.props.chatStore.sendChatMessage({
+      channelId: this.props.chatStore.activeChannel.id,
+      message: this.props.chatStore.currentMessage,
       type: "text",
       userId
-    }).then(() => {
-      this.setState({
-        currentMessage: ""
-      });
     });
   };
 
@@ -155,6 +128,33 @@ class Chat extends Component {
     if (!chatTalk) return;
     chatTalk.scrollBy(0, chatTalk.scrollHeight);
   };
+
+  handleShowUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  handleUploadFiles = () => {
+    const userId = this.props.currentUserStore.userId;
+    const formData = new FormData();
+    formData.append("channelId", this.props.chatStore.activeChannel.id);
+    formData.append("userId", userId);
+    this.state.files.forEach(f => {
+      formData.append("file", f.originFileObj);
+    });
+
+    this.props.chatStore.sendChatFiles(userId, formData);
+    this.handleHideUpload();
+  };
+
+  //renders
 
   renderMessage = m => {
     switch (m.type) {
@@ -207,10 +207,9 @@ class Chat extends Component {
   renderFileMessage = m => {
     const isImage = fileName => {
       const extensions = ["jpg", "jpeg", "svg", "JPG"];
-      return extensions.reduce(
-        (acc, e) => acc || fileName.indexOf(e) > 0,
-        false
-      );
+      return extensions.reduce((acc, e) => {
+        return acc || (fileName && fileName.indexOf(e) > 0);
+      }, false);
     };
 
     const content =
@@ -221,8 +220,8 @@ class Chat extends Component {
               <a download href={f.file} style={{ display: "block" }}>
                 {f.file}
               </a>
-              {isImage(f.file) && (
-                <img className="chat__message-image" src={f.file} alt="some" />
+              {isImage(f.name) && (
+                <img className="chat__message-image" src={f.url} alt="some" />
               )}
             </div>
           );
@@ -233,18 +232,30 @@ class Chat extends Component {
   };
 
   renderMessages() {
-    const activeChannel = this.findActiveChannel();
+    const { activeChannel } = this.props.chatStore;
+    const { currentMessage } = this.props.chatStore;
     const options = {
       onChange: this.handleMessageIntersection,
       root: ".chat__talk"
     };
 
     return (
-      activeChannel &&
-      activeChannel.messages &&
-      activeChannel.messages.map(m => (
-        <React.Fragment key={m.id}>
-          <Observer {...options}>{this.renderMessage(m)}</Observer>
+      <div className="chat__messages-box">
+        <div className="chat__channel-name">
+          {this.props.chatStore.getActiveChannelName()}
+        </div>
+        <div
+          className="chat__messages"
+          onScroll={this.handleChatScroll}
+          ref={this.chatTalkRef}
+        >
+          {activeChannel &&
+            activeChannel.messages &&
+            activeChannel.messages.map(m => (
+              <React.Fragment key={m.id}>
+                <Observer {...options}>{this.renderMessage(m)}</Observer>
+              </React.Fragment>
+            ))}
           <div className="chat__talk-down">
             <Button
               size="large"
@@ -252,49 +263,30 @@ class Chat extends Component {
               onClick={this.handleScrollDown}
             />
           </div>
-        </React.Fragment>
-      ))
-    );
-  }
-
-  renderRow = ({ index, parent, key, style }) => {
-    const options = {
-      onChange: this.handleMessageIntersection,
-      root: ".chat__talk"
-    };
-    const activeChannel = this.findActiveChannel();
-    const message = activeChannel && activeChannel.messages[index];
-
-    return (
-      <CellMeasurer
-        key={key}
-        cache={this.cache}
-        parent={parent}
-        columnIndex={0}
-        rowIndex={index}
-      >
-        {
-          <div style={style}>
-            <Observer {...options}>{this.renderMessage(message)}</Observer>
+        </div>
+        <div className="chat__controls">
+          <div className="chat__controls-file-icon">
+            <Icon
+              type="paper-clip"
+              onClick={this.handleShowUpload}
+              style={{ fontSize: "16px", color: "#00ccff" }}
+            />
           </div>
-        }
-      </CellMeasurer>
+          <Input
+            ref={this.inputRef}
+            disabled={!activeChannel}
+            autoFocus
+            value={this.props.chatStore.currentMessage}
+            onChange={this.handleMessageChange}
+            onKeyPress={this.handleInputKeyPress}
+          />
+        </div>
+      </div>
     );
-  };
-
-  findActiveChannel() {
-    const { channels } = this.props;
-    const { activeChannelId } = this.props;
-    const activeChannel = channels.find(
-      channel => channel.id === activeChannelId
-    );
-    return activeChannel;
   }
 
   handleMessageChange = e => {
-    this.setState({
-      currentMessage: e.target.value
-    });
+    this.props.chatStore.setCurrentMessage(e.target.value);
   };
 
   handleInputKeyPress = e => {
@@ -303,60 +295,20 @@ class Chat extends Component {
     }
   };
 
-  renderFileForm = () => {
-    return (
-      <form
-        action="/upload"
-        method="post"
-        encType="multipart/form-data"
-        ref={this.formRef}
-        style={{ display: "none" }}
-      >
-        <input
-          multiple
-          type="file"
-          name="file"
-          onChange={this.handleFileChange}
-        />
-      </form>
-    );
-  };
-
   handleFileUpload = () => {
     const form = this.formRef.current;
     const input = form.querySelector("input[type=file]");
     input.click();
   };
 
-  handleFileChange = e => {
-    const userId = this.props.currentUserStore.userId;
-    const { activeChannelId } = this.props;
-    const formData = new FormData();
-    const files = Array.prototype.map.call(e.target.files, f => f);
-    formData.append("channelId", activeChannelId);
-    formData.append("userId", userId);
-    files.forEach(f => {
-      formData.append("file", f);
+  handleFileChange = files => {
+    this.setState({
+      files
     });
-
-    Actions.sendChatFile({ payload: formData, userId });
   };
 
   handleChangeChanel = channelId => {
-    const { activePages } = this.props;
-    const channel = this.props.channels.find(ch => channelId === ch.id);
-
-    if (!channel.messages) {
-      this.loadMessages(channelId);
-    } else {
-      Actions.setActiveChannel(channelId);
-    }
-  };
-
-  loadMessages = channelId => {
-    const { activePages } = this.props;
-    const currentPage = activePages[channelId] || 1;
-    Actions.getChannelMessages({ channelId, currentPage });
+    this.props.chatStore.setActiveChannel(channelId);
   };
 
   handleMessageIntersection = e => {
@@ -367,10 +319,10 @@ class Chat extends Component {
     const [channelId, messageId, seen] = dataset.id.split("-");
 
     if (e.isIntersecting && seen !== "true") {
-      Actions.chatMarkAsRead({
-        messageId,
-        userId
-      });
+      // Actions.chatMarkAsRead({
+      //   messageId,
+      //   userId
+      // });
       requestAnimationFrame(() => {
         target.querySelector(".chat__message-seen").textContent = "✔";
       });
@@ -378,21 +330,11 @@ class Chat extends Component {
   };
 
   loadMore() {
-    const { activeChannelId } = this.props;
-    const { channelHasMessages, isLoading, lastMessageId } = this.props;
-
-    if (channelHasMessages[activeChannelId] === false || isLoading) {
+    if (this.props.chatStore.activeChannel.hasMoreMessages) {
+      this.props.chatStore.activeChannel.loadMoreMessages();
+      return true;
+    } else {
       return false;
-    }
-
-    const { activePages } = this.props;
-    const currentPage = activePages[activeChannelId] || 1;
-    if (activeChannelId && currentPage) {
-      Actions.getMoreMessages({
-        activeChannelId,
-        currentPage: currentPage + 1,
-        lastMessageId
-      });
     }
   }
 
@@ -400,18 +342,17 @@ class Chat extends Component {
 
   handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
     const list = this.listRef.current;
-    window.foo = list;
-    // if (scrollTop === 0) {
-    //   this.loadMore();
-    //   setTimeout(() => {
-    //     // debugger;
+    if (scrollTop <= 100) {
+      this.loadMore();
+      // setTimeout(() => {
+      //   // debugger;
 
-    //     // const currentTop = list.Grid.getTotalRowsHeight();
-    //     // const diff = currentTop - scrollTop;
-    //     // list.scrollToPosition();
-    //     list.scrollToRow(2);
-    //   }, 100);
-    // }
+      //   // const currentTop = list.Grid.getTotalRowsHeight();
+      //   // const diff = currentTop - scrollTop;
+      //   // list.scrollToPosition();
+      //   list.scrollToRow(2);
+      // }, 100);
+    }
   };
 
   handleChatScroll = e => {
@@ -427,10 +368,6 @@ class Chat extends Component {
   };
 
   handleScrollDown = () => {
-    // const list = this.listRef.current;
-
-    // setTimeout(() => list.scrollToRow(-1), 300);
-    // setTimeout(() => list.scrollToRow(-1), 300);
     const chatTalks = this.chatTalkRef.current;
     chatTalks.scrollTop = chatTalks.scrollHeight;
   };
@@ -451,7 +388,7 @@ class Chat extends Component {
     this.setState({
       isNewChannelWindowOpen: false
     });
-    return Actions.postCreateChannel(fields);
+    // return Actions.postCreateChannel(fields);
   };
 
   handleAddNewUser = () => {
@@ -470,7 +407,7 @@ class Chat extends Component {
     this.setState({
       isNewUserWindowOpen: false
     });
-    return Actions.postCreatePrivateChannel(fields);
+    // return Actions.postCreatePrivateChannel(fields);
   };
 
   handleJoinChannel = () => {
@@ -489,7 +426,7 @@ class Chat extends Component {
     this.setState({
       isJoinWindowOpen: false
     });
-    return Actions.postJoinChannel(fields);
+    // return Actions.postJoinChannel(fields);
   };
 
   renderChannelAvatar(avatar) {
@@ -516,9 +453,8 @@ class Chat extends Component {
   // renders
 
   renderChatChanels() {
-    const { activeChannelId } = this.props;
-    const { channels } = this.props;
-
+    const { activeChannel } = this.props.chatStore;
+    const { channels } = this.props.chatStore;
     const content = (
       <div>
         <Button onClick={this.handleCreatePrivateChat}>Чат</Button>
@@ -527,7 +463,8 @@ class Chat extends Component {
 
     return channels.map(channel => {
       const className = cn("chat__channels-item", {
-        "chat__channels-item_active": activeChannelId === channel.id
+        "chat__channels-item_active":
+          (activeChannel && activeChannel.id) == channel.id
       });
 
       return (
@@ -541,7 +478,10 @@ class Chat extends Component {
               {this.renderChannelAvatar(channel.avatar)}
             </Popover>
           </div>
-          <div className="chat__channels-title">{channel.name}</div>
+          <div>
+            <div className="chat__channels-title">{channel.name}</div>
+            <div className="chat__channels-last">{channel.lastMessage}</div>
+          </div>
         </div>
       );
     });
@@ -586,51 +526,46 @@ class Chat extends Component {
     const isSocketConnected = chatSocket.connected;
     const { rightPanelState } = this.state;
 
-    const activeChannel = this.findActiveChannel();
-    const messages = (activeChannel && activeChannel.messages) || [];
     const chatIndicatorCls = cn("chat__indicator", {
       chat__indicator_connected: isSocketConnected
     });
 
     return (
-      <Drawer
-        className="chat"
-        placement="right"
-        visible={visible}
-        onClose={this.props.onClose}
-        width={720}
-        closable={false}
-      >
-        <div className="chat__container">
-          <div className="chat__left-panel">
-            <div className="chat__search">
-              <Input.Search
-                placeholder="Поиск по чату"
-                style={{ width: "100%" }}
-              />
+      <>
+        <Drawer
+          className="chat"
+          placement="right"
+          visible={visible}
+          onClose={this.props.onClose}
+          width={720}
+          closable={false}
+        >
+          <div className="chat__container">
+            <div className="chat__left-panel">
+              <div className="chat__search">
+                <Input.Search
+                  placeholder="Поиск по чату"
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <div className="chat__channels">{this.renderChatChanels()}</div>
+              <div className="chat__footer-controls">
+                <ChatChannelsIcon
+                  isActive={rightPanelState === chatStates.chat}
+                  onClick={this.handleViewMessages}
+                />
+                <AddChatIcon
+                  isActive={rightPanelState === chatStates.createGroup}
+                  onClick={this.handleCreateGroup}
+                />
+                <ChatUserIcon />
+              </div>
             </div>
-            <div className="chat__channels">{this.renderChatChanels()}</div>
-            <div className="chat__footer-controls">
-              <ChatChannelsIcon
-                isActive={rightPanelState === chatStates.chat}
-                onClick={this.handleViewMessages}
-              />
-              <AddChatIcon
-                isActive={rightPanelState === chatStates.createGroup}
-                onClick={this.handleCreateGroup}
-              />
-              <ChatUserIcon />
-            </div>
-          </div>
-          <div className="chat__right-panel">
-            <div
-              className="chat__talk"
-              ref={this.chatTalkRef}
-              // onScroll={this.handleChatScroll}
-            >
-              <div className="chat__talk-spin">{isLoading && <Spin />}</div>
+            <div className="chat__right-panel">
+              <div className="chat__talk">
+                <div className="chat__talk-spin">{isLoading && <Spin />}</div>
 
-              {/* <div className="chat__search-controls">
+                {/* <div className="chat__search-controls">
                 <Tooltip placement="bottom" title="Создать канал">
                   <Button icon="plus" onClick={this.handleAddChannel} />
                 </Tooltip>
@@ -643,122 +578,38 @@ class Chat extends Component {
 
                 <Button icon="more" onClick={this.handleLoadMore} />
               </div> */}
-              {rightPanelState === chatStates.chat
-                ? this.renderMessages()
-                : this.renderGroupCreation()}
+                {rightPanelState === chatStates.chat
+                  ? this.renderMessages()
+                  : this.renderGroupCreation()}
+              </div>
             </div>
           </div>
-        </div>
-        <NewChannel
-          isOpen={this.state.isNewChannelWindowOpen}
-          onOk={this.handleNewChannelOk}
-          onCancel={this.handleNewChannelCancel}
-        />
-        <NewUser
-          isOpen={this.state.isNewUserWindowOpen}
-          onOk={this.handleNewUserOk}
-          onCancel={this.handleNewUserCancel}
-        />
-        <JoinChannel
-          isOpen={this.state.isJoinWindowOpen}
-          onOk={this.handleJoinChannelOk}
-          onCancel={this.handleJoinChannelCancel}
-        />
-      </Drawer>
-    );
-
-    return (
-      <div>
-        {this.renderFileForm()}
-        <Drawer
-          className="chat"
-          placement="right"
-          visible={visible}
-          onClose={this.props.onClose}
-          width={720}
-          closable={false}
-        >
-          <div className="chat__container">
-            <div className="chat__search">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  width: "50%"
-                }}
-              >
-                <div className={chatIndicatorCls} />
-                <Input placeholder="Поиск" style={{ width: "100%" }} />
-              </div>
-              <div className="chat__search-controls">
-                <Tooltip placement="bottom" title="Создать канал">
-                  <Button icon="plus" onClick={this.handleAddChannel} />
-                </Tooltip>
-                <Tooltip placement="bottom" title="Присоединится к каналу">
-                  <Button icon="link" onClick={this.handleJoinChannel} />
-                </Tooltip>
-                <Tooltip placement="bottom" title="Создать приватный чат">
-                  <Button icon="user-add" onClick={this.handleAddNewUser} />
-                </Tooltip>
-
-                <Button icon="more" onClick={this.handleLoadMore} />
-              </div>
-            </div>
-
-            <div className="chat__talks">
-              <div className="chat__chanels">{this.renderChatChanels()}</div>
-              <div
-                className="chat__talk"
-                ref={this.chatTalkRef}
-                onScroll={this.handleChatScroll}
-              >
-                <div className="chat__talk-spin">{isLoading && <Spin />}</div>
-                <div className="chat__talk-down">
-                  <Button
-                    size="large"
-                    icon="down-circle"
-                    onClick={this.handleScrollDown}
-                  />
-                </div>
-
-                {this.renderMessages()}
-              </div>
-            </div>
-            <div className="chat__controls">
-              <div className="chat__controls-file-icon">
-                <Icon
-                  type="paper-clip"
-                  style={{ fontSize: "16px", color: "#00ccff" }}
-                  onClick={this.handleFileUpload}
-                />
-              </div>
-              <Input
-                ref={this.inputRef}
-                disabled={isLoading || !activeChannel || !isSocketConnected}
-                autoFocus
-                value={this.state.currentMessage}
-                onChange={this.handleMessageChange}
-                onKeyPress={this.handleInputKeyPress}
-              />
-            </div>
-          </div>
+          <NewChannel
+            isOpen={this.state.isNewChannelWindowOpen}
+            onOk={this.handleNewChannelOk}
+            onCancel={this.handleNewChannelCancel}
+          />
+          <NewUser
+            isOpen={this.state.isNewUserWindowOpen}
+            onOk={this.handleNewUserOk}
+            onCancel={this.handleNewUserCancel}
+          />
+          <JoinChannel
+            isOpen={this.state.isJoinWindowOpen}
+            onOk={this.handleJoinChannelOk}
+            onCancel={this.handleJoinChannelCancel}
+          />
         </Drawer>
-      </div>
+        <UploadWindow
+          visible={this.state.isUploadVisible}
+          onCancel={this.handleHideUpload}
+          onChange={this.handleFileChange}
+          onOk={this.handleUploadFiles}
+          value={this.state.files}
+        />
+      </>
     );
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    chat: state.Chat.chat,
-    channels: state.Chat.channels,
-    activeChannelId: state.Chat.activeChannelId,
-    isLoading: state.Chat.isLoading,
-    socketError: state.Chat.socketError,
-    activePages: state.Chat.activePages,
-    channelHasMessages: state.Chat.channelHasMessages,
-    lastMessageId: state.Chat.lastMessageId
-  };
-};
-
-export default connect(mapStateToProps)(Chat);
+export default Chat;

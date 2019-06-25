@@ -5,10 +5,15 @@ fixture`First`.page`http://localhost:5000/groups`;
 
 function asRegularUser(t) {
   return t
-    .click(".ant-tabs-tab:last-child")
-    .typeText(".signup #normal_login_userName", "Соколова Виктория")
-    .typeText(".signup #normal_login_password", "foo")
-    .click(".signup-form-button");
+    .click(".signup-link")
+    .typeText("#normal_login_surName", "Соколова")
+    .typeText("#normal_login_firstName", "Виктория")
+    .typeText("#normal_login_lastName", "Викторовна")
+    .typeText("#normal_login_email", "foo@mail.com")
+    .typeText("#normal_login_password", "foo")
+    .typeText("#normal_login_confirm", "foo")
+    .typeText("#normal_login_login", "sokol")
+    .click(".login-form__button");
 }
 
 test("should create group", async t => {
@@ -17,7 +22,7 @@ test("should create group", async t => {
   await asRegularUser(t);
 
   await t
-    .click(".project-groups__side-wrap button")
+    .click(".side-wrap button")
     .typeText("#GroupForm_title", "NewGroup")
     .typeText("#GroupForm_shortDescription", "Short")
     .typeText("#GroupForm_description", "Descr")

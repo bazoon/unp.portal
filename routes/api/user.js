@@ -68,6 +68,11 @@ router.post("/signup", async ctx => {
       where: { name: userName }
     });
 
+    user.update({
+      email,
+      login
+    });
+
     const hashedPassword = bcrypt.hashSync(password, 8);
 
     const avatar = "";

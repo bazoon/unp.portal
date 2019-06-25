@@ -234,7 +234,7 @@ class LoginForm extends Component {
           </Button>
           <Form.Item>
             или{" "}
-            <a onClick={this.handleToggle} href="#">
+            <a className="signup-link" onClick={this.handleToggle} href="#">
               Зарегистрируйтесь сейчас!
             </a>
           </Form.Item>

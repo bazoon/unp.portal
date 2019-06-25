@@ -71,9 +71,6 @@ class L extends Component {
 
     return (
       <>
-        {isChatOpen && (
-          <Chat visible={isChatOpen} onClose={this.handleChatClose} />
-        )}
         <BrowserRouter>
           <div className="outer-container">
             <ChatIcon
@@ -206,6 +203,8 @@ class L extends Component {
                 </div>
               </div>
             </Footer>
+
+            <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           </div>
         </BrowserRouter>
       </>

@@ -27,6 +27,7 @@ class Chat {
   onConnection(socket) {
     let userName;
     let decoded;
+    console.log("onConnection");
 
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
@@ -42,6 +43,11 @@ class Chat {
     socket.on("join", rooms => {
       console.log("Joining", rooms);
       socket.join(rooms);
+    });
+
+    socket.on("foo", () => {
+      console.log("foo");
+      socket.emit("bar", "bar");
     });
 
     this.socket = socket;
@@ -69,7 +75,7 @@ class Chat {
     const { channelId, message, type, userId, files, id } = m;
     util.combineFileMessage(channelId, userId, files, id).then(message => {
       this.io.to(channelId).emit("channel-message", message);
-      fn();
+      // fn();
     });
   }
 

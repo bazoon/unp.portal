@@ -27,7 +27,7 @@ class NewChannel extends Component {
   }
 
   componentDidMount() {
-    Actions.getAllChannels();
+    // Actions.getAllChannels();
   }
 
   filterUsers = (inputValue, option) => {

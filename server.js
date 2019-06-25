@@ -59,6 +59,6 @@ app.use(async (ctx, next) => {
 
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
-// models.sequelize.sync().then(function() {
+// models.sequelize.sync({ force: true }).then(function() {
 http.listen(port, () => console.log(`Server is running on ${port}`));
 // });

@@ -1,7 +1,7 @@
 import { types } from "mobx-state-tree";
 import File from "./File";
 
-const Group = types.model("Event", {
+const Event = types.model("Event", {
   id: types.identifierNumber,
   usersCount: types.optional(types.maybeNull(types.number), 0),
   startDate: types.optional(types.maybeNull(types.string), ""),
@@ -11,4 +11,4 @@ const Group = types.model("Event", {
   files: types.optional(types.array(File), [])
 });
 
-export default Group;
+export default Event;

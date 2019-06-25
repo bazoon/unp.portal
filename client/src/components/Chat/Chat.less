@@ -85,7 +85,18 @@
     }
   }
 
-  &__message {
+  &__messages {
+    &-box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    height: 100%;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  & &__message {
     position: relative;
     width: 70%;
     border-radius: 10px;
@@ -182,15 +193,27 @@
     }
   }
 
+  &__channel-name {
+    height: 40px;
+    border-bottom: solid 1px #d8d8d8;
+    padding: 8px;
+    margin-bottom: 4px;
+  }
+
   &__channels {
     flex: 1;
     overflow-y: auto;
 
     &-title {
       font-size: 14px;
-      letter-spacing: 0;
-      text-align: left;
+    
     }
+
+    &-last {
+      color: #909090;
+    }
+
+
 
     &-item {
       padding: 10px;
@@ -240,7 +263,7 @@
     &-down {
       position: absolute;
       right: 30px;
-      bottom: 10px;
+      bottom: 60px;
       z-index: 100;
     }
   }

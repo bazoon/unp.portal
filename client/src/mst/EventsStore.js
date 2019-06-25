@@ -6,8 +6,8 @@ import api from "../api/events";
 
 const CurrentUserStore = types
   .model("CurrentUserStore", {
-    events: types.array(Event),
-    upcoming: types.array(Event),
+    events: types.optional(types.array(Event), []),
+    upcoming: types.maybeNull(types.array(Event)),
     total: types.maybeNull(types.number),
     page: types.optional(types.maybeNull(types.number), 1),
     pageSize: types.optional(types.maybeNull(types.number), 10),
@@ -59,7 +59,6 @@ const CurrentUserStore = types
     };
 
     const setCurrentDate = flow(function* setCurrentDate(date) {
-      debugger;
       self.currentDate = date;
       const events = yield api.loadUpcoming(date);
       self.upcoming = events;

@@ -23,7 +23,8 @@ module.exports = {
             avatar: getUploadFilePath(user.avatar),
             files: files.map(f => ({
               id: f.id,
-              file: getUploadFilePath(f.file),
+              url: getUploadFilePath(f.file),
+              name: f.file,
               size: f.size
             }))
           });
@@ -43,7 +44,8 @@ module.exports = {
           avatar: getUploadFilePath(user.avatar),
           files: files.map(f => ({
             id: f.id,
-            file: getUploadFilePath(f.file),
+            url: getUploadFilePath(f.file),
+            name: f.file,
             size: f.size
           }))
         });

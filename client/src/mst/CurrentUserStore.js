@@ -69,6 +69,7 @@ export default CurrentUserStore.create({
   token: localStorage.getItem("token"),
   userName: localStorage.getItem("userName"),
   id: +localStorage.getItem("userId"),
+  userId: +localStorage.getItem("userId"),
   avatar: localStorage.getItem("avatar"),
   isAdmin: localStorage.getItem("isAdmin") === "true"
 });

@@ -22,6 +22,10 @@ class UploadForm extends Component {
     this.state = { fileList: [] };
   }
 
+  componentDidMount() {
+    console.log("CDM");
+  }
+
   handleDocsChanged = value => {
     this.props.onChange(value.fileList);
   };

@@ -14,11 +14,11 @@ class UploadWindow extends Component {
       <Modal
         title="Загрузка файлов"
         visible={this.props.visible}
-        onOk={this.handleOk}
+        onOk={this.props.onOk}
         onCancel={this.handleCancel}
         className="upload-form"
         width={800}
-        footer={null}
+        // footer={null}
         onCancel={this.props.onCancel}
       >
         <UploadForm value={value} onChange={this.props.onChange} />

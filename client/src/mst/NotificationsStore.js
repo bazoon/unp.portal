@@ -13,7 +13,10 @@ const NotificationsStore = types
   }))
   .actions(self => {
     const load = flow(function* load() {
-      self.items = yield api.load();
+      const items = yield api.load();
+      if (items) {
+        self.items = items;
+      }
     });
 
     return {
