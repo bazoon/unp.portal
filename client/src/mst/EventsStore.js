@@ -29,11 +29,13 @@ const CurrentUserStore = types
     const create = flow(function* create(payload) {
       yield api.create(payload);
       self.loadAll();
+      self.loadUpcoming();
     });
 
     const update = flow(function* update(id, payload) {
       yield api.update(id, payload);
       self.loadAll();
+      self.loadUpcoming();
     });
 
     const loadAll = flow(function* loadAll() {
@@ -49,7 +51,7 @@ const CurrentUserStore = types
     });
 
     const loadUpcoming = flow(function* loadUpcoming() {
-      const events = yield api.loadUpcoming();
+      const events = yield api.loadUpcoming(self.currentDate);
       self.upcoming = events;
     });
 

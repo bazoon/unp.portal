@@ -215,12 +215,11 @@ router.get("/upcoming", async (ctx, next) => {
   from.tz("Etc/GMT-0");
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
-  const query = `select events.id, title, description, start_date, remind_at
-          from events, user_events
-          where events.id = user_events.event_id and user_events.user_id=${userId}
-          and start_date >= '${from}'
-          order by events.start_date asc
-          limit 5`;
+  const query = `select *from events where id in (select event_id from event_accesses 
+            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = ${userId})) or 
+            (access_type = 1 and entity_id = ${userId})) or user_id = ${userId}
+            order by events.start_date asc
+            limit 5`;
 
   const events = (await models.sequelize.query(query))[0];
 
