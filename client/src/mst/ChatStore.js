@@ -27,6 +27,10 @@ const ChatStore = types
     });
     window.s = socket;
 
+    function joinChannels(channels) {
+      socket.emit("join", channels.map(channel => channel.id));
+    }
+
     const afterCreate = function afterCreate() {
       socket.on("channel-message", message => {
         const channel = self.channels.find(ch => ch.id === message.channelId);
@@ -39,11 +43,13 @@ const ChatStore = types
           channel.setLastMessage(message.message);
         }
       });
-    };
 
-    function joinChannels(channels) {
-      socket.emit("join", channels.map(channel => channel.id));
-    }
+      socket.on("connect", () => {
+        if (self.channels && self.channels.length > 0) {
+          joinChannels(self.channels);
+        }
+      });
+    };
 
     const getChannels = flow(function* getChannels(userId) {
       const channels = yield api.getChannels(userId);
