@@ -20,8 +20,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   } = ctx.request.body;
 
   const userId = ctx.user.id;
-  const remindAt = remind > 0 ? moment(date).add(+remind, "minutes") : null;
-
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
@@ -31,19 +29,30 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     description,
     userId,
     startDate: date,
-    remindAt
+    remind,
+    accessType
   });
 
   const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
   if (accessType == 1) {
-    await models.UserEvent.bulkCreate(
+    await models.EventAccess.bulkCreate(
       accessIds.map(id => {
         return {
           eventId: event.id,
-          userId: id
+          entityId: id,
+          accessType: 1
         };
       })
     );
+
+    // await models.UserEvent.bulkCreate(
+    //   accessIds.map(id => {
+    //     return {
+    //       eventId: event.id,
+    //       userId: id
+    //     };
+    //   })
+    // );
 
     await notificationService.eventCreated({
       userId,
@@ -54,14 +63,26 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   } else if (accessType == 2) {
     const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
     const users = (await models.sequelize.query(usersQuery))[0];
-    await models.UserEvent.bulkCreate(
-      users.map(u => {
+
+    // await models.UserEvent.bulkCreate(
+    //   users.map(u => {
+    //     return {
+    //       eventId: event.id,
+    //       userId: u.user_id
+    //     };
+    //   })
+    // );
+
+    await models.EventAccess.bulkCreate(
+      accessIds.map(id => {
         return {
           eventId: event.id,
-          userId: u.user_id
+          entityId: id,
+          accessType: 2
         };
       })
     );
+
     await notificationService.eventCreated({
       userId,
       title: event.title,
@@ -70,13 +91,94 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     });
   }
 
-  await models.UserEvent.findOrCreate({
+  await models.EventAccess.findOrCreate({
     where: {
-      [Op.and]: [{ eventId: event.id }, { userId: userId }]
+      [Op.and]: [{ eventId: event.id }, { entityId: userId }]
     },
     defaults: {
       eventId: event.id,
-      userId: userId
+      entityId: userId,
+      accessType: 1
+    }
+  });
+
+  ctx.body = event;
+});
+
+router.put("/:id", async ctx => {
+  const {
+    title,
+    description,
+    accessType,
+    accessEntitiesIds,
+    date,
+    remind
+  } = ctx.request.body;
+  const { id } = ctx.params;
+  const userId = ctx.user.id;
+  const event = await models.Event.findOne({ where: { id } });
+
+  await event.update({
+    title,
+    description,
+    userId,
+    startDate: date,
+    remind,
+    accessType
+  });
+
+  await models.EventAccess.destroy({
+    where: {
+      eventId: id
+    }
+  });
+
+  if (accessType == 1) {
+    await models.EventAccess.bulkCreate(
+      accessEntitiesIds.map(id => {
+        return {
+          eventId: event.id,
+          entityId: id,
+          accessType: 1
+        };
+      })
+    );
+
+    await notificationService.eventUpdated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: accessEntitiesIds.concat([userId])
+    });
+  } else if (accessType == 2) {
+    const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
+    const users = (await models.sequelize.query(usersQuery))[0];
+
+    await models.EventAccess.bulkCreate(
+      accessEntitiesIds.map(id => {
+        return {
+          eventId: event.id,
+          entityId: id,
+          accessType: 2
+        };
+      })
+    );
+
+    await notificationService.eventUpdated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: users.map(u => u.id).concat([userId])
+    });
+  }
+
+  await models.EventAccess.findOrCreate({
+    where: {
+      [Op.and]: [{ eventId: event.id }, { entityId: userId }]
+    },
+    defaults: {
+      eventId: event.id,
+      entityId: userId
     }
   });
 
@@ -131,27 +233,25 @@ async function getEvents(userId, from, to, page, pageSize) {
   const limit = pageSize;
 
   if (from && to) {
-    countQuery = `select count(events.id)
-                  from events, user_events              
-                  where events.id = user_events.event_id and user_events.user_id=${userId} and
-                  events.start_date BETWEEN '${from}' AND '${to}
-                  `;
-
-    query = `select events.id, title, description, start_date, remind_at
-            from events, user_events
-            where events.id = user_events.event_id and user_events.user_id=${userId} and
-            events.start_date BETWEEN '${from}' AND '${to}'
-            order by events.start_date asc
-            limit ${limit} offset ${offset}`;
+    // countQuery = `select count(events.id)
+    //               from events, user_events
+    //               where events.id = user_events.event_id and user_events.user_id=${userId} and
+    //               events.start_date BETWEEN '${from}' AND '${to}
+    //               `;
+    // query = `select events.id, title, description, start_date, remind_at
+    //         from events, user_events
+    //         where events.id = user_events.event_id and user_events.user_id=${userId} and
+    //         events.start_date BETWEEN '${from}' AND '${to}'
+    //         order by events.start_date asc
+    //         limit ${limit} offset ${offset}`;
   } else {
-    countQuery = `select count(events.id)
-                  from events, user_events            
-                  where events.id = user_events.event_id and user_events.user_id=${userId}
+    countQuery = `select count(*) from participants where project_group_id 
+                  in (select entity_id from event_accesses where event_id = 24 and access_type = 2)
                   `;
 
-    query = `select events.id, title, description, start_date, remind_at
-            from events, user_events
-            where events.id = user_events.event_id and user_events.user_id=${userId}
+    query = `select *from events where id in (select event_id from event_accesses 
+            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = ${userId})) or 
+            (access_type = 1 and entity_id = ${userId})) or user_id = ${userId}
             order by events.start_date asc
             limit ${limit} offset ${offset}`;
   }
@@ -169,17 +269,24 @@ async function getEvents(userId, from, to, page, pageSize) {
 
 function getFullEvents(events) {
   return events.map(async event => {
-    const usersQuery = `select count(*) from user_events where event_id = ${
+    const groupsCountQuery = `select count(*) from participants where project_group_id in 
+                      (select entity_id from event_accesses where event_id = ${
+                        event.id
+                      } and access_type = 2)`;
+    const usersCountQuery = `select count(*) from event_accesses where access_type = 1 and event_id=${
       event.id
     }`;
 
-    const count = +(await models.sequelize.query(usersQuery))[0][0].count;
+    const count =
+      +(await models.sequelize.query(groupsCountQuery))[0][0].count +
+      +(await models.sequelize.query(usersCountQuery))[0][0].count;
+
     return {
       id: event.id,
       title: event.title,
       description: event.description,
       startDate: event.start_date,
-      remindAt: event.remind_at,
+      remind: event.remind,
       usersCount: count
     };
   });
@@ -205,9 +312,13 @@ router.get("/:id", async (ctx, next) => {
     id: id,
     userId: event.UserId,
     description: event.description,
-    remindAt: event.remindAt,
+    remind: event.remind,
     startDate: event.startDate,
-    title: event.title
+    title: event.title,
+    accessType: event.accessType,
+    accesses: await models.EventAccess.findAll({ where: { eventId: id } }).map(
+      ea => ({ id: ea.id, accessType: ea.accessType, entityId: ea.entityId })
+    )
   };
 });
 

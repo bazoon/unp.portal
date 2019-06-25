@@ -55,43 +55,43 @@ class EditEventForm extends Component {
     });
     eventsApi.get(id).then(data => {
       this.setState({
-        event: data
+        event: data,
+        accessType: data.accessType
       });
     });
   }
 
   handlePublish = () => {
+    const id = this.props.match.params.id;
     const { form } = this.props;
     const formData = new FormData();
 
     form.validateFields((err, fields) => {
       if (err) return;
-      let files = [];
+      // let files = [];
 
-      if (fields.files) {
-        files = fields.files.map(f => f.originFileObj);
-        delete fields.files;
-      }
+      // if (fields.files) {
+      //   files = fields.files.map(f => f.originFileObj);
+      //   delete fields.files;
+      // }
 
       if (fields.date) {
         fields.date = fields.date.toISOString();
       }
 
-      const keys = Object.keys(fields);
+      // const keys = Object.keys(fields);
 
-      keys.forEach(key => {
-        if (fields[key]) {
-          formData.append(key, fields[key]);
-        }
-      });
+      // keys.forEach(key => {
+      //   if (fields[key]) {
+      //     formData.append(key, fields[key]);
+      //   }
+      // });
 
-      files.forEach(file => {
-        formData.append("file", file);
-      });
+      // files.forEach(file => {
+      //   formData.append("file", file);
+      // });
 
-      this.props.eventsStore.create(formData).then(() => {
-        this.props.onSuccess();
-      });
+      this.props.eventsStore.update(id, fields).then(() => {});
     });
   };
 
@@ -110,6 +110,8 @@ class EditEventForm extends Component {
     this.setState({
       accessType
     });
+
+    this.props.form.setFieldsValue({ accessEntitiesIds: [] });
   };
 
   handleToggleUpload = () => {
@@ -126,12 +128,13 @@ class EditEventForm extends Component {
 
   // renders
 
-  renderSelectGroups() {
+  renderSelectGroups(accesses) {
     const { getFieldDecorator } = this.props.form;
     return (
       <>
         {getFieldDecorator("accessEntitiesIds", {
-          valuePropName: "value"
+          valuePropName: "value",
+          initialValue: accesses.map(a => a.entityId)
         })(
           <Select
             mode="multiple"
@@ -150,12 +153,13 @@ class EditEventForm extends Component {
     );
   }
 
-  renderSelectUsers() {
+  renderSelectUsers(accesses) {
     const { getFieldDecorator } = this.props.form;
     return (
       <>
         {getFieldDecorator("accessEntitiesIds", {
-          valuePropName: "value"
+          valuePropName: "value",
+          initialValue: accesses.map(a => a.entityId)
         })(
           <Select
             mode="multiple"
@@ -178,7 +182,14 @@ class EditEventForm extends Component {
     const { getFieldDecorator } = this.props.form;
     const { isUploadVisible, event } = this.state;
     const { avatar, userName } = this.props.currentUserStore;
-    const { title, description, remindAt, startDate } = event;
+    const {
+      title,
+      description,
+      remind,
+      startDate,
+      accessType,
+      accesses
+    } = event;
 
     return (
       <div className="group__conversation-form">
@@ -203,7 +214,7 @@ class EditEventForm extends Component {
               })(<Input.TextArea rows={5} placeholder="Описание" />)}
             </Form.Item>
           </div>
-          <div className="form-row form-row_40">
+          {/* <div className="form-row form-row_40">
             {getFieldDecorator("files", {})(
               <UploadWindow
                 visible={isUploadVisible}
@@ -215,7 +226,7 @@ class EditEventForm extends Component {
               Загрузить
             </Button>
             {getFieldDecorator("files")(<RenderFiles />)}
-          </div>
+          </div> */}
 
           <div className="form-row form-row_24">
             <Form.Item
@@ -223,7 +234,9 @@ class EditEventForm extends Component {
               labelCol={{ span: 5 }}
               wrapperCol={{ span: 12 }}
             >
-              {getFieldDecorator("date", { initialValue: moment(startDate) })(
+              {getFieldDecorator("date", {
+                initialValue: moment(startDate)
+              })(
                 <DatePicker format="DD.MM.YYYY HH:mm" placeholder="" showTime />
               )}
             </Form.Item>
@@ -236,7 +249,8 @@ class EditEventForm extends Component {
               wrapperCol={{ span: 12 }}
             >
               {getFieldDecorator("remind", {
-                valuePropName: "value"
+                valuePropName: "value",
+                initialValue: remind
               })(
                 <Select>
                   <Option value={60}>За час</Option>
@@ -254,7 +268,7 @@ class EditEventForm extends Component {
               wrapperCol={{ span: 12 }}
             >
               {getFieldDecorator("accessType", {
-                initialValue: 0
+                initialValue: this.state.accessType
               })(
                 <Select onChange={this.handleChangeAccessType}>
                   <Option value={0}>Никто</Option>
@@ -274,8 +288,8 @@ class EditEventForm extends Component {
                       valuePropName: "value"
                     })(
                       this.state.accessType === 1
-                        ? this.renderSelectUsers()
-                        : this.renderSelectGroups()
+                        ? this.renderSelectUsers(accesses)
+                        : this.renderSelectGroups(accesses)
                     )}
                   </Col>
                   <Col offset={2} span={5}>

@@ -68,7 +68,7 @@ class UserLayout extends Component {
             />
 
             <Route
-              path="/events/:id"
+              path="/events/edit/:id"
               component={props => <EditEventForm {...props} />}
             />
 

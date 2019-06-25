@@ -21,6 +21,11 @@ export default {
       return data;
     });
   },
+  update(id, payload) {
+    return api.put(`api/events/${id}`, payload).then(({ data }) => {
+      return data;
+    });
+  },
   loadUpcoming(date) {
     return api.get("api/events/upcoming", { date }).then(({ data }) => {
       return data;

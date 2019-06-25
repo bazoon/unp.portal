@@ -8,12 +8,12 @@ class Events extends Component {
   renderOperationsMenu(event) {
     return (
       <>
-        {/* <div
+        <div
           className="admin-user__menu-item"
           onClick={() => this.props.onEdit(event.id)}
         >
           Редактировать
-        </div> */}
+        </div>
         <div
           className="admin-user__menu-item"
           onClick={() => this.props.onDelete(event.id)}

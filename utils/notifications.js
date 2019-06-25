@@ -116,6 +116,11 @@ module.exports = {
     const description = `Создано событие #${title}:event:${eventId}#`;
     return createForRecipients(userId, description, recipientsIds);
   },
+  eventUpdated: function(config) {
+    const { userId, title, eventId, recipientsIds } = config;
+    const description = `Изменено событие #${title}:event:${eventId}#`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
   eventRemoved: function(config) {
     const { userId, title, eventId, recipientsIds } = config;
     const description = `Удалено событие ${title}`;

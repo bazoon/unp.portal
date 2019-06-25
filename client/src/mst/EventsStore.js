@@ -31,7 +31,12 @@ const CurrentUserStore = types
       self.loadAll();
     });
 
-    const loadAll = flow(function* loadAll(payload) {
+    const update = flow(function* update(id, payload) {
+      yield api.update(id, payload);
+      self.loadAll();
+    });
+
+    const loadAll = flow(function* loadAll() {
       const data = yield api.loadAll({
         page: self.page,
         pageSize: self.pageSize
@@ -66,6 +71,7 @@ const CurrentUserStore = types
 
     return {
       create,
+      update,
       loadAll,
       setPage,
       loadUpcoming,

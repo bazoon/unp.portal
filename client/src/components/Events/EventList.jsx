@@ -162,7 +162,7 @@ class EventList extends Component {
   };
 
   handleEdit = id => {
-    this.props.history.push(`/events/${id}`);
+    this.props.history.push(`/events/edit/${id}`);
   };
 
   handleDelete = id => {

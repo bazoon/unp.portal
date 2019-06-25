@@ -29,6 +29,12 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "RESTRICT"
       },
+      accessType: {
+        type: Sequelize.INTEGER
+      },
+      remind: {
+        type: Sequelize.INTEGER
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
