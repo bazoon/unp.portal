@@ -182,14 +182,7 @@ class EditEventForm extends Component {
     const { getFieldDecorator } = this.props.form;
     const { isUploadVisible, event } = this.state;
     const { avatar, userName } = this.props.currentUserStore;
-    const {
-      title,
-      description,
-      remind,
-      startDate,
-      accessType,
-      accesses
-    } = event;
+    const { title, description, remind, startDate, accesses = [] } = event;
 
     return (
       <div className="group__conversation-form">

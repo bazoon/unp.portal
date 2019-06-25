@@ -304,7 +304,6 @@ router.get("/:id", async (ctx, next) => {
 
   if (!event) {
     ctx.code = 404;
-    ctx.body = "not found";
     return;
   }
 

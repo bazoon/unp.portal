@@ -11,7 +11,7 @@ const Event = types.model("Event", {
   title: types.optional(types.maybeNull(types.string), ""),
   description: types.optional(types.string, ""),
   files: types.optional(types.array(File), []),
-  accesses: types.array(EventAcccess)
+  accesses: types.optional(types.array(EventAcccess), [])
 });
 
 export default Event;
