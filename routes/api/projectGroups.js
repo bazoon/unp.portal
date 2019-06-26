@@ -244,9 +244,30 @@ router.delete("/:id/subscriptions", async ctx => {
         "Перед тем, как покинуть группу, нужно назначить администратором другого участника группы"
     };
   } else {
+    // notifications
+
+    await notificationService.groupParticipantLeft({
+      userId,
+      title: group.title,
+      groupId: group.id,
+      applicantId: userId,
+      applicantName: user.name,
+      recipientsIds: await getGroupUsersIds(groupId)
+    });
+
     participant.destroy();
     ctx.body = { success: true };
   }
+});
+
+router.delete("/files", async ctx => {
+  const { fileId } = ctx.request.query;
+  await models.File.destroy({
+    where: {
+      id: fileId
+    }
+  });
+  ctx.body = fileId;
 });
 
 router.delete("/:id", async ctx => {
@@ -255,6 +276,15 @@ router.delete("/:id", async ctx => {
 
   const canEdit = await canEditGroup(id, ctx);
   if (!canEdit) return;
+
+  // notifications
+  await notificationService.groupRemoved({
+    userId,
+    title: group.title,
+    groupId: group.id
+  });
+
+  //
 
   await models.ProjectGroup.destroy({
     where: {
@@ -471,14 +501,25 @@ router.post("/:id/subscriptions", async ctx => {
     }
   });
 
-  await notificationService.groupRequestApplied({
-    userId,
-    title: group.title,
-    groupId: group.id,
-    applicantId: userId,
-    applicantName: user.name,
-    recipientsIds: await getGroupAdminsIds(groupId)
-  });
+  if (group.isOpen) {
+    await notificationService.groupParticipantJoined({
+      userId,
+      title: group.title,
+      groupId: group.id,
+      applicantId: userId,
+      applicantName: user.name,
+      recipientsIds: await getGroupUsersIds(groupId)
+    });
+  } else {
+    await notificationService.groupRequestApplied({
+      userId,
+      title: group.title,
+      groupId: group.id,
+      applicantId: userId,
+      applicantName: user.name,
+      recipientsIds: await getGroupAdminsIds(groupId)
+    });
+  }
 
   //end
 
@@ -802,6 +843,32 @@ router.post("/requests", async ctx => {
   // end
 
   ctx.body = { id: participant.id };
+});
+
+router.post("/files", koaBody({ multipart: true }), async ctx => {
+  const userId = ctx.user.id;
+  const { groupId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const docs = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(docs);
+  const files = await models.File.bulkCreate(
+    docs.map(doc => {
+      return {
+        userId,
+        file: doc.name,
+        entityType: fileOwners.group,
+        entityId: groupId,
+        size: doc.size
+      };
+    }),
+    { returning: true }
+  );
+  ctx.body = files.map(f => ({
+    id: f.id,
+    name: f.file,
+    url: getUploadFilePath(f.file),
+    size: f.size
+  }));
 });
 
 module.exports = router;

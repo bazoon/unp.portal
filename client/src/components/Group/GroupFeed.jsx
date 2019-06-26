@@ -38,6 +38,7 @@ import { observer, inject } from "mobx-react";
 import projectGroups from "../ProjectGroups/reducer";
 import GroupButton from "../ProjectGroups/GroupButton";
 import Conversation from "./Conversation/Conversation";
+import UploadWindow from "../UploadWindow/UploadWindow";
 
 const maxDescriptionSentences = 10;
 
@@ -52,7 +53,9 @@ class GroupFeed extends Component {
       isShortMode: true,
       isTitleOver: false,
       isTitleEditing: false,
-      isShortDescriptionEditing: false
+      isShortDescriptionEditing: false,
+      isUploadVisible: false,
+      files: []
     };
     this.editingFields = {};
     this.formRef = React.createRef();
@@ -234,6 +237,41 @@ class GroupFeed extends Component {
     );
   };
 
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  handleUploadFiles = () => {
+    const { id } = this.props.match.params;
+    const formData = new FormData();
+    formData.append("groupId", id);
+
+    this.state.files.forEach(f => {
+      formData.append("file", f.originFileObj);
+    });
+
+    this.props.groupsStore.uploadFiles(formData);
+    this.handleHideUpload();
+  };
+
+  handleFileChange = files => {
+    this.setState({
+      files
+    });
+  };
+
+  handleShowUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleDeleteFile = fileId => {
+    this.props.groupsStore.deleteFile(fileId);
+  };
+
   renderAddRegion() {
     return (
       <div
@@ -287,7 +325,17 @@ class GroupFeed extends Component {
     return (
       <div className="group__files">
         <div className="group__files-title">Прикрепленные файлы</div>
-        <Files files={files} />
+        <Files files={files} onDelete={this.handleDeleteFile} />
+        <Button onClick={this.handleShowUpload} icon="upload">
+          Добавить файл
+        </Button>
+        <UploadWindow
+          visible={this.state.isUploadVisible}
+          onCancel={this.handleHideUpload}
+          onChange={this.handleFileChange}
+          onOk={this.handleUploadFiles}
+          value={this.state.files}
+        />
       </div>
     );
   }
@@ -418,11 +466,13 @@ class GroupFeed extends Component {
       shortDescription,
       participant,
       participants = [],
-      files = [],
+      // files = [],
       isOpen,
       isAdmin,
       state
     } = currentGroup;
+
+    const files = (currentGroup.files && currentGroup.files.slice()) || [];
 
     const { isShortMode } = this.state;
     const isSuperAdmin = this.props.currentUserStore.isAdmin;
@@ -517,9 +567,7 @@ class GroupFeed extends Component {
             {description ? (
               <>
                 <Col span={16}>{this.renderRestDescription(description)}</Col>
-                {files.length > 0 && (
-                  <Col span={8}>{canPost && this.renderFiles(files)}</Col>
-                )}
+                {<Col span={8}>{canPost && this.renderFiles(files)}</Col>}
               </>
             ) : (
               <Col span={24}>{canPost && this.renderFiles(files)}</Col>

@@ -15,6 +15,12 @@ export default props => {
             <a download href={file.url}>
               {file.name}
             </a>
+            <span
+              onClick={() => props.onDelete(file.id)}
+              className="group__file-remove"
+            >
+              x
+            </span>
           </li>
         );
       })}

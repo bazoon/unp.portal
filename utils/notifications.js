@@ -38,6 +38,15 @@ module.exports = {
       constants.notifications.type.common
     );
   },
+  groupRemoved: function(config) {
+    const { userId, title, groupId } = config;
+    const description = `Удалена группа #${title}:group:${groupId}#`;
+    return createNotification(
+      userId,
+      description,
+      constants.notifications.type.common
+    );
+  },
   conversationCreated: function(config) {
     const {
       userId,
@@ -48,6 +57,32 @@ module.exports = {
       recipientsIds
     } = config;
     const description = `Новое обсуждение #${conversationTitle}:conversation:${groupId}-${conversationId}# в группе #${groupTitle}:group:${groupId}#`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  groupParticipantJoined: function(config) {
+    const {
+      userId,
+      title,
+      groupId,
+      applicantId,
+      applicantName,
+      recipientsIds
+    } = config;
+    const description = `В группу #${title}:group:${groupId}# 
+                        вступил #${applicantName}:user:${applicantId}`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  groupParticipantLeft: function(config) {
+    const {
+      userId,
+      title,
+      groupId,
+      applicantId,
+      applicantName,
+      recipientsIds
+    } = config;
+    const description = `Из группы #${title}:group:${groupId}# 
+                        вышел #${applicantName}:user:${applicantId}`;
     return createForRecipients(userId, description, recipientsIds);
   },
   groupRequestApplied: function(config) {

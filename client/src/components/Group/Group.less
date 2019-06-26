@@ -44,6 +44,7 @@
     background: #fff;
     padding-top: 24px;
     padding-left: 24px;
+    padding-bottom: 24px;
     height: 100%;
     &-title {
       font-family: OpenSans-Bold;
@@ -60,6 +61,14 @@
   &__file {
     display: flex;
     align-items: center;
+
+    margin-bottom: 8px;
+    &-remove {
+      line-height: 14px;
+      margin-left: 4px;
+      cursor: pointer;
+      color: #f27171;
+    }
     svg {
       margin-right: 4px;
       flex-shrink: 0;
@@ -69,7 +78,6 @@
       display: inline-block;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-bottom: 8px;
     }
   }
 

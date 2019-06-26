@@ -234,6 +234,23 @@ const GroupsStore = types
       self.groups = self.groups.filter(g => g.id !== id);
     });
 
+    const uploadFiles = flow(function* uploadFiles(payload) {
+      const files = yield api.uploadFiles(payload);
+
+      if (files) {
+        self.current.files = self.current.files.concat(files);
+        // self.current.title = "Look2";
+      }
+    });
+
+    const deleteFile = flow(function* deleteFile(fileId) {
+      yield api.deleteFile({ fileId });
+      debugger;
+      self.current.files = self.current.files.filter(file => file.id != fileId);
+      // self.current.title = Math.random() + "";
+      debugger;
+    });
+
     return {
       setPage,
       createGroup,
@@ -257,7 +274,9 @@ const GroupsStore = types
       setCurrentConversation,
       getConversation,
       sendPost,
-      deleteGroup
+      deleteGroup,
+      uploadFiles,
+      deleteFile
     };
   });
 

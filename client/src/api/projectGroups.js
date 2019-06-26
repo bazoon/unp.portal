@@ -96,5 +96,15 @@ export default {
   },
   deleteGroup(id) {
     return api.delete(`api/projectGroups/${id}`);
+  },
+  uploadFiles(payload) {
+    return api
+      .post("api/ProjectGroups/files", payload)
+      .then(({ data }) => data);
+  },
+  deleteFile(payload) {
+    return api
+      .delete("api/ProjectGroups/files", payload)
+      .then(({ data }) => data);
   }
 };
