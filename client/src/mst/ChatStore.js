@@ -44,16 +44,17 @@ const ChatStore = types
         }
       });
 
-      socket.on("private-chat-created", ({ chat, userId, selectedUserId }) => {
-        console.log(userId, selectedUserId, chat);
-
-        if (
-          chat.firstUserId == userId ||
-          chat.firstUserId == selectedUserId ||
-          chat.secondUserId == userId ||
-          chat.secondUserId == selectedUserId
-        ) {
-          self.addChannel(chat);
+      socket.on("private-chat-created", chat => {
+        const { userId } = self.currentUserStore;
+        const { id, firstUser, secondUser } = chat;
+        if (firstUser.id == userId || secondUser.id == userId) {
+          const newChat = {
+            id: id,
+            avatar:
+              firstUser.id == userId ? secondUser.avatar : firstUser.avatar,
+            name: firstUser.id == userId ? secondUser.name : firstUser.name
+          };
+          self.addChannel(newChat);
           joinChannels(self.channels);
         }
       });
@@ -106,16 +107,9 @@ const ChatStore = types
       });
     });
 
-    const createPrivateChat = flow(function* createPrivateChat(
-      userId,
-      selectedUserId
-    ) {
+    const createPrivateChat = flow(function* createPrivateChat(selectedUserId) {
       const chat = yield api.createPrivateChannel({ selectedUserId });
-      socket.emit("private-chat-created", {
-        chat,
-        userId,
-        selectedUserId
-      });
+      socket.emit("private-chat-created", chat);
     });
 
     const connectSocket = function() {
@@ -123,6 +117,10 @@ const ChatStore = types
       socket.query.token = token;
       console.log("connecting with", token);
       socket.connect();
+    };
+
+    const setCurrentUserStore = function setCurrentUserStore(currentUserStore) {
+      self.currentUserStore = currentUserStore;
     };
 
     return {
@@ -134,7 +132,8 @@ const ChatStore = types
       sendChatMessage,
       sendChatFiles,
       createPrivateChat,
-      connectSocket
+      connectSocket,
+      setCurrentUserStore
     };
   });
 

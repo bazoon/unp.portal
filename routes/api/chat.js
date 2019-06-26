@@ -109,6 +109,8 @@ router.post("/channels/createPrivate", async ctx => {
   const { selectedUserId } = ctx.request.body;
   const userId = ctx.user.id;
 
+  const user = await models.User.findOne({ where: userId });
+
   const result = await models.User.findOne({
     where: { id: selectedUserId }
   }).then(selectedUser => {
@@ -131,10 +133,16 @@ router.post("/channels/createPrivate", async ctx => {
       ]).then(() => {
         return {
           id: channel.id,
-          avatar: getUploadFilePath(selectedUser.avatar),
-          name: selectedUser.name,
-          firstUserId: userId,
-          secondUserId: selectedUserId
+          firstUser: {
+            id: userId,
+            name: user.name,
+            avatar: getUploadFilePath(user.avatar)
+          },
+          secondUser: {
+            id: selectedUserId,
+            name: selectedUser.name,
+            avatar: getUploadFilePath(selectedUser.avatar)
+          }
         };
       });
     });

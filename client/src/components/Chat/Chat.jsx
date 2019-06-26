@@ -60,14 +60,10 @@ const colors = [
   Math.floor(Math.random() * 16777215).toString(16)
 ];
 
-const rightPanelStates = {
+const chatStates = {
   chat: 0,
-  createGroup: 1
-};
-
-const leftPanelStates = {
-  channels: 0,
-  users: 1
+  create: 1,
+  private: 2
 };
 
 @inject("currentUserStore")
@@ -96,8 +92,7 @@ class Chat extends Component {
       isNewChannelWindowOpen: false,
       isNewUserWindowOpen: false,
       isJoinWindowOpen: false,
-      rightPanelState: rightPanelStates.chat,
-      leftPanelState: leftPanelStates.channels,
+      chatState: chatStates.chat,
       isUploadVisible: false,
       files: [],
       selectedUserId: undefined
@@ -447,33 +442,29 @@ class Chat extends Component {
 
   handleViewMessages = () => {
     this.setState({
-      rightPanelState: rightPanelStates.chat,
-      leftPanelState: leftPanelStates.channels
+      chatState: chatStates.chat
     });
   };
 
   handleCreateGroup = () => {
     this.setState({
-      rightPanelState: rightPanelStates.createGroup
+      chatState: chatStates.create
     });
   };
 
   handleCreatePrivateChat = () => {
     this.props.chatStore
-      .createPrivateChat(
-        this.props.currentUserStore.id,
-        this.state.selectedUserId
-      )
+      .createPrivateChat(this.state.selectedUserId)
       .then(() => {
         this.setState({
-          leftPanelState: leftPanelStates.channels
+          chatState: chatStates.chat
         });
       });
   };
 
   handleToggleUsers = () => {
     this.setState({
-      leftPanelState: leftPanelStates.users
+      chatState: chatStates.private
     });
   };
 
@@ -583,7 +574,7 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const isSocketConnected = chatSocket.connected;
-    const { rightPanelState, leftPanelState } = this.state;
+    const { chatState } = this.state;
 
     const chatIndicatorCls = cn("chat__indicator", {
       chat__indicator_connected: isSocketConnected
@@ -608,23 +599,29 @@ class Chat extends Component {
                 />
               </div>
 
-              {leftPanelState === leftPanelStates.channels ? (
+              {chatState === chatStates.chat && (
                 <div className="chat__channels">{this.renderChatChanels()}</div>
-              ) : (
+              )}
+
+              {chatState === chatStates.create && (
+                <div className="chat__channels" />
+              )}
+
+              {chatState === chatStates.private && (
                 <div className="chat__users">{this.renderUsers()}</div>
               )}
 
               <div className="chat__footer-controls">
                 <ChatChannelsIcon
-                  isActive={rightPanelState === rightPanelStates.chat}
+                  isActive={chatState === chatStates.chat}
                   onClick={this.handleViewMessages}
                 />
                 <AddChatIcon
-                  isActive={rightPanelState === rightPanelStates.createGroup}
+                  isActive={chatState === chatStates.create}
                   onClick={this.handleCreateGroup}
                 />
                 <ChatUserIcon
-                  isActive={leftPanelState === leftPanelStates.users}
+                  isActive={chatState === chatStates.private}
                   onClick={this.handleToggleUsers}
                 />
               </div>
@@ -633,40 +630,12 @@ class Chat extends Component {
               <div className="chat__talk">
                 <div className="chat__talk-spin">{isLoading && <Spin />}</div>
 
-                {/* <div className="chat__search-controls">
-                <Tooltip placement="bottom" title="Создать канал">
-                  <Button icon="plus" onClick={this.handleAddChannel} />
-                </Tooltip>
-                <Tooltip placement="bottom" title="Присоединится к каналу">
-                  <Button icon="link" onClick={this.handleJoinChannel} />
-                </Tooltip>
-                <Tooltip placement="bottom" title="Создать приватный чат">
-                  <Button icon="user-add" onClick={this.handleAddNewUser} />
-                </Tooltip>
-
-                <Button icon="more" onClick={this.handleLoadMore} />
-              </div> */}
-                {rightPanelState === rightPanelStates.chat
-                  ? this.renderMessages()
-                  : this.renderGroupCreation()}
+                {chatState === chatStates.chat && this.renderMessages()}
+                {chatState === chatStates.private && <div />}
+                {chatState === chatStates.create && this.renderGroupCreation()}
               </div>
             </div>
           </div>
-          <NewChannel
-            isOpen={this.state.isNewChannelWindowOpen}
-            onOk={this.handleNewChannelOk}
-            onCancel={this.handleNewChannelCancel}
-          />
-          <NewUser
-            isOpen={this.state.isNewUserWindowOpen}
-            onOk={this.handleNewUserOk}
-            onCancel={this.handleNewUserCancel}
-          />
-          <JoinChannel
-            isOpen={this.state.isJoinWindowOpen}
-            onOk={this.handleJoinChannelOk}
-            onCancel={this.handleJoinChannelCancel}
-          />
         </Drawer>
         <UploadWindow
           visible={this.state.isUploadVisible}
