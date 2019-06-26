@@ -10,6 +10,7 @@ const Op = Sequelize.Op;
 const koaBody = require("koa-body");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
+const { fileOwners } = require("../../utils/constants");
 
 router.get("/channels/all", async (ctx, next) => {
   const response = await models.Channel.findAll({
@@ -271,7 +272,7 @@ router.post("/upload", koaBody({ multipart: true }), async ctx => {
       return {
         file: f.name,
         size: f.size,
-        type: "message",
+        entityType: fileOwners.message,
         entityId: message.id
       };
     }),

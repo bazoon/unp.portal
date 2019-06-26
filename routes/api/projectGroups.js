@@ -11,6 +11,7 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 const notificationService = require("../../utils/notifications");
+const { fileOwners } = require("../../utils/constants");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
@@ -39,7 +40,8 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
         return {
           userId,
           file: doc.name,
-          groupId: group.id,
+          entityType: fileOwners.group,
+          entityId: group.id,
           size: doc.size
         };
       })
@@ -407,7 +409,8 @@ router.get("/:id", async (ctx, next) => {
 
   const files = await models.File.findAll({
     where: {
-      groupId: id
+      entityType: fileOwners.group,
+      entityId: id
     }
   });
 
@@ -566,7 +569,8 @@ router.post("/conversations", koaBody({ multipart: true }), async ctx => {
       return {
         userId,
         file: file.name,
-        conversationId: conversation.id,
+        entityType: fileOwners.conversation,
+        entityId: conversation.id,
         size: conversation.size
       };
     }),

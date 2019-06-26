@@ -6,6 +6,7 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const koaBody = require("koa-body");
 const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
+const { fileOwners } = require("../../utils/constants");
 
 router.get("/:id", async (ctx, next) => {
   const { id } = ctx.params;
@@ -15,7 +16,8 @@ router.get("/:id", async (ctx, next) => {
   });
   const files = await models.File.findAll({
     where: {
-      conversation_id: conversation.id
+      entityId: conversation.id,
+      entityType: fileOwners.conversation
     }
   });
 

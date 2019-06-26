@@ -8,6 +8,7 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const uploadFiles = require("../../utils/uploadFiles");
 const notificationService = require("../../utils/notifications");
+const { fileOwners } = require("../../utils/constants");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const {

@@ -2,6 +2,7 @@ const models = require("../../../models");
 const Sequelize = require("sequelize");
 const getUploadFilePath = require("../../../utils/getUploadFilePath");
 const uploadFiles = require("../../../utils/uploadFiles");
+const { fileOwners } = require("../../../utils/constants");
 
 const createPost = async function createPost({
   text,
@@ -31,7 +32,8 @@ const createPost = async function createPost({
     files.map(file => ({
       file: file.name,
       size: file.size,
-      postId: postId
+      entityType: fileOwners.post,
+      entityId: postId
     })),
     { returning: true }
   );
@@ -62,7 +64,7 @@ const getPosts = async function getPosts(query) {
   const postFilesPromises = posts.map(async post => {
     const filesQuery = `select files.id, files.file, files.size
                         from files
-                        where files.post_id = ${post.id}`;
+                        where files.entity_id = ${post.id}`;
     const files = await models.sequelize.query(filesQuery).then(f => f[0]);
 
     return {
