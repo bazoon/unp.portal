@@ -34,6 +34,18 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     accessType
   });
 
+  await models.File.bulkCreate(
+    files.map(file => {
+      return {
+        userId,
+        file: file.name,
+        entityType: fileOwners.event,
+        entityId: event.id,
+        size: file.size
+      };
+    })
+  );
+
   const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
   if (accessType == 1) {
     await models.EventAccess.bulkCreate(
@@ -46,15 +58,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       })
     );
 
-    // await models.UserEvent.bulkCreate(
-    //   accessIds.map(id => {
-    //     return {
-    //       eventId: event.id,
-    //       userId: id
-    //     };
-    //   })
-    // );
-
     await notificationService.eventCreated({
       userId,
       title: event.title,
@@ -64,15 +67,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   } else if (accessType == 2) {
     const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
     const users = (await models.sequelize.query(usersQuery))[0];
-
-    // await models.UserEvent.bulkCreate(
-    //   users.map(u => {
-    //     return {
-    //       eventId: event.id,
-    //       userId: u.user_id
-    //     };
-    //   })
-    // );
 
     await models.EventAccess.bulkCreate(
       accessIds.map(id => {

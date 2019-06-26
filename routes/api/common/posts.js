@@ -25,7 +25,8 @@ const createPost = async function createPost({
     groupId: groupId,
     conversationId: conversationId,
     userId: userId,
-    parentId: postId
+    parentId: postId,
+    userId
   });
 
   const createdFiles = await models.File.bulkCreate(

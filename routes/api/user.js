@@ -8,10 +8,16 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const fileName = __dirname + "/users.json";
 const expiresIn = 60 * 60 * 24;
 
-async function login(userName, password) {
-  const user = await models.User.findOne({ where: { name: userName } });
+async function login(login, password) {
+  const user = await models.User.findOne({ where: { login } });
+
+  if (!user) {
+    ctx.status = 404;
+    return;
+  }
+
   const token = jwt.sign(
-    { userName, id: user.id, isAdmin: user.isAdmin },
+    { userName: user.name, id: user.id, isAdmin: user.isAdmin },
     process.env.API_TOKEN,
     {
       expiresIn: expiresIn
@@ -25,7 +31,7 @@ async function login(userName, password) {
       userId: user.id,
       token,
       isAdmin: user.isAdmin,
-      userName,
+      userName: user.name,
       avatar: getUploadFilePath(user.avatar)
     };
   } else {

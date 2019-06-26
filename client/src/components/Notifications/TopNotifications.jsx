@@ -17,6 +17,24 @@ class TopNotifications extends Component {
     };
   }
 
+  clikOutsideListener = e => {
+    const { target } = e;
+    const popover = target.closest(".ant-popover");
+    if (!popover) {
+      this.setState({
+        visible: false
+      });
+    }
+  };
+
+  componentDidMount() {
+    document.body.addEventListener("click", this.clikOutsideListener);
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener("click", this.clikOutsideListener);
+  }
+
   handleSaw = id => {
     this.props.notificationsStore.markAsSeen(id);
   };

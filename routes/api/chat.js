@@ -255,7 +255,8 @@ router.post("/send", (req, res) => {
 
 // Uploads
 router.post("/upload", koaBody({ multipart: true }), async ctx => {
-  const { channelId, userId } = ctx.request.body;
+  const { channelId } = ctx.request.body;
+  const userId = ctx.user.id;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
@@ -273,7 +274,8 @@ router.post("/upload", koaBody({ multipart: true }), async ctx => {
         file: f.name,
         size: f.size,
         entityType: fileOwners.message,
-        entityId: message.id
+        entityId: message.id,
+        userId
       };
     }),
     { returning: true }
