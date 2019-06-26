@@ -21,11 +21,17 @@ class RenderFiles extends Component {
 
       const all = Promise.all(imageUrlPromises);
       all.then(fileInfo => {
-        this.setState({
-          fileInfo
-        });
+        if (!this.isUnmounted) {
+          this.setState({
+            fileInfo
+          });
+        }
       });
     }
+  }
+
+  componentWillUnmount() {
+    this.isUnmounted = true;
   }
 
   isImage(name) {
