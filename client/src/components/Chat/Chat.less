@@ -206,14 +206,52 @@
 
     &-title {
       font-size: 14px;
-    
     }
 
     &-last {
       color: #909090;
     }
 
+    &-item {
+      padding: 10px;
+      display: flex;
+      cursor: pointer;
+      align-items: center;
+      margin-left: 10px;
+      &_active {
+        background: #ebebeb;
+      }
+      &:last-child {
+        margin-bottom: 0px;
+      }
+      border-bottom: solid 1px #d8d8d8;
+    }
 
+    &-avatar img {
+      border-radius: 50%;
+      margin-right: 16px;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+
+    &-avatar .placeholder {
+      background-color: #d8d8d8;
+      border-radius: 50%;
+      margin-right: 16px;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+  }
+
+  &__users {
+    flex: 1;
+    overflow-y: auto;
+
+    &-name {
+      font-size: 14px;
+    }
 
     &-item {
       padding: 10px;

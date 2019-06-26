@@ -27,6 +27,8 @@ class Chat {
   onConnection(socket) {
     let userName;
     let decoded;
+
+    this.socket = socket;
     console.log("onConnection");
 
     const token = socket.handshake.query && socket.handshake.query.token;
@@ -57,6 +59,10 @@ class Chat {
       this.onChannelFileMessage.bind(this, {})
     );
     this.socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
+    this.socket.on(
+      "private-chat-created",
+      this.onPrivateChatCreated.bind(this)
+    );
   }
 
   onDisconnect(socket) {
@@ -96,6 +102,11 @@ class Chat {
         });
       }
     });
+  }
+
+  onPrivateChatCreated(chat) {
+    console.log("Adding new chat", chat);
+    this.io.emit("private-chat-created", chat);
   }
 }
 

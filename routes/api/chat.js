@@ -39,10 +39,11 @@ router.get("/channels", async (ctx, next) => {
   const [channels] = await models.sequelize.query(query);
 
   const promises = channels.map(async channel => {
-    if (channel.firstUserId && channel.secondUserId) {
-      if (channel.firstUserId == userId) {
+    console.log(channel.first_user_id, channel.second_user_id);
+    if (channel.first_user_id && channel.second_user_id) {
+      if (channel.first_user_id == userId) {
         return models.User.findOne({
-          where: { id: channel.secondUserId }
+          where: { id: channel.second_user_id }
         }).then(user => {
           return {
             id: channel.id,
@@ -52,7 +53,7 @@ router.get("/channels", async (ctx, next) => {
         });
       } else {
         return models.User.findOne({
-          where: { id: channel.firstUserId }
+          where: { id: channel.first_user_id }
         }).then(user => {
           return {
             id: channel.id,
@@ -67,7 +68,8 @@ router.get("/channels", async (ctx, next) => {
                           where channel_id=${channel.id} 
                           order by created_at desc
                           limit 1`;
-    const message = (await models.sequelize.query(messageQuery))[0][0].message;
+    const messageResult = await models.sequelize.query(messageQuery);
+    const message = messageResult[0][0] && messageResult[0][0].message;
 
     return Promise.resolve({
       id: channel.id,
@@ -104,7 +106,8 @@ router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
 });
 
 router.post("/channels/createPrivate", async ctx => {
-  const { selectedUserId, userId } = ctx.request.body;
+  const { selectedUserId } = ctx.request.body;
+  const userId = ctx.user.id;
 
   const result = await models.User.findOne({
     where: { id: selectedUserId }
@@ -129,11 +132,14 @@ router.post("/channels/createPrivate", async ctx => {
         return {
           id: channel.id,
           avatar: getUploadFilePath(selectedUser.avatar),
-          name: selectedUser.name
+          name: selectedUser.name,
+          firstUserId: userId,
+          secondUserId: selectedUserId
         };
       });
     });
   });
+
   ctx.body = result;
 });
 

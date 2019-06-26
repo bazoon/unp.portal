@@ -56,7 +56,7 @@ router.post("/signup", async ctx => {
     login,
     password
   } = ctx.request.body;
-  const userName = `${firstName} ${surName} ${lastName}`;
+  const userName = `${surName} ${firstName} ${lastName}`;
 
   if (!userName || !password) {
     ctx.status = 500;

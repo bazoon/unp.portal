@@ -5,7 +5,8 @@ const Notification = types.model("Notification", {
   userId: types.maybeNull(types.number),
   description: types.maybeNull(types.string),
   avatar: types.maybeNull(types.string),
-  createdAt: types.maybeNull(types.string)
+  createdAt: types.maybeNull(types.string),
+  seen: types.maybeNull(types.boolean)
 });
 
 export default Notification;

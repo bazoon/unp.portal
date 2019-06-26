@@ -165,7 +165,7 @@ class Users extends Component {
             <div className="user__groups">
               {groups.map(group => {
                 return (
-                  <div className="user__group">
+                  <div key={group.id} className="user__group">
                     <div className="user__group-info">
                       <div className="user__group-avatar">
                         {group.avatar && <img src={group.avatar} />}

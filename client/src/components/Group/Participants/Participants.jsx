@@ -101,27 +101,32 @@ class Participants extends Component {
   renderMenu(id, isAdmin, state) {
     return (
       <div>
-        <div
-          onClick={() => this.handleRemoveFromGroup(id)}
-          className="page-participants__link"
-        >
-          Удалить из группы
-        </div>
-        {isAdmin ? (
-          <div
-            onClick={() => this.handleRemoveAdmin(id)}
-            className="page-participants__link"
-          >
-            Удалить из админов
-          </div>
-        ) : (
-          <div
-            onClick={() => this.handleMakeAdmin(id)}
-            className="page-participants__link"
-          >
-            Назначить админом
-          </div>
+        {state === 1 && (
+          <>
+            <div
+              onClick={() => this.handleRemoveFromGroup(id)}
+              className="page-participants__link"
+            >
+              Удалить из группы
+            </div>
+            {isAdmin ? (
+              <div
+                onClick={() => this.handleRemoveAdmin(id)}
+                className="page-participants__link"
+              >
+                Удалить из админов
+              </div>
+            ) : (
+              <div
+                onClick={() => this.handleMakeAdmin(id)}
+                className="page-participants__link"
+              >
+                Назначить админом
+              </div>
+            )}
+          </>
         )}
+
         {state === 2 && (
           <div
             className="page-participants__link"

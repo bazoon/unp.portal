@@ -97,9 +97,9 @@ const api = {
     return axios
       .put("/" + url, data, config)
       .then(data => {
-        notification.success({
-          message: "Данные успешно обновлены"
-        });
+        // notification.success({
+        //   message: "Данные успешно обновлены"
+        // });
         return data;
       })
       .catch(e => {

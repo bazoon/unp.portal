@@ -30,6 +30,7 @@ const { TextArea } = Input;
 @inject("usersStore")
 @inject("organizationsStore")
 @inject("positionsStore")
+@inject("currentUserStore")
 @observer
 class GroupForm extends Component {
   constructor(props) {
@@ -336,13 +337,13 @@ class GroupForm extends Component {
             {getFieldDecorator("password", {})(<Input />)}
           </Form.Item>
         </Row>
-        {user.isAdmin && (
+        {this.props.currentUserStore.isAdmin && (
           <Row>
-            <Form.Item label="Пароль" {...formItemLayout}>
+            <Form.Item label="Администратор" {...formItemLayout}>
               {getFieldDecorator("isAdmin", {
                 valuePropName: "checked",
                 initialValue: user.isAdmin
-              })(<Checkbox>Администратор?</Checkbox>)}
+              })(<Checkbox />)}
             </Form.Item>
           </Row>
         )}

@@ -22,16 +22,13 @@ class UploadForm extends Component {
     this.state = { fileList: [] };
   }
 
-  componentDidMount() {
-    console.log("CDM");
-  }
-
   handleDocsChanged = value => {
     this.props.onChange(value.fileList);
   };
 
-  handleFileNameChange = (e, doc) => {
-    doc.originFileObj = new File([doc.originFileObj], e.target.value);
+  handleFileNameChange = (e, doc, extension) => {
+    const name = extension ? `${e.target.value}.${extension}` : e.target.value;
+    doc.originFileObj = new File([doc.originFileObj], name);
     this.props.onChange(this.props.value.slice());
   };
 
@@ -47,12 +44,13 @@ class UploadForm extends Component {
 
   renderFileInputs = docs => {
     return docs.map(doc => {
+      const [name, extension] = doc.name.split(".");
       return (
         <div className="upload-form__inputs" key={doc.name}>
           <Input
             className="upload-form__input"
-            onChange={e => this.handleFileNameChange(e, doc)}
-            defaultValue={doc.name}
+            onChange={e => this.handleFileNameChange(e, doc, extension)}
+            defaultValue={name}
           />
           <div
             className="upload-form__input-remove"

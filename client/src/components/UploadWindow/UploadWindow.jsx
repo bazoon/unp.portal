@@ -7,6 +7,11 @@ class UploadWindow extends Component {
     super(props);
   }
 
+  handleCancel = () => {
+    this.props.onChange([]);
+    this.props.onCancel();
+  };
+
   render() {
     const { value } = this.props;
 
@@ -18,8 +23,6 @@ class UploadWindow extends Component {
         onCancel={this.handleCancel}
         className="upload-form"
         width={800}
-        // footer={null}
-        onCancel={this.props.onCancel}
       >
         <UploadForm value={value} onChange={this.props.onChange} />
       </Modal>

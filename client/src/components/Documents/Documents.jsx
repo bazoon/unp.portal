@@ -11,7 +11,9 @@ import {
   Row,
   Col,
   Table,
-  message
+  message,
+  Popover,
+  Checkbox
 } from "antd";
 import "./Documents.less";
 import { Actions } from "jumpstate";
@@ -53,20 +55,9 @@ const columns = [
     key: "share",
     render: (value, record) => {
       return (
-        <ShareIcon
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            if (navigator.clipboard) {
-              navigator.clipboard
-                .writeText(`${location.origin}${record.url}`)
-                .then(() => {
-                  message.success("Скопировано");
-                });
-            } else {
-              message.success("Копирование недоступно");
-            }
-          }}
-        />
+        <a download href={record.url}>
+          <ShareIcon />
+        </a>
       );
     }
   }
@@ -79,7 +70,42 @@ class Documents extends Component {
     super(props);
     this.state = {
       docs: [],
-      isUploadVisible: false
+      isUploadVisible: false,
+      columns: [
+        {
+          title: "Наименование",
+          dataIndex: "name",
+          key: "title"
+        },
+        {
+          title: "",
+          dataIndex: "createdAt",
+          key: "type",
+          render: value => {
+            return moment(value).format("D MMMM YYYY HH:mm");
+          }
+        },
+        {
+          title: "Размер",
+          dataIndex: "size",
+          key: "size",
+          render: value => {
+            return value && prettyBytes(value, { locale: "ru" });
+          }
+        },
+        {
+          title: "Прделиться",
+          dataIndex: "share",
+          key: "share",
+          render: (value, record) => {
+            return (
+              <a download href={record.url}>
+                <ShareIcon />
+              </a>
+            );
+          }
+        }
+      ]
     };
   }
 
@@ -122,7 +148,7 @@ class Documents extends Component {
         showHeader={false}
         rowKey="id"
         dataSource={documents.slice()}
-        columns={columns}
+        columns={this.state.columns}
         pagination={{
           showQuickJumper: true
         }}
@@ -133,6 +159,31 @@ class Documents extends Component {
   componentDidMount() {
     this.props.documentsStore.loadAll();
   }
+
+  renderColumnMenu = () => {
+    return (
+      <>
+        <div>
+          <Checkbox
+            checked={this.state.checked}
+            disabled={this.state.disabled}
+            onChange={this.onChange}
+          >
+            Имя
+          </Checkbox>
+        </div>
+        <div>
+          <Checkbox
+            checked={this.state.checked}
+            disabled={this.state.disabled}
+            onChange={this.onChange}
+          >
+            Размер
+          </Checkbox>
+        </div>
+      </>
+    );
+  };
 
   render() {
     const { isUploadVisible } = this.state;
@@ -150,6 +201,9 @@ class Documents extends Component {
             <div className="documents__search">
               <Search placeholder="Поиск по файлам" />
             </div>
+            {/* <Popover trigger="click" content={this.renderColumnMenu()}>
+              <Button>Столбцы</Button>
+            </Popover> */}
             <div className="documents">
               {this.renderDocs(this.props.documentsStore.getAll())}
             </div>
@@ -161,6 +215,7 @@ class Documents extends Component {
 
               <UploadWindow
                 visible={isUploadVisible}
+                onOk={this.handleHideUpload}
                 onCancel={this.handleHideUpload}
                 onChange={this.handleDocsChanged}
                 value={this.state.docs}

@@ -120,6 +120,7 @@ class GroupForm extends Component {
               <UploadWindow
                 visible={isUploadVisible}
                 onCancel={this.handleHideUpload}
+                onOk={this.handleHideUpload}
               />
             )}
             <Button

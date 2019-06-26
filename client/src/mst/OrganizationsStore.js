@@ -17,10 +17,13 @@ const OrganizationsStore = types
     });
 
     const loadAll = flow(function* loadAll(payload) {
-      self.items = yield api.loadAll({
+      const items = yield api.loadAll({
         page: self.page,
         pageSize: self.pageSize
       });
+      if (items) {
+        self.items = items;
+      }
     });
 
     const setPage = function setPage(page) {

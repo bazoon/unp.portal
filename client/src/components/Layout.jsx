@@ -25,7 +25,6 @@ import AdminLayout from "./AdminLayout";
 import Logo from "../../images/logo";
 import ColorLogo from "../../images/top-logo";
 import PhoneIcon from "../../images/phone";
-import BellIcon from "../../images/bell";
 
 import { observer, inject } from "mobx-react";
 import TopNotifications from "./Notifications/TopNotifications";
@@ -114,26 +113,11 @@ class L extends Component {
                     </div>
 
                     <div className="header__icons">
-                      <Popover
-                        placement="bottom"
-                        content={
-                          <TopNotifications
-                            notifications={this.props.notificationsStore.unseen}
-                          />
-                        }
-                        trigger="click"
-                      >
-                        <Badge
-                          count={this.props.notificationsStore.items.length}
-                          className="notification-badge"
-                        >
-                          <BellIcon />
-                        </Badge>
-                      </Popover>
+                      <TopNotifications />
 
                       <Link
                         to={`/admin/users/edit/${
-                          this.props.currentUserStore.id
+                          this.props.currentUserStore.userId
                         }`}
                         style={{
                           display: "flex",

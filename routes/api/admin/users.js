@@ -68,6 +68,11 @@ router.get("/:id", async (ctx, next) => {
     ]
   });
 
+  if (!user) {
+    ctx.status = 404;
+    return;
+  }
+
   ctx.body = {
     id: user.id,
     isAdmin: user.isAdmin,
@@ -180,7 +185,7 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
     name,
     login,
     avatar: (avatar && avatar.name) || newUser.avatar,
-    isAdmin,
+    isAdmin: isAdmin === "true",
     OrganizationId: organizationId,
     PositionId: positionId
   });

@@ -408,6 +408,7 @@ class GroupPosts extends Component {
           value={uploadFiles}
           visible={isUploadVisible}
           onCancel={this.handleHideUpload}
+          onOk={this.handleHideUpload}
           onChange={this.handleChangeUpload}
         />
         <UploadWindow

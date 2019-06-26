@@ -390,7 +390,7 @@ router.get("/:id", async (ctx, next) => {
                           left join participant_roles on (participants.participant_role_id = participant_roles.id)
                           left join positions on (users.position_id = positions.id)
                           where (participants.project_group_id = ${id})
-                          order by level`;
+                          order by state desc, level`;
 
   const groupResult = await models.sequelize.query(query);
   const group = groupResult[0][0];

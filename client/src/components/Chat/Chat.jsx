@@ -60,9 +60,14 @@ const colors = [
   Math.floor(Math.random() * 16777215).toString(16)
 ];
 
-const chatStates = {
+const rightPanelStates = {
   chat: 0,
   createGroup: 1
+};
+
+const leftPanelStates = {
+  channels: 0,
+  users: 1
 };
 
 @inject("currentUserStore")
@@ -91,9 +96,11 @@ class Chat extends Component {
       isNewChannelWindowOpen: false,
       isNewUserWindowOpen: false,
       isJoinWindowOpen: false,
-      rightPanelState: chatStates.chat,
+      rightPanelState: rightPanelStates.chat,
+      leftPanelState: leftPanelStates.channels,
       isUploadVisible: false,
-      files: []
+      files: [],
+      selectedUserId: undefined
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -440,13 +447,39 @@ class Chat extends Component {
 
   handleViewMessages = () => {
     this.setState({
-      rightPanelState: chatStates.chat
+      rightPanelState: rightPanelStates.chat,
+      leftPanelState: leftPanelStates.channels
     });
   };
 
   handleCreateGroup = () => {
     this.setState({
-      rightPanelState: chatStates.createGroup
+      rightPanelState: rightPanelStates.createGroup
+    });
+  };
+
+  handleCreatePrivateChat = () => {
+    this.props.chatStore
+      .createPrivateChat(
+        this.props.currentUserStore.id,
+        this.state.selectedUserId
+      )
+      .then(() => {
+        this.setState({
+          leftPanelState: leftPanelStates.channels
+        });
+      });
+  };
+
+  handleToggleUsers = () => {
+    this.setState({
+      leftPanelState: leftPanelStates.users
+    });
+  };
+
+  handleSelectUser = id => {
+    this.setState({
+      selectedUserId: id
     });
   };
 
@@ -482,6 +515,32 @@ class Chat extends Component {
             <div className="chat__channels-title">{channel.name}</div>
             <div className="chat__channels-last">{channel.lastMessage}</div>
           </div>
+        </div>
+      );
+    });
+  }
+
+  renderUsers() {
+    const { users } = this.props.usersStore;
+    const { selectedUserId } = this.state;
+
+    return users.map(user => {
+      const className = cn("chat__users-item", {
+        "chat__users-item_active": selectedUserId === user.id
+      });
+
+      return (
+        <div
+          key={user.id}
+          className={className}
+          onClick={() => this.handleSelectUser(user.id)}
+          onDoubleClick={this.handleCreatePrivateChat}
+        >
+          <div className="chat__users-avatar">
+            <img src={user.avatar} />
+          </div>
+
+          <div className="chat__users-name">{user.name}</div>
         </div>
       );
     });
@@ -524,7 +583,7 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const isSocketConnected = chatSocket.connected;
-    const { rightPanelState } = this.state;
+    const { rightPanelState, leftPanelState } = this.state;
 
     const chatIndicatorCls = cn("chat__indicator", {
       chat__indicator_connected: isSocketConnected
@@ -548,17 +607,26 @@ class Chat extends Component {
                   style={{ width: "100%" }}
                 />
               </div>
-              <div className="chat__channels">{this.renderChatChanels()}</div>
+
+              {leftPanelState === leftPanelStates.channels ? (
+                <div className="chat__channels">{this.renderChatChanels()}</div>
+              ) : (
+                <div className="chat__users">{this.renderUsers()}</div>
+              )}
+
               <div className="chat__footer-controls">
                 <ChatChannelsIcon
-                  isActive={rightPanelState === chatStates.chat}
+                  isActive={rightPanelState === rightPanelStates.chat}
                   onClick={this.handleViewMessages}
                 />
                 <AddChatIcon
-                  isActive={rightPanelState === chatStates.createGroup}
+                  isActive={rightPanelState === rightPanelStates.createGroup}
                   onClick={this.handleCreateGroup}
                 />
-                <ChatUserIcon />
+                <ChatUserIcon
+                  isActive={leftPanelState === leftPanelStates.users}
+                  onClick={this.handleToggleUsers}
+                />
               </div>
             </div>
             <div className="chat__right-panel">
@@ -578,7 +646,7 @@ class Chat extends Component {
 
                 <Button icon="more" onClick={this.handleLoadMore} />
               </div> */}
-                {rightPanelState === chatStates.chat
+                {rightPanelState === rightPanelStates.chat
                   ? this.renderMessages()
                   : this.renderGroupCreation()}
               </div>

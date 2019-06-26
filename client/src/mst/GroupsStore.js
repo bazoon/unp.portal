@@ -107,16 +107,18 @@ const GroupsStore = types
 
     const getCurrent = flow(function* getCurrent(id) {
       const data = yield api.get(id);
-      const group = self.groups.find(g => g.id == id);
+      if (data) {
+        const group = self.groups.find(g => g.id == id);
 
-      if (group) {
-        Object.assign(group, data);
-        self.currentGroup = group.id;
-      } else {
-        self.groups.push(data);
-        self.currentGroup = data.id;
+        if (group) {
+          Object.assign(group, data);
+          self.currentGroup = group.id;
+        } else {
+          self.groups.push(data);
+          self.currentGroup = data.id;
+        }
+        self.setCurrentGroup(data.id);
       }
-      self.setCurrentGroup(data.id);
     });
 
     const getBackgrounds = flow(function* getBackgrounds() {

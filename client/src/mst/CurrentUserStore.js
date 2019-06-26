@@ -25,7 +25,7 @@ const CurrentUserStore = types
 
     const setData = function setData(data) {
       const { token, userName, userId, avatar, isAdmin } = data;
-
+      console.log(data);
       // self.id = userId;
       self.userId = userId;
       self.token = token;

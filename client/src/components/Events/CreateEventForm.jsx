@@ -195,6 +195,7 @@ class CreateEventForm extends Component {
               <UploadWindow
                 visible={isUploadVisible}
                 onCancel={this.handleHideUpload}
+                onOk={this.handleHideUpload}
               />
             )}
             <Button onClick={this.handleToggleUpload}>

@@ -261,6 +261,7 @@ class GroupFeed extends Component {
         {conversations.map(conversation => {
           return (
             <Conversation
+              key={conversation.id}
               id={conversation.id}
               showMenu
               name={conversation.name}

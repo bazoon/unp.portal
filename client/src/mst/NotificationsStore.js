@@ -8,7 +8,8 @@ const NotificationsStore = types
   })
   .views(self => ({
     get unseen() {
-      return self.items.slice(0, 5);
+      const u = self.items.filter(i => !i.seen);
+      return u;
     }
   }))
   .actions(self => {
@@ -19,8 +20,28 @@ const NotificationsStore = types
       }
     });
 
+    const mark = function(id) {
+      const item = self.items.find(i => i.id == id);
+      if (item) {
+        item.seen = true;
+      }
+    };
+
+    const markAsSeen = flow(function* markAsSeen(id) {
+      yield api.markAsSeen(id);
+      self.mark(id);
+    });
+
+    const markAllAsSeen = flow(function* markAllAsSeen() {
+      yield api.markAllAsSeen();
+      self.items = self.items.map(i => ({ ...i, seen: true }));
+    });
+
     return {
-      load
+      load,
+      markAsSeen,
+      mark,
+      markAllAsSeen
     };
   });
 
