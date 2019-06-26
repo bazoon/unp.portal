@@ -245,10 +245,7 @@ const GroupsStore = types
 
     const deleteFile = flow(function* deleteFile(fileId) {
       yield api.deleteFile({ fileId });
-      debugger;
       self.current.files = self.current.files.filter(file => file.id != fileId);
-      // self.current.title = Math.random() + "";
-      debugger;
     });
 
     return {

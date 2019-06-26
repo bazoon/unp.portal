@@ -44,7 +44,10 @@ class UploadForm extends Component {
 
   renderFileInputs = docs => {
     return docs.map(doc => {
-      const [name, extension] = doc.name.split(".");
+      const periodIndex = doc.name.lastIndexOf(".");
+      const name = doc.name.slice(0, periodIndex);
+      const extension = periodIndex > 0 && doc.name.slice(periodIndex + 1);
+
       return (
         <div className="upload-form__inputs" key={doc.name}>
           <Input
