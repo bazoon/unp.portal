@@ -3,9 +3,7 @@ import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
 import MainMenu from "./MainMenu/MainMenu";
-import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
-import UserProfile from "./UserProfile/UserProfile";
 import Group from "./Group/Group";
 import Feed from "./Feed/Feed";
 import Laws from "./Laws/Laws";
@@ -34,7 +32,6 @@ class UserLayout extends Component {
               component={() => <ProjectGroups type="all" />}
             />
 
-            <Route path="/profile" component={() => <UserProfile />} />
             <Route
               exact
               path="/groups/:id/conversations/:conversationId"
@@ -75,25 +72,6 @@ class UserLayout extends Component {
             <Route path="/" component={() => <Feed />} />
           </Switch>
         </Col>
-        {/* <Col span={8}>
-            <Switch>
-              <Route
-                exact
-                path="/groups/:id"
-                component={props => (
-                  <>
-                    <Group {...props} />
-                  </>
-                )}
-              />
-              <Route path="/groups" component={null} />
-              <Route
-                exact
-                path="/"
-                component={props => <RightMenu {...props} />}
-              />
-            </Switch>
-          </Col> */}
       </Row>
     );
   }

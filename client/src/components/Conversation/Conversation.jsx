@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import Participants from "../Group/Participants";
 import JoinButton from "../ProjectGroups/JoinButton";
 import LeaveButton from "../ProjectGroups/LeaveButton";
-import Files from "../Group/Files";
+import Files from "../Files/Files";
 import PinnedIcon from "../../../images/pin";
 import { observer, inject } from "mobx-react";
 import GroupButton from "../ProjectGroups/GroupButton";

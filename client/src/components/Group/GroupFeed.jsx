@@ -31,7 +31,7 @@ import BackgroundSlider from "./BackgroundSlider";
 import EditIcon from "../../../images/edit";
 import DoneEditIcon from "../../../images/done-edit";
 import ConversationForm from "./Conversation/ConversationForm";
-import Files from "./Files";
+import Files from "../Files/Files";
 import MoreIcon from "../../../images/more";
 import ChatIcon from "../../../images/chat";
 import { observer, inject } from "mobx-react";
@@ -323,8 +323,8 @@ class GroupFeed extends Component {
 
   renderFiles(files) {
     return (
-      <div className="group__files">
-        <div className="group__files-title">Прикрепленные файлы</div>
+      <div className="files group__files">
+        <div className="files-title">Прикрепленные файлы</div>
         <Files files={files} onDelete={this.handleDeleteFile} />
         <Button onClick={this.handleShowUpload} icon="upload">
           Добавить файл

@@ -4,9 +4,7 @@ import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
 
 import MainMenu from "./MainMenu/MainMenu";
-import RightMenu from "./RightMenu/RightMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
-import UserProfile from "./UserProfile/UserProfile";
 import Group from "./Group/Group";
 import GroupSidebar from "./Group/GroupSidebar";
 import Feed from "./Feed/Feed";
