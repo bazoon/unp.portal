@@ -12,56 +12,19 @@ import {
   Col,
   Table,
   message,
-  Popover,
+  Popconfirm,
   Checkbox
 } from "antd";
 import "./Documents.less";
-import { Actions } from "jumpstate";
-import { connect } from "react-redux";
 import moment from "moment";
 import prettyBytes from "pretty-bytes";
 import { observer, inject } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import ShareIcon from "../../../images/share";
 import UploadWindow from "../UploadWindow/UploadWindow";
 import RenderFiles from "../ProjectGroups/RenderFiles";
 
 const { Search } = Input;
-
-const columns = [
-  {
-    title: "Наименование",
-    dataIndex: "name",
-    key: "title"
-  },
-  {
-    title: "",
-    dataIndex: "createdAt",
-    key: "type",
-    render: value => {
-      return moment(value).format("D MMMM YYYY HH:mm");
-    }
-  },
-  {
-    title: "Размер",
-    dataIndex: "size",
-    key: "size",
-    render: value => {
-      return value && prettyBytes(value, { locale: "ru" });
-    }
-  },
-  {
-    title: "Прделиться",
-    dataIndex: "share",
-    key: "share",
-    render: (value, record) => {
-      return (
-        <a download href={record.url}>
-          <ShareIcon />
-        </a>
-      );
-    }
-  }
-];
 
 @inject("documentsStore")
 @observer
@@ -94,9 +57,20 @@ class Documents extends Component {
           }
         },
         {
+          title: "Описание",
+          dataIndex: "description",
+          key: "description"
+        },
+        {
+          title: "Автор",
+          dataIndex: "author",
+          key: "author"
+        },
+        {
           title: "Прделиться",
           dataIndex: "share",
           key: "share",
+          fixed: "right",
           render: (value, record) => {
             return (
               <a download href={record.url}>
@@ -104,10 +78,39 @@ class Documents extends Component {
               </a>
             );
           }
+        },
+        {
+          title: "Удалить",
+          dataIndex: "delete",
+          key: "delete",
+          fixed: "right",
+          render: (value, record) => {
+            return (
+              <Popconfirm
+                title="Удалить файл?"
+                onConfirm={() => this.handleDelete(record.id)}
+              >
+                <Icon type="delete" />
+              </Popconfirm>
+            );
+          }
         }
       ]
     };
   }
+
+  renderExpandedRow = (description, author) => {
+    return (
+      <div>
+        <div>{description}</div>
+        <div>Автор: {author}</div>
+      </div>
+    );
+  };
+
+  handleDelete = id => {
+    this.props.documentsStore.deleteFile(id);
+  };
 
   handleToggleUpload = () => {
     this.setState({
@@ -149,6 +152,11 @@ class Documents extends Component {
         rowKey="id"
         dataSource={documents.slice()}
         columns={this.state.columns}
+        scroll={{ x: 1300 }}
+        // expandedRowRender={record => {
+        //   if (!isAlive(record)) return null;
+        //   return this.renderExpandedRow(record.description, record.author);
+        // }}
         pagination={{
           showQuickJumper: true
         }}
@@ -205,7 +213,7 @@ class Documents extends Component {
               <Button>Столбцы</Button>
             </Popover> */}
             <div className="documents">
-              {this.renderDocs(this.props.documentsStore.getAll())}
+              {this.renderDocs(this.props.documentsStore.documents)}
             </div>
           </Col>
           <Col span={8}>

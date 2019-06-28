@@ -84,6 +84,13 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       eventId: event.id,
       recipientsIds: users.map(u => u.id).concat([userId])
     });
+  } else {
+    await notificationService.eventCreated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: [userId]
+    });
   }
 
   await models.EventAccess.findOrCreate({

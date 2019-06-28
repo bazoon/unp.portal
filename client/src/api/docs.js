@@ -8,5 +8,8 @@ export default {
   },
   upload(payload) {
     return api.post("api/files", payload);
+  },
+  deleteFile(id) {
+    return api.delete(`api/files/${id}`);
   }
 };

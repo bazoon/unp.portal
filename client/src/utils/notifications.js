@@ -19,9 +19,21 @@ function createLink(entity, entityId, content) {
       </Link>
     ),
     user: (
-      <Link key={content} to={`/users/view/${entityId}`}>
+      <Link key={content} to={`/admin/users/view/${entityId}`}>
         {formattedContent}
       </Link>
+    ),
+    file: () => {
+      return (
+        <a className="notification__file" key={entityId} href={entityId}>
+          {content}
+        </a>
+      );
+    },
+    file_removed: (
+      <span key={content} className="notification__file">
+        {content}
+      </span>
     ),
     conversation: () => {
       const [groupId, conversationId] = entityId.split("-");
@@ -48,12 +60,13 @@ export default {
     const parts = text.split("#");
     const re = /(.+):(\w+):(.+)/;
 
-    return parts.map(part => {
+    return parts.filter(Boolean).map(part => {
       const tagMatch = part.match(re);
       if (tagMatch) {
         const [_, content, entity, entityId] = tagMatch;
         return createLink(entity, entityId, content);
       }
+
       return <span key={part}>{part}</span>;
     });
   }

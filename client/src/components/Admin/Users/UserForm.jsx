@@ -168,7 +168,7 @@ class GroupForm extends Component {
   };
 
   handleChangeAvatar = info => {
-    getImageUrlFromFile(info.file).then(imageUrl => {
+    getImageUrlFromFile(info.file).then(({ imageUrl }) => {
       this.setState({
         avatarUrl: imageUrl,
         avatarFile: info.fileList

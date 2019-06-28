@@ -28,6 +28,7 @@ import {
 const { Search } = Input;
 
 @inject("usersStore")
+@inject("currentUserStore")
 @observer
 class Users extends Component {
   constructor(props) {
@@ -104,7 +105,10 @@ class Users extends Component {
   render() {
     const { usersStore } = this.props;
     const user = usersStore.currentUser || {};
+    const isSuperAdmin = this.props.currentUserStore.isAdmin;
     const groups = usersStore.currentUserGroups || [];
+    const canEdit =
+      isSuperAdmin || user.id === this.props.currentUserStore.userId;
 
     return (
       <>
@@ -159,7 +163,9 @@ class Users extends Component {
                   </tr>
                 </tbody>
               </table>
-              <Button onClick={this.handleEditUser}>Редактировать</Button>
+              {canEdit && (
+                <Button onClick={this.handleEditUser}>Редактировать</Button>
+              )}
             </div>
 
             <div className="user__groups">

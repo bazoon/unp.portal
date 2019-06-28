@@ -33,6 +33,7 @@ class CreateCard extends Component {
     const formData = new FormData();
 
     form.validateFields((err, fields) => {
+      if (err) return;
       const keys = Object.keys(fields);
       const avatar = fields.avatar && fields.avatar.file;
       delete fields.avatar;

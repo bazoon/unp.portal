@@ -9,11 +9,11 @@ const getUploadFilePath = require("../../../utils/getUploadFilePath");
 
 router.get("/user", async (ctx, next) => {
   const { isAdmin } = ctx.user;
-  if (!isAdmin) {
-    ctx.status = 403;
-    ctx.body = "Not authorized!";
-    return;
-  }
+  // if (!isAdmin) {
+  //   ctx.status = 403;
+  //   ctx.body = "Not authorized!";
+  //   return;
+  // }
 
   const { page, pageSize, id } = ctx.request.query;
   const userId = ctx.user.id;

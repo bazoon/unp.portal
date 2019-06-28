@@ -6,15 +6,6 @@ const DocumentsStore = types
   .model("DocumentsStore", {
     documents: types.array(File)
   })
-  .views(self => {
-    function getAll() {
-      return self.documents;
-    }
-
-    return {
-      getAll
-    };
-  })
   .actions(self => {
     const loadAll = flow(function* loadAll() {
       const documents = yield api.loadAll();
@@ -32,10 +23,16 @@ const DocumentsStore = types
       self.documents.push(f);
     }
 
+    const deleteFile = flow(function* deleteFile(id) {
+      yield api.deleteFile(id);
+      self.documents = self.documents.filter(d => d.id !== id);
+    });
+
     return {
       loadAll,
       upload,
-      push
+      push,
+      deleteFile
     };
   });
 

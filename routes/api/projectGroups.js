@@ -12,6 +12,7 @@ const uploadFiles = require("../../utils/uploadFiles");
 const { createPost, getPosts } = require("./common/posts");
 const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
+const { getGroupUsersIds, getGroupAdminsIds } = require("./common/groups");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
@@ -245,7 +246,6 @@ router.delete("/:id/subscriptions", async ctx => {
     };
   } else {
     // notifications
-
     await notificationService.groupParticipantLeft({
       userId,
       title: group.title,
@@ -902,27 +902,4 @@ async function canEditGroup(groupId, ctx) {
   }
 
   return true;
-}
-
-function getGroupUsersIds(projectGroupId) {
-  return models.Participant.findAll({
-    where: {
-      projectGroupId
-    }
-  }).map(a => a.userId);
-}
-
-function getGroupAdminsIds(projectGroupId) {
-  return models.Participant.findAll({
-    where: {
-      [Op.and]: [
-        {
-          projectGroupId
-        },
-        {
-          isAdmin: true
-        }
-      ]
-    }
-  }).map(a => a.userId);
 }

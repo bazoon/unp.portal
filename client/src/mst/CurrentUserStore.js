@@ -25,8 +25,6 @@ const CurrentUserStore = types
 
     const setData = function setData(data) {
       const { token, userName, userId, avatar, isAdmin } = data;
-      console.log(data);
-      // self.id = userId;
       self.userId = userId;
       self.token = token;
       self.userName = userName;
@@ -57,11 +55,20 @@ const CurrentUserStore = types
       });
     };
 
+    const update = function(user) {
+      self.name = user.name;
+      self.avatar = user.avatar;
+      self.isAdmin = user.isAdmin;
+      localStorage.setItem("userName", user.name);
+      localStorage.setItem("avatar", user.avatar);
+    };
+
     return {
       login,
       signup,
       logout,
-      setData
+      setData,
+      update
     };
   });
 

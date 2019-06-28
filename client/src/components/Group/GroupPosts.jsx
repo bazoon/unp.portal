@@ -129,7 +129,7 @@ class GroupPosts extends Component {
     const uploadFiles = this.state.replyUploadFiles[post.id];
 
     if (e.charCode === 13) {
-      const originFiles = uploadFiles.map(f => f.originFileObj);
+      const originFiles = uploadFiles && uploadFiles.map(f => f.originFileObj);
       onReplySend(e.target.value, post, originFiles).then(() => {
         const postReplies = { ...this.state.postReplies };
         const replyUploadFiles = { ...this.state.replyUploadFiles };
@@ -415,6 +415,7 @@ class GroupPosts extends Component {
           value={replyUploadFiles[this.replyPostId] || []}
           visible={isReplyUploadVisible}
           onCancel={this.handleHideReplyUpload}
+          onOk={this.handleHideReplyUpload}
           onChange={this.handleChangeReplyUpload}
         />
       </div>

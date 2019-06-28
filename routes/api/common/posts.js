@@ -3,6 +3,8 @@ const Sequelize = require("sequelize");
 const getUploadFilePath = require("../../../utils/getUploadFilePath");
 const uploadFiles = require("../../../utils/uploadFiles");
 const { fileOwners } = require("../../../utils/constants");
+const notificationService = require("../../../utils/notifications");
+const { getGroupUsersIds, getGroupAdminsIds } = require("./groups");
 
 const createPost = async function createPost({
   text,
@@ -29,6 +31,36 @@ const createPost = async function createPost({
     userId
   });
 
+  const users = await models.sequelize.query(userQuery);
+  const user = users[0][0];
+
+  // notification
+
+  const conversation = await models.Conversation.findOne({
+    where: {
+      id: conversationId
+    }
+  });
+
+  const group = await models.ProjectGroup.findOne({
+    where: {
+      id: conversation.projectGroupId
+    }
+  });
+
+  notificationService.postCreated({
+    userId,
+    userName: user.name,
+    conversationId,
+    groupId: conversation.projectGroupId,
+    groupTitle: group.title,
+    conversationTitle: conversation.title,
+    recipientsIds: await getGroupUsersIds(conversation.projectGroupId),
+    text
+  });
+
+  //
+
   const createdFiles = await models.File.bulkCreate(
     files.map(file => ({
       file: file.name,
@@ -38,9 +70,6 @@ const createPost = async function createPost({
     })),
     { returning: true }
   );
-
-  const users = await models.sequelize.query(userQuery);
-  const user = users[0][0];
 
   return {
     id: post.id,

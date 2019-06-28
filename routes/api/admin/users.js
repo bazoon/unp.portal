@@ -5,6 +5,7 @@ const router = new Router();
 const models = require("../../../models");
 const getUploadFilePath = require("../../../utils/getUploadFilePath");
 const uploadFiles = require("../../../utils/uploadFiles");
+const notificationService = require("../../../utils/notifications");
 
 router.get("/", async (ctx, next) => {
   const { isAdmin } = ctx.user;
@@ -46,11 +47,11 @@ router.get("/:id", async (ctx, next) => {
   const { isAdmin } = ctx.user;
   const { id } = ctx.params;
 
-  if (!(isAdmin || id == ctx.user.id)) {
-    ctx.status = 403;
-    ctx.body = "Not authorized!";
-    return;
-  }
+  // if (!(isAdmin || id == ctx.user.id)) {
+  //   ctx.status = 403;
+  //   ctx.body = "Not authorized!";
+  //   return;
+  // }
 
   const user = await models.User.findOne({
     where: {
@@ -94,7 +95,7 @@ router.post("/", async (ctx, next) => {
     password,
     isAdmin
   } = ctx.request.body;
-
+  const userId = ctx.user.id;
   const id = ctx.query.id;
 
   if (!ctx.user.isAdmin) {
@@ -116,7 +117,9 @@ router.post("/", async (ctx, next) => {
   });
 
   const user = await models.User.findOne({
-    where: { id: newUser.id },
+    where: {
+      id: newUser.id
+    },
     include: [
       {
         model: models.Position,
@@ -128,6 +131,18 @@ router.post("/", async (ctx, next) => {
       }
     ]
   });
+
+  // notification
+
+  if (user.isAdmin) {
+    notificationService.superAdminAdded({
+      userId,
+      adminId: user.id,
+      adminName: user.name
+    });
+  }
+
+  // end
 
   ctx.body = {
     id: user.id,
@@ -152,7 +167,7 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
     password,
     isAdmin
   } = ctx.request.body;
-
+  const userId = ctx.user.id;
   const isSuperAdmin = ctx.user.isAdmin;
 
   if (!(isSuperAdmin || id == ctx.user.id)) {
@@ -168,7 +183,9 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
   const name = `${surName} ${firstName} ${lastName}`;
 
   const newUser = await models.User.findOne({
-    where: { id },
+    where: {
+      id
+    },
     include: [
       {
         model: models.Position,
@@ -195,6 +212,24 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
       password: bcrypt.hashSync(password, 8)
     });
   }
+
+  // notification
+
+  if (newUser.isAdmin) {
+    notificationService.superAdminAdded({
+      userId,
+      adminId: newUser.id,
+      adminName: newUser.name
+    });
+  } else {
+    notificationService.superAdminRemoved({
+      userId,
+      adminId: newUser.id,
+      adminName: newUser.name
+    });
+  }
+
+  // end
 
   ctx.body = {
     id: newUser.id,

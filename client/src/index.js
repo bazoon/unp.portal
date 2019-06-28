@@ -29,6 +29,7 @@ const notificationsStore = NotificationsStore.create();
 const chatStore = ChatStore.create();
 
 chatStore.setCurrentUserStore(currentUserStore);
+usersStore.setCurrentUserStore(currentUserStore);
 
 ReactDOM.render(
   <MobxProvider

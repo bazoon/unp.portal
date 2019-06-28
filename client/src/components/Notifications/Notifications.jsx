@@ -8,6 +8,10 @@ import NotificationsList from "./NotificationsList";
 @inject("notificationsStore")
 @observer
 class Notifications extends Component {
+  componentDidMount() {
+    this.props.notificationsStore.load();
+  }
+
   render() {
     const { items } = this.props.notificationsStore;
     return (

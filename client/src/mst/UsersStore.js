@@ -55,6 +55,7 @@ const UsersStore = types
 
     const updateUser = flow(function* updateUser(payload) {
       self.currentUser = yield api.update(payload);
+      self.currentUserStore.update(self.currentUser);
     });
 
     const loadUserGroups = flow(function* load(id) {
@@ -63,13 +64,21 @@ const UsersStore = types
         page: self.groupsPage,
         pageSize: self.groupsPageSize
       });
-      self.currentUserGroups = data.groups;
-      self.groupsTotal = data.pagination.total;
+      if (data && data.groups) {
+        self.currentUserGroups = data.groups;
+      }
+      if (data && data.pagination) {
+        self.groupsTotal = data.pagination.total;
+      }
     });
 
     const setGroupsPagionation = function setGroupsPagionation(page) {
       self.groupsPage = page;
       self.loadUserGroups(self.currentUser.id);
+    };
+
+    const setCurrentUserStore = function setCurrentUserStore(store) {
+      self.currentUserStore = store;
     };
 
     return {
@@ -78,7 +87,8 @@ const UsersStore = types
       loadUserGroups,
       setGroupsPagionation,
       updateUser,
-      deleteUser
+      deleteUser,
+      setCurrentUserStore
     };
   });
 

@@ -239,7 +239,6 @@ const GroupsStore = types
 
       if (files) {
         self.current.files = self.current.files.concat(files);
-        // self.current.title = "Look2";
       }
     });
 

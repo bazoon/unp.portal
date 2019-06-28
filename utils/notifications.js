@@ -2,6 +2,46 @@ const models = require("../models");
 const constants = require("../utils/constants");
 
 module.exports = {
+  superAdminAdded: function(config) {
+    const { userId, adminId, adminName } = config;
+    return createNotification(
+      userId,
+      `Назначен новый администратор портала #${adminName}:user:${adminId}#`,
+      constants.notifications.type.common
+    );
+  },
+  superAdminRemoved: function(config) {
+    const { userId, adminId, adminName } = config;
+    return createNotification(
+      userId,
+      `Снят с должности администратора портала #${adminName}:user:${adminId}#`,
+      constants.notifications.type.common
+    );
+  },
+  documentsAdded: function(config) {
+    const { userId, files } = config;
+
+    const filesDescription = files
+      .reduce((acc, file) => {
+        return acc.concat(`#${file.name}:file:${file.url}#`);
+      }, [])
+      .join("");
+
+    return createNotification(
+      userId,
+      `В реестр документов добавлены файлы ${filesDescription}`,
+      constants.notifications.type.common
+    );
+  },
+  documentRemoved: function(config) {
+    const { userId, file } = config;
+
+    return createNotification(
+      userId,
+      `Из реестра документов удален файл #${file}:file_removed:_#`,
+      constants.notifications.type.common
+    );
+  },
   groupNameChanged: function(config) {
     const { userId, oldTitle, title, groupId } = config;
     const description = `Группа #${oldTitle}:group:${groupId}# переименована в #${title}:group:${groupId}`;
@@ -57,6 +97,21 @@ module.exports = {
       recipientsIds
     } = config;
     const description = `Новое обсуждение #${conversationTitle}:conversation:${groupId}-${conversationId}# в группе #${groupTitle}:group:${groupId}#`;
+    return createForRecipients(userId, description, recipientsIds);
+  },
+  postCreated: function(config) {
+    const {
+      userId,
+      userName,
+      groupId,
+      conversationId,
+      conversationTitle,
+      groupTitle,
+      text,
+      recipientsIds
+    } = config;
+    console.log(recipientsIds);
+    const description = `#${userName}:user:${userId}# написал «${text}» в обсуждении #${conversationTitle}:conversation:${groupId}-${conversationId}# в группе #${groupTitle}:group:${groupId}#`;
     return createForRecipients(userId, description, recipientsIds);
   },
   groupParticipantJoined: function(config) {
