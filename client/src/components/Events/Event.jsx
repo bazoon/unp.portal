@@ -1,122 +1,108 @@
 import React, { Component } from "react";
 import moment from "moment";
 import { Input, Tooltip, Icon, Button, Breadcrumb, Row, Col } from "antd";
-import { HashLink } from "react-router-hash-link";
-import Posts from "../Group/GroupPosts";
-import "./Conversation.less";
 import { Link } from "react-router-dom";
-import Participants from "../Group/Participants";
-import JoinButton from "../ProjectGroups/JoinButton";
-import LeaveButton from "../ProjectGroups/LeaveButton";
-import Files from "../Group/Files";
+import Files from "../Files/Files";
 import { observer, inject } from "mobx-react";
+import UploadWindow from "../UploadWindow/UploadWindow";
+import Calendar from "../Calendar/Calendar";
 
-// @inject("projectGroups")
-@inject("groupsStore")
+@inject("eventsStore")
 @inject("currentUserStore")
 @observer
 class Conversation extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isUploadVisible: false,
+      files: []
+    };
+  }
+
   componentDidMount = () => {
-    const { id, conversationId } = this.props.match.params;
-
-    this.props.groupsStore.getCurrent(id).then(() => {
-      this.props.groupsStore.getConversation(conversationId);
-    });
-  };
-
-  handleSend = (text, uploadFiles) => {
-    const { conversationId } = this.props.match.params;
-    const { userId } = this.props;
-
-    const formData = new FormData();
-    formData.append("conversationId", conversationId);
-    formData.append("userId", userId);
-    formData.append("text", text);
-    uploadFiles.forEach(f => {
-      formData.append("file", f);
-    });
-
-    return this.props.groupsStore.sendPost(formData);
-  };
-
-  handleReplySend = (comment, post, files = []) => {
-    const { conversationId } = this.props.match.params;
-
-    const formData = new FormData();
-
-    formData.append("conversationId", conversationId);
-    formData.append("postId", post.id);
-    formData.append("text", comment);
-
-    files.forEach(f => {
-      formData.append("file", f);
-    });
-
-    return this.props.groupsStore.sendPost(formData);
-  };
-
-  handleSubscribe = () => {
     const { id } = this.props.match.params;
-    this.props.projectGroups.subscribeToCurrent(id);
+    this.props.eventsStore.get(id);
   };
 
-  handleUnsubscribe = () => {
+  handleFileChange = files => {
+    this.setState({
+      files
+    });
+  };
+
+  handleShowUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  handleDeleteFile = id => {
+    this.props.eventsStore.deleteFile(id);
+  };
+
+  handleUploadFiles = () => {
     const { id } = this.props.match.params;
-    this.props.projectGroups.unsubscribeFromCurrent(id);
+    const formData = new FormData();
+    formData.append("eventId", id);
+
+    this.state.files.forEach(f => {
+      formData.append("file", f.originFileObj);
+    });
+
+    this.props.eventsStore.uploadFiles(formData);
+    this.handleHideUpload();
   };
 
-  handlePin = () => {
-    const { conversationId } = this.props.match.params;
-    Actions.postPinConversation({ conversationId, pinned: true });
-  };
+  renderEvent(event) {
+    const {
+      id,
+      title,
+      description,
+      startDate,
+      usersCount,
+      userName,
+      userAvatar
+    } = event || {};
 
-  renderConversation(conversation) {
-    const date = moment(conversation.created_at).fromNow();
-
+    const date = event && moment(event.created_at).fromNow();
+    const files = (event && (event.files && event.files.slice())) || [];
     return (
-      <div className="group__conversations">
-        {
-          <div key={conversation.id} className="group__conversation">
-            <div className="group__conversation-header">
-              <div className="group__conversation-user">
-                {conversation.name}
-              </div>
-              <div className="group__conversation-date">{date}</div>
-            </div>
-            <div className="group__conversation-title">
-              {conversation.title}
-            </div>
-            <div className="group__conversation-description">
-              {conversation.description}
-            </div>
-            <div>
-              <Files files={conversation.files} />
-            </div>
-            <div className="group__conversation-footer">
-              <PinnedIcon onClick={this.handlePin} />
-            </div>
+      <div key={id} className="single-event">
+        <div className="single-event__header">
+          <div className="single-event__avatar">
+            <img src={userAvatar} />
           </div>
-        }
+          <div className="single-event__user">{userName}</div>
+          <div className="single-event__date">{date}</div>
+        </div>
+        <div className="single-event__title">{title}</div>
+        <div className="single-event__description">{description}</div>
+        <div className="single-event__files">
+          <Files files={files} onDelete={this.handleDeleteFile} />
+          <Button onClick={this.handleShowUpload} icon="upload">
+            Добавить файл
+          </Button>
+          <UploadWindow
+            visible={this.state.isUploadVisible}
+            onCancel={this.handleHideUpload}
+            onChange={this.handleFileChange}
+            onOk={this.handleUploadFiles}
+            value={this.state.files}
+          />
+        </div>
       </div>
     );
   }
 
   render() {
-    const { conversationId } = this.props.match.params;
-    const {
-      id,
-      title,
-      avatar,
-      participants = [],
-      participant,
-      isOpen,
-      isAdmin,
-      isMember
-    } = this.props.groupsStore.current || {};
+    const { title } = this.props.eventsStore.currentEvent || {};
 
-    const conversation = this.props.groupsStore.currentConversation || {};
-    const postsTree = (conversation && conversation.postsTree) || [];
-    const conversationTitle = conversation && conversation.title;
     return (
       <>
         <Breadcrumb>
@@ -124,51 +110,17 @@ class Conversation extends Component {
             <Link to="/">Главная</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link to="/groups">Группы</Link>
+            <Link to="/events">События</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to={`/groups/${id}`}>{title}</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>{conversationTitle}</Breadcrumb.Item>
+          <Breadcrumb.Item>{title}</Breadcrumb.Item>
         </Breadcrumb>
 
         <Row gutter={27}>
           <Col span={16}>
-            <div className="conversation__container">
-              {this.renderConversation(conversation)}
-              {conversation.isCommentable && (
-                <Posts
-                  posts={postsTree}
-                  avatar={this.props.currentUserStore.avatar}
-                  onSend={this.handleSend}
-                  onReplySend={this.handleReplySend}
-                  showConversationForm
-                />
-              )}
-            </div>
+            <div>{this.renderEvent(this.props.eventsStore.currentEvent)}</div>
           </Col>
           <Col span={8}>
-            <div
-              className="conversation__group-header"
-              style={{
-                backgroundImage: `url(${avatar})`
-              }}
-            >
-              {title}
-            </div>
-            <div className="group__add-info">
-              <Participants participants={participants} />
-
-              <GroupButton
-                isOpen={isOpen}
-                isAdmin={isAdmin}
-                isMember={isMember}
-                participant={participant}
-                onJoin={this.handleSubscribe}
-                onLeave={this.handleUnsubscribe}
-                onRequest={this.handleSubscribe}
-              />
-            </div>
+            <Calendar />
           </Col>
         </Row>
       </>

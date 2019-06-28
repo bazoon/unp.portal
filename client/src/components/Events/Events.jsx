@@ -3,6 +3,7 @@ import moment from "moment";
 import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
 import { Popover } from "antd";
+import { Link } from "react-router-dom";
 
 class Events extends Component {
   renderOperationsMenu(event) {
@@ -42,7 +43,11 @@ class Events extends Component {
                       <div>
                         <div className="event__day-time">{time}</div>
                         <div>
-                          <div className="event__day-title">{event.title}</div>
+                          <div className="event__day-title">
+                            <Link to={`/events/${event.id}`}>
+                              {event.title}
+                            </Link>
+                          </div>
                           <div className="event__day-users-count">
                             {pluralizeParticipants(event.usersCount)}
                           </div>

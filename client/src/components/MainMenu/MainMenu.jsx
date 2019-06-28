@@ -35,8 +35,8 @@ class MainMenu extends Component {
             </div>
           </NavLink>
         </Menu.Item>
-        <Menu.Item key="/events/my">
-          <NavLink to="/events/my">
+        <Menu.Item key="/events">
+          <NavLink to="/events">
             <div className="main-menu__item">
               <EventsIcon />
               <span>События</span>

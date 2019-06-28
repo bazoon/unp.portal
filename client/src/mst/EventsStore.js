@@ -11,7 +11,8 @@ const CurrentUserStore = types
     total: types.maybeNull(types.number),
     page: types.optional(types.maybeNull(types.number), 1),
     pageSize: types.optional(types.maybeNull(types.number), 10),
-    currentDate: types.maybeNull(types.Date)
+    currentDate: types.maybeNull(types.Date),
+    currentEvent: types.maybeNull(Event)
   })
   .views(self => ({
     get groupedByDays() {
@@ -36,6 +37,11 @@ const CurrentUserStore = types
       yield api.update(id, payload);
       self.loadAll();
       self.loadUpcoming();
+    });
+
+    const get = flow(function* get(id) {
+      const data = yield api.get(id);
+      self.currentEvent = data;
     });
 
     const loadAll = flow(function* loadAll() {
@@ -71,14 +77,32 @@ const CurrentUserStore = types
       self.upcoming = events;
     });
 
+    const deleteFile = flow(function* deleteFile(fileId) {
+      yield api.deleteFile({ fileId });
+      self.currentEvent.files = self.currentEvent.files.filter(
+        file => file.id != fileId
+      );
+    });
+
+    const uploadFiles = flow(function* uploadFiles(payload) {
+      const files = yield api.uploadFiles(payload);
+
+      if (files) {
+        self.currentEvent.files = self.currentEvent.files.concat(files);
+      }
+    });
+
     return {
+      get,
       create,
       update,
       loadAll,
       setPage,
       loadUpcoming,
       deleteEvent,
-      setCurrentDate
+      setCurrentDate,
+      deleteFile,
+      uploadFiles
     };
   });
 

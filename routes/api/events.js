@@ -9,6 +9,7 @@ const Op = Sequelize.Op;
 const uploadFiles = require("../../utils/uploadFiles");
 const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
+const getUploadFilePath = require("../../utils/getUploadFilePath");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const {
@@ -303,23 +304,60 @@ router.get("/:id", async (ctx, next) => {
     }
   });
 
+  const user = await models.User.findOne({ where: { id: event.userId } });
+  const files = await models.File.findAll({
+    where: {
+      [Op.or]: [
+        {
+          entityId: event.id
+        },
+        {
+          entityType: fileOwners.event
+        }
+      ]
+    }
+  });
+
   if (!event) {
     ctx.code = 404;
     return;
   }
 
   ctx.body = {
-    id: id,
+    id: event.id,
     userId: event.UserId,
+    userName: user.name,
+    userAvatar: getUploadFilePath(user.avatar),
     description: event.description,
     remind: event.remind,
     startDate: event.startDate,
     title: event.title,
+    files: files.map(file => {
+      return {
+        id: file.id,
+        name: file.file,
+        url: getUploadFilePath(file.file)
+      };
+    }),
     accessType: event.accessType,
-    accesses: await models.EventAccess.findAll({ where: { eventId: id } }).map(
-      ea => ({ id: ea.id, accessType: ea.accessType, entityId: ea.entityId })
-    )
+    accesses: await models.EventAccess.findAll({
+      where: { eventId: id }
+    }).map(ea => ({
+      id: ea.id,
+      accessType: ea.accessType,
+      entityId: ea.entityId
+    }))
   };
+});
+
+router.delete("/files", async ctx => {
+  const { fileId } = ctx.request.query;
+  await models.File.destroy({
+    where: {
+      id: fileId
+    }
+  });
+  ctx.body = fileId;
 });
 
 router.delete("/:id", async (ctx, next) => {
@@ -365,6 +403,33 @@ router.delete("/:id", async (ctx, next) => {
   });
 
   ctx.body = "ok";
+});
+
+router.post("/files", koaBody({ multipart: true }), async ctx => {
+  const userId = ctx.user.id;
+  const { eventId } = ctx.request.body;
+  const { file } = ctx.request.files;
+  const docs = file ? (Array.isArray(file) ? file : [file]) : [];
+  await uploadFiles(docs);
+
+  const files = await models.File.bulkCreate(
+    docs.map(doc => {
+      return {
+        userId,
+        file: doc.name,
+        entityType: fileOwners.event,
+        entityId: eventId,
+        size: doc.size
+      };
+    }),
+    { returning: true }
+  );
+  ctx.body = files.map(f => ({
+    id: f.id,
+    name: f.file,
+    url: getUploadFilePath(f.file),
+    size: f.size
+  }));
 });
 
 module.exports = router;

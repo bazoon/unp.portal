@@ -4,6 +4,8 @@ import EventAcccess from "./EventAccess";
 
 const Event = types.model("Event", {
   id: types.identifierNumber,
+  userName: types.maybeNull(types.string),
+  userAvatar: types.maybeNull(types.string),
   usersCount: types.optional(types.maybeNull(types.number), 0),
   accessType: types.maybeNull(types.integer),
   startDate: types.optional(types.maybeNull(types.string), ""),

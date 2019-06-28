@@ -30,5 +30,11 @@ export default {
     return api.get("api/events/upcoming", { date }).then(({ data }) => {
       return data;
     });
+  },
+  deleteFile(payload) {
+    return api.delete("api/events/files", payload).then(({ data }) => data);
+  },
+  uploadFiles(payload) {
+    return api.post("api/events/files", payload).then(({ data }) => data);
   }
 };

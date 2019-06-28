@@ -256,7 +256,7 @@ class GroupPosts extends Component {
       <div className="group__post-files">
         {files &&
           files.map(f => {
-            const fileSize = prettyBytes(f.size, { locale: "ru" });
+            const fileSize = f.size && prettyBytes(f.size, { locale: "ru" });
             return (
               <div key={f.name} className="group__post-file">
                 <a download href={f.name} style={{ display: "block" }}>
