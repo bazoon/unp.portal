@@ -17,9 +17,11 @@ module.exports = {
           resolve({
             channelId,
             id: message.id,
+            createdAt: message.createdAt,
             type: message.type,
             message: message.message,
             userName: user.name,
+            userId: user.id,
             avatar: getUploadFilePath(user.avatar),
             files: files.map(f => ({
               id: f.id,

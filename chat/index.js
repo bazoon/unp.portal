@@ -63,6 +63,7 @@ class Chat {
       "private-chat-created",
       this.onPrivateChatCreated.bind(this)
     );
+    this.socket.on("channel-created", this.onChannelCreated.bind(this));
   }
 
   onDisconnect(socket) {
@@ -107,6 +108,13 @@ class Chat {
   onPrivateChatCreated(chat) {
     console.log("Adding new chat", chat);
     this.io.emit("private-chat-created", chat);
+  }
+
+  onChannelCreated({ channel, usersIds }) {
+    console.log("Channel-create", channel, usersIds);
+    usersIds.forEach(userId => {
+      this.io.emit("channel-created", { userId, channel });
+    });
   }
 }
 

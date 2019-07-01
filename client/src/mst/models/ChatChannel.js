@@ -5,13 +5,17 @@ import api from "../../api/chat";
 const ChatChannel = types
   .model("ChatChannel", {
     id: types.identifierNumber,
-    name: types.string,
+    name: types.maybeNull(types.string),
+    private: types.maybeNull(types.boolean),
     avatar: types.maybeNull(types.string),
     messages: types.array(ChatMessage),
     page: types.optional(types.integer, 1),
-    lastMessage: types.maybeNull(types.string),
-    lastMessageId: types.maybeNull(types.integer),
-    hasMoreMessages: types.optional(types.maybeNull(types.boolean), true)
+    // userName: types.maybeNull(types.string),
+    // lastMessage: types.maybeNull(types.string),
+    // lastMessageId: types.maybeNull(types.integer),
+    hasMoreMessages: types.optional(types.maybeNull(types.boolean), true),
+    lastMessage: types.maybeNull(ChatMessage),
+    unreads: types.optional(types.integer, 0)
   })
   .actions(self => {
     const loadMessages = flow(function* loadMessages() {
@@ -62,12 +66,22 @@ const ChatChannel = types
       self.lastMessage = message;
     };
 
+    const incUnreads = function incUnreads(message) {
+      self.unreads += 1;
+    };
+
+    const decUnreads = function decUnreads(message) {
+      self.unreads -= 1;
+    };
+
     return {
       loadMessages,
       addMessage,
       loadMoreMessages,
       sendChatFiles,
-      setLastMessage
+      setLastMessage,
+      incUnreads,
+      decUnreads
     };
   });
 

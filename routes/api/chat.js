@@ -40,7 +40,29 @@ router.get("/channels", async (ctx, next) => {
   const [channels] = await models.sequelize.query(query);
 
   const promises = channels.map(async channel => {
-    console.log(channel.first_user_id, channel.second_user_id);
+    const messageQuery = `select messages.id, message, name as userName, messages.created_at as createdAt from messages
+                          left join users on messages.user_id = users.id
+                          where channel_id=${channel.id}
+                          order by messages.created_at desc
+                          limit 1`;
+
+    const unreadsQuery = `select count(id) from messages 
+                  where channel_id = ${
+                    channel.id
+                  } and id not in (select message_id from "reads" where user_id = ${userId} and seen = true)`;
+
+    const messageResult = await models.sequelize.query(messageQuery);
+    const message = messageResult[0][0] && messageResult[0][0];
+    const lastMessage = message && {
+      id: message.id,
+      userName: message.username,
+      message: message.message,
+      createdAt: message.createdat
+    };
+
+    const unreadsResult = await models.sequelize.query(unreadsQuery);
+    const unreads = unreadsResult[0][0] && +unreadsResult[0][0].count;
+
     if (channel.first_user_id && channel.second_user_id) {
       if (channel.first_user_id == userId) {
         return models.User.findOne({
@@ -48,8 +70,12 @@ router.get("/channels", async (ctx, next) => {
         }).then(user => {
           return {
             id: channel.id,
+            private: channel.private,
             avatar: getUploadFilePath(user.avatar),
-            name: user.name
+            name: user.name,
+            lastMessage,
+            private: true,
+            unreads
           };
         });
       } else {
@@ -58,29 +84,45 @@ router.get("/channels", async (ctx, next) => {
         }).then(user => {
           return {
             id: channel.id,
+            name: user.name,
+            private: channel.private,
             avatar: getUploadFilePath(user.avatar),
-            name: user.name
+            lastMessage,
+            private: true,
+            unreads
           };
         });
       }
     }
 
-    const messageQuery = `select message from messages 
-                          where channel_id=${channel.id} 
-                          order by created_at desc
-                          limit 1`;
-    const messageResult = await models.sequelize.query(messageQuery);
-    const message = messageResult[0][0] && messageResult[0][0].message;
-
     return Promise.resolve({
       id: channel.id,
       name: channel.name,
       avatar: getUploadFilePath(channel.avatar),
-      lastMessage: message
+      lastMessage,
+      unreads
     });
   });
 
   ctx.body = await Promise.all(promises);
+});
+router.post("/seen", async ctx => {
+  const { messageId } = ctx.request.body;
+  const userId = ctx.user.id;
+
+  const a = await models.Read.findOrCreate({
+    where: {
+      messageId,
+      userId
+    },
+    defaults: {
+      messageId,
+      userId,
+      seen: true
+    }
+  });
+
+  ctx.body = "ok";
 });
 
 router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
@@ -104,6 +146,32 @@ router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
       };
     });
   });
+});
+
+router.post("/channels", async ctx => {
+  const { channelName, usersIds } = ctx.request.body;
+  const userId = ctx.user.id;
+  const usersIdsWithUser = Array.from(new Set(usersIds.concat([userId])));
+
+  const channel = await models.Channel.create({
+    name: channelName,
+    avatar: ""
+  });
+
+  await models.UserChannel.bulkCreate(
+    usersIdsWithUser.map(id => {
+      return {
+        ChannelId: channel.id,
+        UserId: id
+      };
+    }),
+    { returning: true }
+  );
+
+  ctx.body = {
+    channel,
+    usersIds: usersIdsWithUser
+  };
 });
 
 router.post("/channels/createPrivate", async ctx => {
@@ -187,7 +255,7 @@ function getMessageFiles(message) {
 
 router.get("/messages", async ctx => {
   const { channelId, currentPage, lastMessageId } = ctx.request.query;
-
+  const userId = ctx.user.id;
   const limit = 20;
   const offset = limit * (currentPage - 1);
 
@@ -200,7 +268,7 @@ router.get("/messages", async ctx => {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id) 
+            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
             where (messages.channel_id = ${channelId}) and (messages.id < ${lastMessageId})
             order by messages.created_at desc
             limit ${limit} offset ${offset}`;
@@ -208,7 +276,7 @@ router.get("/messages", async ctx => {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id) 
+            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
             where (messages.channel_id = ${channelId})
             order by messages.created_at desc
             limit ${limit} offset ${offset}`;
@@ -222,8 +290,9 @@ router.get("/messages", async ctx => {
           message: message.message,
           type: message.type,
           userName: message.name,
+          userId: message.user_id,
           avatar: getUploadFilePath(message.avatar),
-          createdAt: message.createdAt,
+          createdAt: message.created_at,
           seen: message.seen,
           files: messageFiles.map(f => ({
             id: f.id,

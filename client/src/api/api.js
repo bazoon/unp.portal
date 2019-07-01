@@ -66,9 +66,9 @@ const api = {
     return axios
       .post("/" + url, data, config)
       .then(data => {
-        notification.success({
-          message: "Запись успешно создана"
-        });
+        // notification.success({
+        //   message: "Запись успешно создана"
+        // });
         return data;
       })
       .catch(e => {

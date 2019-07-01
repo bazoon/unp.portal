@@ -6,11 +6,6 @@ export default {
       return data;
     });
   },
-  createChannel(payload) {
-    return api.post("api/chat/channels/create", payload).then(({ data }) => {
-      return data;
-    });
-  },
   joinChannel(payload) {
     return api.post("api/chat/channels/join", payload).then(({ data }) => {
       return data;
@@ -22,6 +17,11 @@ export default {
       .then(({ data }) => {
         return data;
       });
+  },
+  createChannel(payload) {
+    return api.post("api/chat/channels", payload).then(({ data }) => {
+      return data;
+    });
   },
   getChannellMessages({ channelId, currentPage }) {
     return api
@@ -44,6 +44,11 @@ export default {
   sendChatFiles(payload) {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     return api.post("api/chat/upload", payload, config).then(({ data }) => {
+      return data;
+    });
+  },
+  markAsRead(payload) {
+    return api.post("api/chat/seen", payload).then(({ data }) => {
       return data;
     });
   }

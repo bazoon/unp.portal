@@ -3,7 +3,6 @@
     height: 100%;
 
     &-header {
-      height: 60px;
       display: flex;
       justify-content: space-between;
     }
@@ -16,9 +15,15 @@
       }
     }
 
+    &-input input {
+      width: 100%;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
     &-users {
       overflow-y: auto;
-      height: calc(100% - 60px);
+      height: calc(100% - 60px - 20px - 20px - 32px);
     }
 
     &-user {
@@ -96,23 +101,39 @@
     overflow-y: auto;
   }
 
-  & &__message {
+  &__message {
     position: relative;
-    width: 70%;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+
+    &-wrap {
+      width: 90%;
+      display: flex;
+      align-items: flex-start;
+    }
+
     padding-left: 40px;
-    padding-bottom: 20px;
     margin-bottom: 20px;
 
     &-avatar img {
       position: absolute;
       left: 4px;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       object-fit: cover;
       border-radius: 50%;
+    }
+
+    &-author {
+      font-family: OpenSansSemiBold;
+      font-size: 13px;
+      color: #f27171;
+      margin-bottom: 4px;
+    }
+
+    &-text {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 0 8px 8px 8px;
+      margin-right: 12px;
     }
 
     &-info {
@@ -122,9 +143,10 @@
     }
 
     &-date {
-      font-size: 8px;
-      text-align: right;
-      margin-right: 5px;
+      flex-shrink: 0;
+      font-family: Helvetica;
+      font-size: 12px;
+      color: #b2b2b2;
     }
 
     &-seen {
@@ -135,6 +157,42 @@
       width: 200px;
       height: 200px;
       object-fit: contain;
+    }
+
+    &_own {
+      position: relative;
+      margin-bottom: 20px;
+
+      .chat__message-text {
+        border-radius: 8px 0px 8px 8px;
+        margin-left: 12px;
+      }
+
+      &-author {
+        font-family: OpenSansSemiBold;
+        font-size: 13px;
+        color: #f27171;
+        margin-bottom: 4px;
+        margin-right: 50px;
+        text-align: right;
+      }
+
+      &-avatar img {
+        position: absolute;
+        top: 0;
+        right: 4px;
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      &-wrap {
+        width: 90%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
     }
   }
 
@@ -173,6 +231,7 @@
 
   &__right-panel {
     flex: 1;
+    background-color: #efece7;
   }
 
   &__talks {
@@ -205,22 +264,68 @@
     flex: 1;
     overflow-y: auto;
 
+    &-wrap {
+      display: flex;
+      justify-content: space-between;
+    }
+
     &-title {
-      font-size: 14px;
+      font-family: OpenSansSemiBold;
+      font-size: 12px;
+      color: #000000;
+    }
+
+    &-title,
+    &-user-name {
+      font-size: 12px;
+      max-width: 170px;
+      // display: inline-block;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      line-height: 17px;
+    }
+
+    &-date {
+      color: #909090;
+      font-size: 12px;
+      line-height: 17px;
     }
 
     &-last {
       color: #909090;
+      font-size: 12px;
+      line-height: 17px;
+      max-width: 170px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      line-height: 17px;
+    }
+
+    &-unread {
+      background-color: #1790ff;
+      display: flex;
+      border-radius: 50%;
+      font-family: OpenSansBold;
+      font-size: 10px;
+      color: #ffffff;
+      width: 20px;
+      height: 20px;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     &-item {
-      padding: 10px;
+      padding: 12px;
+      padding-right: 4px;
       display: flex;
       cursor: pointer;
       align-items: center;
-      margin-left: 10px;
+
       &_active {
-        background: #ebebeb;
+        background: #efece7;
       }
       &:last-child {
         margin-bottom: 0px;
@@ -230,18 +335,18 @@
 
     &-avatar img {
       border-radius: 50%;
-      margin-right: 16px;
-      width: 40px;
-      height: 40px;
+      margin-right: 8px;
+      width: 48px;
+      height: 48px;
       object-fit: cover;
     }
 
     &-avatar .placeholder {
       background-color: #d8d8d8;
       border-radius: 50%;
-      margin-right: 16px;
-      width: 40px;
-      height: 40px;
+      margin-right: 8px;
+      width: 48px;
+      height: 48px;
       object-fit: cover;
     }
   }

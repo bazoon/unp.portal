@@ -47,19 +47,6 @@ function hashCode(string) {
   return hash;
 }
 
-const colors = [
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16),
-  Math.floor(Math.random() * 16777215).toString(16)
-];
-
 const chatStates = {
   chat: 0,
   create: 1,
@@ -95,7 +82,9 @@ class Chat extends Component {
       chatState: chatStates.chat,
       isUploadVisible: false,
       files: [],
-      selectedUserId: undefined
+      selectedUserId: undefined,
+      selectedGroupUsers: {},
+      channelName: ""
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -175,28 +164,38 @@ class Chat extends Component {
   };
 
   renderMessageTemplate = (m, content) => {
-    const { activeChannelId } = this.props;
-    const messageId = `${activeChannelId}-${m.id}-${m.seen}`;
+    const messageId = `${m.id}-${m.seen}`;
     const hash = Math.abs(hashCode(m.userName));
     const index = hash % 10;
-    const colorStyle = {
-      color: `#${colors[index]}`
-    };
 
-    return (
+    const isOwnMessage = this.props.currentUserStore.userId == m.userId;
+
+    return isOwnMessage ? (
+      <div className="chat__message_own" key={m.id} data-id={messageId}>
+        <div className="chat__message_own-author">{m.userName}</div>
+        <div className="chat__message_own-avatar">
+          {m.avatar && <img src={m.avatar} alt={m.userName} />}
+        </div>
+
+        <div className="chat__message_own-wrap">
+          <div className="chat__message-date">
+            {moment(m.createdAt).format("HH:mm")}
+          </div>
+          <div className="chat__message-text">{content}</div>
+        </div>
+      </div>
+    ) : (
       <div className="chat__message" key={m.id} data-id={messageId}>
         <div className="chat__message-avatar">
           {m.avatar && <img src={m.avatar} alt={m.userName} />}
         </div>
-        <div style={colorStyle} className="chat__message-author">
-          {m.userName}
-        </div>
-        {content}
-        <div className="chat__message-info">
+        <div className="chat__message-author">{m.userName}</div>
+
+        <div className="chat__message-wrap">
+          <div className="chat__message-text">{content}</div>
           <div className="chat__message-date">
             {moment(m.createdAt).format("HH:mm")}
           </div>
-          <div className="chat__message-seen">{m.seen ? "✔" : null}</div>
         </div>
       </div>
     );
@@ -318,16 +317,14 @@ class Chat extends Component {
     const { dataset } = target;
     const userId = this.props.currentUserStore.userId;
 
-    const [channelId, messageId, seen] = dataset.id.split("-");
+    const [messageId, seen] = dataset.id.split("-");
 
     if (e.isIntersecting && seen !== "true") {
-      // Actions.chatMarkAsRead({
-      //   messageId,
-      //   userId
-      // });
-      requestAnimationFrame(() => {
-        target.querySelector(".chat__message-seen").textContent = "✔";
+      this.props.chatStore.markAsRead({
+        messageId
       });
+
+      target.setAttribute("data-id", `${messageId}-true`);
     }
   };
 
@@ -474,6 +471,27 @@ class Chat extends Component {
     });
   };
 
+  handleSelectGroupUser = id => {
+    this.setState({
+      selectedGroupUsers: { ...this.state.selectedGroupUsers, [id]: true }
+    });
+  };
+
+  handleChangeChannelName = e => {
+    this.setState({
+      channelName: e.target.value
+    });
+  };
+
+  handleCreateChannel = () => {
+    const { selectedGroupUsers, channelName } = this.state;
+    const usersIds = Object.keys(selectedGroupUsers).reduce((acc, key) => {
+      return selectedGroupUsers[key] ? acc.concat([key]) : acc;
+    }, []);
+
+    this.props.chatStore.createChannel({ usersIds, channelName });
+  };
+
   // renders
 
   renderChatChanels() {
@@ -491,6 +509,11 @@ class Chat extends Component {
           (activeChannel && activeChannel.id) == channel.id
       });
 
+      const { name } = channel;
+      const { userName, message, createdAt } = channel.lastMessage || {};
+      const date = createdAt && moment(createdAt).format("HH:mm");
+      const { unreads } = channel;
+
       return (
         <div
           key={channel.id}
@@ -502,9 +525,16 @@ class Chat extends Component {
               {this.renderChannelAvatar(channel.avatar)}
             </Popover>
           </div>
-          <div>
-            <div className="chat__channels-title">{channel.name}</div>
-            <div className="chat__channels-last">{channel.lastMessage}</div>
+          <div style={{ flex: 1 }}>
+            <div className="chat__channels-wrap">
+              <div className="chat__channels-title">{name}</div>
+              <div className="chat__channels-date">{date}</div>
+            </div>
+            <div className="chat__channels-user-name">{userName}</div>
+            <div className="chat__channels-wrap">
+              <div className="chat__channels-last">{message}</div>
+              <div className="chat__channels-unread">{unreads}</div>
+            </div>
           </div>
         </div>
       );
@@ -547,10 +577,20 @@ class Chat extends Component {
               Добавление пользователей
             </div>
           </div>
-          <Button type="primary">Создать</Button>
+          <Button type="primary" onClick={this.handleCreateChannel}>
+            Создать
+          </Button>
+        </div>
+        <div className="chat__group-creation-input">
+          <Input
+            value={this.state.channelName}
+            placeholder="Введите название канала"
+            onChange={this.handleChangeChannelName}
+          />
         </div>
         <div className="chat__group-creation-users">
           {this.props.usersStore.users.map(user => {
+            const checked = this.state.selectedGroupUsers[user.id];
             return (
               <div key={user.id} className="chat__group-creation-user">
                 <div className="chat__group-creation-user-wrap">
@@ -562,7 +602,10 @@ class Chat extends Component {
                     {user.name}
                   </div>
                 </div>
-                <Checkbox />
+                <Checkbox
+                  checked={checked}
+                  onClick={() => this.handleSelectGroupUser(user.id)}
+                />
               </div>
             );
           })}

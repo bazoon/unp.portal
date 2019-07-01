@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     "Message",
     {
       channelId: DataTypes.INTEGER,
-      message: DataTypes.STRING,
+      message: DataTypes.TEXT,
       type: DataTypes.STRING
     },
     {}

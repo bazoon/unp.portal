@@ -33,6 +33,7 @@ const ChatStore = types
 
     const afterCreate = function afterCreate() {
       socket.on("channel-message", message => {
+        console.log(message);
         const channel = self.channels.find(ch => ch.id === message.channelId);
         if (channel) {
           if (channel.messages.length === 0) {
@@ -40,7 +41,8 @@ const ChatStore = types
           } else {
             channel.addMessage(message);
           }
-          channel.setLastMessage(message.message);
+          channel.setLastMessage(message);
+          channel.incUnreads();
         }
       });
 
@@ -55,6 +57,16 @@ const ChatStore = types
             name: firstUser.id == userId ? secondUser.name : firstUser.name
           };
           self.addChannel(newChat);
+          joinChannels(self.channels);
+        }
+      });
+
+      socket.on("channel-created", data => {
+        const { userId } = self.currentUserStore;
+        const { channel } = data;
+        console.log("channel-create", data);
+        if (data.userId == userId) {
+          self.addChannel(channel);
           joinChannels(self.channels);
         }
       });
@@ -112,6 +124,12 @@ const ChatStore = types
       socket.emit("private-chat-created", chat);
     });
 
+    const createChannel = flow(function* createChannel(payload) {
+      const data = yield api.createChannel(payload);
+      console.log("emit channel-created", data);
+      socket.emit("channel-created", data);
+    });
+
     const connectSocket = function() {
       const token = `Bearer ${localStorage.getItem("token")}`;
       socket.query.token = token;
@@ -123,8 +141,16 @@ const ChatStore = types
       self.currentUserStore = currentUserStore;
     };
 
+    const markAsRead = flow(function* markAsRead(payload) {
+      yield api.markAsRead(payload);
+      if (self.activeChannel.unreads > 0) {
+        self.activeChannel.decUnreads();
+      }
+    });
+
     return {
       addChannel,
+      createChannel,
       afterCreate,
       getChannels,
       setActiveChannel,
@@ -133,7 +159,8 @@ const ChatStore = types
       sendChatFiles,
       createPrivateChat,
       connectSocket,
-      setCurrentUserStore
+      setCurrentUserStore,
+      markAsRead
     };
   });
 

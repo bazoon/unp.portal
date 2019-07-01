@@ -27,7 +27,7 @@ module.exports = {
         onDelete: "RESTRICT"
       },
       message: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       type: {
         type: Sequelize.STRING
