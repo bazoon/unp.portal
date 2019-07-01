@@ -21,18 +21,15 @@ import Event from "./Events/Event";
 
 const { Sider, Content } = Layout;
 
+console.log(ProjectGroups);
+
 class UserLayout extends Component {
   render() {
     return (
       <Row gutter={27}>
         <Col span={24}>
           <Switch>
-            <Route
-              exact
-              path="/groups"
-              component={() => <ProjectGroups type="all" />}
-            />
-
+            <Route exact path="/groups" component={ProjectGroups} />
             <Route
               exact
               path="/groups/:id/conversations/:conversationId"
@@ -54,12 +51,10 @@ class UserLayout extends Component {
               path="/docs/"
               component={props => <Documents {...props} />}
             />
-
             <Route
               path="/notifications/"
               component={props => <Notifications {...props} />}
             />
-
             <Route
               path="/events/edit/:id"
               component={props => <EditEventForm {...props} />}
@@ -68,12 +63,10 @@ class UserLayout extends Component {
               path="/events/:id"
               component={props => <Event {...props} />}
             />
-
             <Route
               path="/events"
               component={props => <EventList {...props} />}
             />
-
             <Route path="/" component={() => <Feed />} />
           </Switch>
         </Col>

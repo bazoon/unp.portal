@@ -15,7 +15,8 @@ const ChatChannel = types
     // lastMessageId: types.maybeNull(types.integer),
     hasMoreMessages: types.optional(types.maybeNull(types.boolean), true),
     lastMessage: types.maybeNull(ChatMessage),
-    unreads: types.optional(types.integer, 0)
+    unreads: types.optional(types.integer, 0),
+    participantsCount: types.optional(types.integer, 2)
   })
   .actions(self => {
     const loadMessages = flow(function* loadMessages() {

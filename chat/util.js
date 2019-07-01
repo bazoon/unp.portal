@@ -34,12 +34,13 @@ module.exports = {
       });
     });
   },
-  combineFileMessage(channelId, userId, files = [], id) {
+  combineFileMessage(channelId, userId, files = [], id, createdAt) {
     return new Promise((resolve, reject) => {
       models.User.findByPk(userId).then(user => {
         resolve({
           channelId,
           id,
+          createdAt,
           type: "file",
           message: null,
           userName: user.name,

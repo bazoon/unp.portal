@@ -1,10 +1,12 @@
 .chat {
   &__group-creation {
+    background-color: #ffffff;
     height: 100%;
 
     &-header {
       display: flex;
       justify-content: space-between;
+      padding: 8px;
     }
 
     &-title {
@@ -15,8 +17,13 @@
       }
     }
 
+    &-input {
+      padding: 0px 8px;
+    }
+
     &-input input {
       width: 100%;
+
       margin-top: 20px;
       margin-bottom: 20px;
     }
@@ -59,6 +66,23 @@
     height: 50px;
     cursor: pointer;
 
+    &-count {
+      position: fixed;
+      bottom: 65px;
+      z-index: 2;
+      right: 20px;
+      background: #f27171;
+      border-radius: 4px;
+      padding: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 24px;
+      font-family: OpenSansBold;
+      font-size: 12px;
+      color: #ffffff;
+    }
+
     &-wrap {
       display: flex;
       justify-content: center;
@@ -99,6 +123,16 @@
     height: 100%;
     flex: 1;
     overflow-y: auto;
+
+    &-day {
+      font-family: OpenSansSemiBold;
+      font-size: 12px;
+      color: #909090;
+      letter-spacing: 0;
+      text-align: center;
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
   }
 
   &__message {
@@ -180,7 +214,7 @@
       &-avatar img {
         position: absolute;
         top: 0;
-        right: 4px;
+        right: 12px;
         width: 32px;
         height: 32px;
         object-fit: cover;
@@ -200,8 +234,7 @@
     display: flex;
     justify-content: space-between;
     padding: 10px;
-    height: 52px;
-    margin-bottom: 8px;
+    height: 70px;
 
     &-controls * {
       margin-right: 5px;
@@ -253,11 +286,48 @@
     }
   }
 
-  &__channel-name {
-    height: 40px;
-    border-bottom: solid 1px #d8d8d8;
-    padding: 8px;
-    margin-bottom: 4px;
+  &__channel {
+    &__top {
+      background-color: #ffffff;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding-left: 16px;
+
+      &-wrap {
+        display: flex;
+        align-items: center;
+      }
+      &-avatar img {
+        border-radius: 50%;
+        margin-right: 8px;
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+      }
+
+      &-avatar .placeholder {
+        background-color: #d8d8d8;
+        border-radius: 50%;
+        margin-right: 8px;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    &-name {
+      height: 40px;
+      margin-bottom: 4px;
+      width: 370px;
+      overflow: hidden;
+      display: inline-block;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    &-count {
+      color: #909090;
+    }
   }
 
   &__channels {
@@ -394,7 +464,6 @@
 
   &__talk {
     flex: 3;
-    padding: 10px 10px 0 10px;
     height: 100%;
 
     &-spin {
@@ -419,7 +488,7 @@
     height: 52px;
 
     &-file-icon {
-      width: 40px;
+      margin-right: 12px;
       text-align: center;
       cursor: pointer;
     }

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import cn from "classnames";
 import moment from "moment";
 import {
@@ -23,15 +24,11 @@ import ChatChannelsIcon from "../../../images/chatChannels";
 import AddChatIcon from "../../../images/addChat";
 import ChatUserIcon from "../../../images/chatUser";
 import UploadWindow from "../UploadWindow/UploadWindow";
-
-import {
-  List,
-  AutoSizer,
-  CellMeasurer,
-  CellMeasurerCache
-} from "react-virtualized";
+import groupBy from "lodash/groupBy";
+import FileIcon from "../../../images/folder";
 
 import chatSocket from "./socket";
+import { pluralizeParticipants } from "../../utils/pluralize";
 
 function hashCode(string) {
   if (!string) return "333";
@@ -239,24 +236,52 @@ class Chat extends Component {
       onChange: this.handleMessageIntersection,
       root: ".chat__talk"
     };
+    const avatar = activeChannel && activeChannel.avatar;
+    const messages = activeChannel && activeChannel.messages;
+    const groupedMessages = groupBy(messages, m => {
+      return moment(m.createdAt).format("DD MMMM YYYY");
+    });
+    const participantsCount = activeChannel && activeChannel.participantsCount;
+
+    const days = Object.keys(groupedMessages);
 
     return (
       <div className="chat__messages-box">
-        <div className="chat__channel-name">
-          {this.props.chatStore.getActiveChannelName()}
+        <div className="chat__channel__top">
+          {activeChannel && (
+            <div className="chat__channel__top-wrap">
+              <div className="chat__channel__top-avatar">
+                {this.renderChannelAvatar(avatar)}
+              </div>
+              <div className="chat__channel-name">
+                {this.props.chatStore.getActiveChannelName()}
+                <div className="chat__channel-count">
+                  {pluralizeParticipants(participantsCount)}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div
           className="chat__messages"
           onScroll={this.handleChatScroll}
           ref={this.chatTalkRef}
         >
-          {activeChannel &&
-            activeChannel.messages &&
-            activeChannel.messages.map(m => (
-              <React.Fragment key={m.id}>
-                <Observer {...options}>{this.renderMessage(m)}</Observer>
+          {days.map(day => {
+            const messages = groupedMessages[day];
+
+            return (
+              <React.Fragment key={day}>
+                <div className="chat__messages-day">{day}</div>
+                {messages.map(m => (
+                  <React.Fragment key={m.id}>
+                    <Observer {...options}>{this.renderMessage(m)}</Observer>
+                  </React.Fragment>
+                ))}
               </React.Fragment>
-            ))}
+            );
+          })}
+
           <div className="chat__talk-down">
             <Button
               size="large"
@@ -267,11 +292,7 @@ class Chat extends Component {
         </div>
         <div className="chat__controls">
           <div className="chat__controls-file-icon">
-            <Icon
-              type="paper-clip"
-              onClick={this.handleShowUpload}
-              style={{ fontSize: "16px", color: "#00ccff" }}
-            />
+            <FileIcon onClick={this.handleShowUpload} />
           </div>
           <Input
             ref={this.inputRef}
@@ -453,9 +474,7 @@ class Chat extends Component {
     this.props.chatStore
       .createPrivateChat(this.state.selectedUserId)
       .then(() => {
-        this.setState({
-          chatState: chatStates.chat
-        });
+        this.handleViewMessages();
       });
   };
 
@@ -489,7 +508,9 @@ class Chat extends Component {
       return selectedGroupUsers[key] ? acc.concat([key]) : acc;
     }, []);
 
-    this.props.chatStore.createChannel({ usersIds, channelName });
+    this.props.chatStore
+      .createChannel({ usersIds, channelName })
+      .then(() => this.handleViewMessages());
   };
 
   // renders
@@ -533,7 +554,9 @@ class Chat extends Component {
             <div className="chat__channels-user-name">{userName}</div>
             <div className="chat__channels-wrap">
               <div className="chat__channels-last">{message}</div>
-              <div className="chat__channels-unread">{unreads}</div>
+              {unreads > 0 && (
+                <div className="chat__channels-unread">{unreads}</div>
+              )}
             </div>
           </div>
         </div>
@@ -671,8 +694,6 @@ class Chat extends Component {
             </div>
             <div className="chat__right-panel">
               <div className="chat__talk">
-                <div className="chat__talk-spin">{isLoading && <Spin />}</div>
-
                 {chatState === chatStates.chat && this.renderMessages()}
                 {chatState === chatStates.private && <div />}
                 {chatState === chatStates.create && this.renderGroupCreation()}
@@ -680,6 +701,7 @@ class Chat extends Component {
             </div>
           </div>
         </Drawer>
+
         <UploadWindow
           visible={this.state.isUploadVisible}
           onCancel={this.handleHideUpload}

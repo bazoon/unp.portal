@@ -79,11 +79,13 @@ class Chat {
   }
 
   onChannelFileMessage(userName, m, fn) {
-    const { channelId, message, type, userId, files, id } = m;
-    util.combineFileMessage(channelId, userId, files, id).then(message => {
-      this.io.to(channelId).emit("channel-message", message);
-      // fn();
-    });
+    const { channelId, message, type, userId, files, id, createdAt } = m;
+    util
+      .combineFileMessage(channelId, userId, files, id, createdAt)
+      .then(message => {
+        this.io.to(channelId).emit("channel-message", message);
+        // fn();
+      });
   }
 
   onMarkAsRead(m, fn) {

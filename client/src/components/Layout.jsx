@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
@@ -31,6 +32,7 @@ const { Header, Sider, Footer } = Layout;
 
 @inject("notificationsStore")
 @inject("currentUserStore")
+@inject("chatStore")
 @observer
 class L extends Component {
   constructor(props) {
@@ -70,10 +72,13 @@ class L extends Component {
       <>
         <BrowserRouter>
           <div className="outer-container">
-            <ChatIcon
-              className="chat__icon-wrap"
-              onClick={this.handleChatClick}
-            />
+            <div className="chat__icon-count">
+              {this.props.chatStore.getUnreadsCount()}
+            </div>
+            <div className="chat__icon-wrap">
+              <ChatIcon onClick={this.handleChatClick} />
+            </div>
+
             <Header className="header top-header">
               <div className="container">
                 <div className="header__container">
@@ -156,14 +161,12 @@ class L extends Component {
                 </div>
               </div>
             </Header>
-
             <div className="container container_content">
               <Switch>
                 <Route path="/admin" component={AdminLayout} />
                 <Route path="/" component={UserLayout} />
               </Switch>
             </div>
-
             <Footer className="footer">
               <div className="container container_footer">
                 <div className="logo-wrap">
@@ -185,7 +188,6 @@ class L extends Component {
                 </div>
               </div>
             </Footer>
-
             <Chat visible={isChatOpen} onClose={this.handleChatClose} />
           </div>
         </BrowserRouter>

@@ -14,8 +14,15 @@ const ChatStore = types
       return self.activeChannel && self.activeChannel.name;
     };
 
+    const getUnreadsCount = function() {
+      return self.channels.reduce((acc, channel) => {
+        return acc + channel.unreads;
+      }, 0);
+    };
+
     return {
-      getActiveChannelName
+      getActiveChannelName,
+      getUnreadsCount
     };
   })
   .actions(self => {
@@ -114,6 +121,7 @@ const ChatStore = types
         userId,
         message: "",
         files: data.files,
+        createdAt: data.createdAt,
         type: "file",
         id: data.id
       });

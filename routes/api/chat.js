@@ -51,6 +51,10 @@ router.get("/channels", async (ctx, next) => {
                     channel.id
                   } and id not in (select message_id from "reads" where user_id = ${userId} and seen = true)`;
 
+    const participantsCountQuery = `select  count(*) from user_channels where channel_id=${
+      channel.id
+    }`;
+
     const messageResult = await models.sequelize.query(messageQuery);
     const message = messageResult[0][0] && messageResult[0][0];
     const lastMessage = message && {
@@ -62,6 +66,12 @@ router.get("/channels", async (ctx, next) => {
 
     const unreadsResult = await models.sequelize.query(unreadsQuery);
     const unreads = unreadsResult[0][0] && +unreadsResult[0][0].count;
+
+    const participantsCountResult = await models.sequelize.query(
+      participantsCountQuery
+    );
+    const participantsCount =
+      participantsCountResult[0][0] && +participantsCountResult[0][0].count;
 
     if (channel.first_user_id && channel.second_user_id) {
       if (channel.first_user_id == userId) {
@@ -100,7 +110,8 @@ router.get("/channels", async (ctx, next) => {
       name: channel.name,
       avatar: getUploadFilePath(channel.avatar),
       lastMessage,
-      unreads
+      unreads,
+      participantsCount
     });
   });
 
@@ -135,9 +146,15 @@ router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
     name: channelTitle,
     avatar: avatar
   }).then(channel => {
-    return models.UserChannel.create({
-      ChannelId: channel.id,
-      UserId: userId
+    return models.UserChannel.findOrCreate({
+      where: {
+        ChannelId: channel.id,
+        UserId: userId
+      },
+      defaults: {
+        ChannelId: channel.id,
+        UserId: userId
+      }
     }).then(() => {
       return {
         id: channel.id,
@@ -352,6 +369,7 @@ router.post("/upload", koaBody({ multipart: true }), async ctx => {
 
   ctx.body = {
     id: message.id,
+    createdAt: message.createdAt,
     channelId,
     files: createdFiles
   };
