@@ -33,41 +33,16 @@ class UserLayout extends Component {
             <Route
               exact
               path="/groups/:id/conversations/:conversationId"
-              component={props => (
-                <>
-                  <Conversation {...props} />
-                </>
-              )}
+              component={Conversation}
             />
-            <Route
-              path="/groups/:id/participants"
-              component={props => <Participants {...props} />}
-            />
-            <Route
-              path="/groups/:id"
-              component={props => <GroupFeed {...props} />}
-            />
-            <Route
-              path="/docs/"
-              component={props => <Documents {...props} />}
-            />
-            <Route
-              path="/notifications/"
-              component={props => <Notifications {...props} />}
-            />
-            <Route
-              path="/events/edit/:id"
-              component={props => <EditEventForm {...props} />}
-            />
-            <Route
-              path="/events/:id"
-              component={props => <Event {...props} />}
-            />
-            <Route
-              path="/events"
-              component={props => <EventList {...props} />}
-            />
-            <Route path="/" component={() => <Feed />} />
+            <Route path="/groups/:id/participants" component={Participants} />
+            <Route path="/groups/:id" component={GroupFeed} />
+            <Route path="/docs/" component={Documents} />
+            <Route path="/notifications/" component={Notifications} />
+            <Route path="/events/edit/:id" component={EditEventForm} />
+            <Route path="/events/:id" component={Event} />
+            <Route path="/events" component={EventList} />
+            <Route path="/" component={Feed} />
           </Switch>
         </Col>
       </Row>
