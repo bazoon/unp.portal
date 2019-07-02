@@ -491,8 +491,9 @@ class Chat extends Component {
   };
 
   handleSelectGroupUser = id => {
+    const checked = this.state.selectedGroupUsers[id];
     this.setState({
-      selectedGroupUsers: { ...this.state.selectedGroupUsers, [id]: true }
+      selectedGroupUsers: { ...this.state.selectedGroupUsers, [id]: !checked }
     });
   };
 
