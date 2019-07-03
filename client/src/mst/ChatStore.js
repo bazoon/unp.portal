@@ -1,7 +1,7 @@
 import { types, flow } from "mobx-state-tree";
+import socketIOClient from "socket.io-client";
 import api from "../api/chat";
 import ChatChannel from "./models/ChatChannel";
-import socketIOClient from "socket.io-client";
 
 const ChatStore = types
   .model("ChatStore", {
@@ -29,10 +29,10 @@ const ChatStore = types
     const socket = socketIOClient(location.host, {
       query: {
         token: `Bearer ${localStorage.getItem("token")}`,
-        userName: localStorage.getItem("userName")
+        userName: localStorage.getItem("userName"),
+        userId: localStorage.getItem("userId")
       }
     });
-    window.s = socket;
 
     function joinChannels(channels) {
       socket.emit("join", channels.map(channel => channel.id));
@@ -40,7 +40,6 @@ const ChatStore = types
 
     const afterCreate = function afterCreate() {
       socket.on("channel-message", message => {
-        console.log(message);
         const channel = self.channels.find(ch => ch.id === message.channelId);
         if (channel) {
           if (channel.messages.length === 0) {
@@ -83,6 +82,11 @@ const ChatStore = types
         if (self.channels && self.channels.length > 0) {
           joinChannels(self.channels);
         }
+      });
+
+      socket.on("socket-connected", id => {
+        console.log(`I'am ${id}`);
+        socket.emit("socket-connected", self.currentUserStore.userId);
       });
     };
 

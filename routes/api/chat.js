@@ -165,14 +165,29 @@ router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
   });
 });
 
-router.post("/channels", async ctx => {
+router.post("/channels", koaBody({ multipart: true }), async ctx => {
   const { channelName, usersIds } = ctx.request.body;
   const userId = ctx.user.id;
-  const usersIdsWithUser = Array.from(new Set(usersIds.concat([userId])));
+  const Op = Sequelize.Op;
+
+  const { channelAvatar } = ctx.request.files;
+  const files = channelAvatar
+    ? Array.isArray(channelAvatar)
+      ? channelAvatar
+      : [channelAvatar]
+    : [];
+  const avatar = files[0] && files[0].name;
+  await uploadFiles(files);
+
+  const usersIdsWithUser = Array.from(
+    new Set(JSON.parse(usersIds).concat([userId]))
+  );
+
+  // console.log(channelName, avatar, usersIds, usersIdsWithUser);
 
   const channel = await models.Channel.create({
     name: channelName,
-    avatar: ""
+    avatar: avatar
   });
 
   await models.UserChannel.bulkCreate(
@@ -186,7 +201,12 @@ router.post("/channels", async ctx => {
   );
 
   ctx.body = {
-    channel,
+    channel: {
+      id: channel.id,
+      name: channel.name,
+      avatar: getUploadFilePath(channel.avatar),
+      participantsCount: usersIdsWithUser.length
+    },
     usersIds: usersIdsWithUser
   };
 });

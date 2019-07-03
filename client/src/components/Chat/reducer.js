@@ -1,6 +1,5 @@
 import { State, Effect, Actions } from "jumpstate";
 import api from "../../api/api";
-import chatSocket from "./socket";
 
 const Chat = State({
   initial: {

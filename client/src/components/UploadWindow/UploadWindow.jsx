@@ -1,6 +1,9 @@
 import React, { Component } from "react";
-import { Modal } from "antd";
+import { Button } from "antd";
 import UploadForm from "./UploadForm";
+// Используется сторонний компонент из-за
+//  https://github.com/ant-design/ant-design/issues/16680
+import Modal from "react-responsive-modal";
 
 class UploadWindow extends Component {
   constructor(props) {
@@ -18,13 +21,32 @@ class UploadWindow extends Component {
     return (
       <Modal
         title="Загрузка файлов"
-        visible={this.props.visible}
+        open={this.props.visible}
         onOk={this.props.onOk}
-        onCancel={this.handleCancel}
+        closeOnOverlayClick
+        onClose={this.handleCancel}
         className="upload-form"
-        width={800}
+        showCloseIcon={false}
+        // width={800}
       >
-        <UploadForm value={value} onChange={this.props.onChange} />
+        <>
+          <div className="ant-modal-header">
+            <div className="ant-modal-title">Загрузка файлов</div>
+          </div>
+          <div className="ant-modal-body" style={{ width: "700px" }}>
+            <UploadForm value={value} onChange={this.props.onChange} />
+          </div>
+          <div className="ant-modal-footer">
+            <Button onClick={this.handleCancel}>Отмена</Button>
+            <Button
+              type="primary"
+              style={{ marginLeft: "8px" }}
+              onClick={this.props.onOk}
+            >
+              Ok
+            </Button>
+          </div>
+        </>
       </Modal>
     );
   }

@@ -10,15 +10,14 @@ import {
   Spin,
   Popover,
   Tooltip,
-  Checkbox
+  Checkbox,
+  Upload,
+  Badge
 } from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
 import { observer, inject } from "mobx-react";
 import Observer from "@researchgate/react-intersection-observer";
-import NewChannel from "./NewChannel";
-import NewUser from "./NewUser";
-import JoinChannel from "./JoinChannel";
 import "./Chat.less";
 import ChatChannelsIcon from "../../../images/chatChannels";
 import AddChatIcon from "../../../images/addChat";
@@ -26,23 +25,7 @@ import ChatUserIcon from "../../../images/chatUser";
 import UploadWindow from "../UploadWindow/UploadWindow";
 import groupBy from "lodash/groupBy";
 import FileIcon from "../../../images/folder";
-
-import chatSocket from "./socket";
 import { pluralizeParticipants } from "../../utils/pluralize";
-
-function hashCode(string) {
-  if (!string) return "333";
-  var hash = 0;
-  if (string.length === 0) {
-    return hash;
-  }
-  for (var i = 0; i < string.length; i++) {
-    var char = string.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return hash;
-}
 
 const chatStates = {
   chat: 0,
@@ -81,7 +64,8 @@ class Chat extends Component {
       files: [],
       selectedUserId: undefined,
       selectedGroupUsers: {},
-      channelName: ""
+      channelName: "",
+      channelAvatar: ""
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -140,6 +124,9 @@ class Chat extends Component {
 
     this.props.chatStore.sendChatFiles(userId, formData);
     this.handleHideUpload();
+    this.setState({
+      files: []
+    });
   };
 
   //renders
@@ -162,9 +149,6 @@ class Chat extends Component {
 
   renderMessageTemplate = (m, content) => {
     const messageId = `${m.id}-${m.seen}`;
-    const hash = Math.abs(hashCode(m.userName));
-    const index = hash % 10;
-
     const isOwnMessage = this.props.currentUserStore.userId == m.userId;
 
     return isOwnMessage ? (
@@ -504,14 +488,33 @@ class Chat extends Component {
   };
 
   handleCreateChannel = () => {
-    const { selectedGroupUsers, channelName } = this.state;
+    const { selectedGroupUsers, channelName, channelAvatar } = this.state;
     const usersIds = Object.keys(selectedGroupUsers).reduce((acc, key) => {
       return selectedGroupUsers[key] ? acc.concat([key]) : acc;
     }, []);
 
-    this.props.chatStore
-      .createChannel({ usersIds, channelName })
-      .then(() => this.handleViewMessages());
+    const file =
+      channelAvatar && channelAvatar[0] && channelAvatar[0].originFileObj;
+
+    const formData = new FormData();
+    formData.append("usersIds", JSON.stringify(usersIds));
+    formData.append("channelName", channelName);
+    formData.append("channelAvatar", file);
+
+    this.props.chatStore.createChannel(formData).then(() => {
+      this.setState({
+        channelName: "",
+        channelAvatar: "",
+        selectedGroupUsers: {}
+      });
+      this.handleViewMessages();
+    });
+  };
+
+  handleChannelAvatarChanged = value => {
+    this.setState({
+      channelAvatar: value.fileList
+    });
   };
 
   // renders
@@ -555,8 +558,17 @@ class Chat extends Component {
             <div className="chat__channels-user-name">{userName}</div>
             <div className="chat__channels-wrap">
               <div className="chat__channels-last">{message}</div>
-              {unreads > 0 && (
+              {/* {unreads > 0 && (
                 <div className="chat__channels-unread">{unreads}</div>
+              )} */}
+              {unreads > 0 && (
+                <Badge
+                  count={unreads}
+                  style={{
+                    backgroundColor: "#1790ff",
+                    color: "#fff"
+                  }}
+                />
               )}
             </div>
           </div>
@@ -606,6 +618,15 @@ class Chat extends Component {
           </Button>
         </div>
         <div className="chat__group-creation-input">
+          <Upload
+            onChange={this.handleChannelAvatarChanged}
+            fileList={this.state.channelAvatar}
+            beforeUpload={() => false}
+          >
+            <FileIcon />
+          </Upload>
+        </div>
+        <div className="chat__group-creation-input">
           <Input
             value={this.state.channelName}
             placeholder="Введите название канала"
@@ -640,12 +661,11 @@ class Chat extends Component {
 
   render() {
     const { visible, isLoading, socketError } = this.props;
-    const isSocketConnected = chatSocket.connected;
     const { chatState } = this.state;
 
-    const chatIndicatorCls = cn("chat__indicator", {
-      chat__indicator_connected: isSocketConnected
-    });
+    // const chatIndicatorCls = cn("chat__indicator", {
+    //   chat__indicator_connected: isSocketConnected
+    // });
 
     return (
       <>

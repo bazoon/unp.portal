@@ -14,7 +14,7 @@ module.exports = merge(common, {
   },
 
   plugins: [
-    // new BundleAnalyzerPlugin(),
+    new BundleAnalyzerPlugin()
     // new WebpackBuildNotifierPlugin({
     //   title: "My Project Webpack Build",
     //   // logo: path.resolve("./img/favicon.png"),

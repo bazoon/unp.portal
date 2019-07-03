@@ -5,8 +5,8 @@ const models = require("../models");
 class Chat {
   constructor(io) {
     this.io = io;
-    // this.io.use(this.verifyToken.bind(this));
     this.io.on("connection", this.onConnection.bind(this));
+    this.clients = {};
   }
 
   verifyToken(socket, next) {
@@ -29,7 +29,10 @@ class Chat {
     let decoded;
 
     this.socket = socket;
-    console.log("onConnection");
+    const userId = socket.handshake.query && socket.handshake.query.userId;
+    this.clients[userId] = socket;
+    console.log(`Connected ${Object.keys(this.clients).length}`);
+    console.log(`Sockets: ${Object.keys(this.clients)}`);
 
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
@@ -40,38 +43,37 @@ class Chat {
       return;
     }
 
-    socket.on("disconnect", this.onDisconnect.bind(this));
+    console.log("Connect", socket.id);
+
+    socket.on("disconnect", this.onDisconnect.bind(this, socket));
 
     socket.on("join", rooms => {
       console.log("Joining", rooms);
       socket.join(rooms);
     });
 
-    socket.on("foo", () => {
-      console.log("foo");
-      socket.emit("bar", "bar");
+    socket.on("baz", data => {
+      console.log("BAZ");
     });
 
-    this.socket = socket;
-    this.socket.on("channel-message", this.onChannelMessage.bind(this, {}));
-    this.socket.on(
-      "channel-file-message",
-      this.onChannelFileMessage.bind(this, {})
-    );
-    this.socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
-    this.socket.on(
-      "private-chat-created",
-      this.onPrivateChatCreated.bind(this)
-    );
-    this.socket.on("channel-created", this.onChannelCreated.bind(this));
+    socket.on("channel-message", this.onChannelMessage.bind(this, {}));
+    socket.on("channel-file-message", this.onChannelFileMessage.bind(this, {}));
+    socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
+    socket.on("private-chat-created", this.onPrivateChatCreated.bind(this));
+    socket.on("channel-created", this.onChannelCreated.bind(this));
   }
 
   onDisconnect(socket) {
-    console.log("Disconnect");
+    const userId = socket.handshake.query && socket.handshake.query.userId;
+    this.clients[userId] = socket;
+    delete this.clients[userId];
+    console.log(`Sockets: ${Object.keys(this.clients)}`);
+    console.log(`after disconnected ${Object.keys(this.clients).length}`);
   }
 
   onChannelMessage(userName, m, fn) {
     const { channelId, message, type, userId, files } = m;
+    console.log(channelId, message, type, userId, files);
     util.writeMessage(channelId, message, type, userId, files).then(message => {
       this.io.to(channelId).emit("channel-message", message);
       fn();
@@ -108,14 +110,25 @@ class Chat {
   }
 
   onPrivateChatCreated(chat) {
-    console.log("Adding new chat", chat);
-    this.io.emit("private-chat-created", chat);
+    const { firstUser, secondUser } = chat;
+    const firstUserSocket = this.clients[firstUser.id];
+    const secondUserSocket = this.clients[secondUser.id];
+
+    if (firstUserSocket) {
+      firstUserSocket.emit("private-chat-created", chat);
+    }
+    if (secondUserSocket) {
+      secondUserSocket.emit("private-chat-created", chat);
+    }
   }
 
   onChannelCreated({ channel, usersIds }) {
-    console.log("Channel-create", channel, usersIds);
     usersIds.forEach(userId => {
-      this.io.emit("channel-created", { userId, channel });
+      const socket = this.clients[userId];
+
+      if (socket) {
+        socket.emit("channel-created", { userId, channel });
+      }
     });
   }
 }
