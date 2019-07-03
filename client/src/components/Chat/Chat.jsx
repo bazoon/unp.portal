@@ -558,9 +558,6 @@ class Chat extends Component {
             <div className="chat__channels-user-name">{userName}</div>
             <div className="chat__channels-wrap">
               <div className="chat__channels-last">{message}</div>
-              {/* {unreads > 0 && (
-                <div className="chat__channels-unread">{unreads}</div>
-              )} */}
               {unreads > 0 && (
                 <Badge
                   count={unreads}
