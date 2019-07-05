@@ -13,6 +13,7 @@ const CurrentUserStore = types
   })
   .actions(self => {
     const login = flow(function* login(payload) {
+      console.log("login");
       const data = yield api.login(payload);
       self.setData(data);
     });
@@ -33,9 +34,20 @@ const CurrentUserStore = types
       self.token = token;
     };
 
+    const clearData = function clearData(data) {
+      const { token, userName, userId, avatar, isAdmin } = data;
+      self.userId = -1;
+      self.token = "";
+      self.userName = "";
+      self.userId = "";
+      self.avatar = "";
+      self.isAdmin = "";
+      self.token = "";
+    };
+
     const logout = function logout() {
       api.logout();
-      self.setData({
+      self.clearData({
         token: "",
         userName: "",
         userId: -1,
@@ -44,7 +56,7 @@ const CurrentUserStore = types
       });
     };
 
-    const update = function(user) {
+    const update = function update(user) {
       self.name = user.name;
       self.avatar = user.avatar;
       self.isAdmin = user.isAdmin;
@@ -57,7 +69,8 @@ const CurrentUserStore = types
       signup,
       logout,
       setData,
-      update
+      update,
+      clearData
     };
   });
 

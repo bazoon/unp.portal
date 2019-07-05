@@ -27,16 +27,21 @@ class App extends Component {
     this.props.eventsStore.loadAll();
     this.props.notificationsStore.load();
 
+    console.log("App did mount");
     this.removeMiddlware = addMiddleware(
       // Если произошел релогин то перезагружаем данные пользователя
       this.props.currentUserStore,
       (call, next) => {
         if (call.name === "setData") {
+          console.log("middlware", call.name);
           this.props.eventsStore.loadAll();
           this.props.notificationsStore.load();
           this.props.chatStore.getChannels();
           this.props.usersStore.loadAllUsers();
           this.props.chatStore.connectSocket();
+        } else if (call.name === "logout") {
+          console.log("Logout");
+          this.props.chatStore.disconnectSocket();
         }
 
         next(call);

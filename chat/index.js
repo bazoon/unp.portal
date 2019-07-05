@@ -30,30 +30,37 @@ class Chat {
 
     this.socket = socket;
     const userId = socket.handshake.query && socket.handshake.query.userId;
-    this.clients[userId] = socket;
-    console.log(`Connected ${Object.keys(this.clients).length}`);
-    console.log(`Sockets: ${Object.keys(this.clients)}`);
 
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
+
+    console.log("");
+    console.log("");
+    console.log("");
+    console.log("onConnection");
+    console.log(`with token ${tokenOnly && tokenOnly.slice(0, 10)}`);
+
     try {
       decoded = jwt.verify(tokenOnly, process.env.API_TOKEN);
+      this.clients[userId] = socket;
+      console.log(`User: ${userId} connected`);
+      console.log(`Connected ${Object.keys(this.clients).length}`);
+      console.log(`Sockets: ${Object.keys(this.clients)}`);
     } catch (e) {
+      console.log(userId, "failed");
       socket.disconnect(true);
       return;
     }
 
-    console.log("Connect", socket.id);
+    console.log("");
+    console.log("");
+    console.log("");
 
     socket.on("disconnect", this.onDisconnect.bind(this, socket));
 
     socket.on("join", rooms => {
-      console.log("Joining", rooms);
+      // console.log("Joining", rooms);
       socket.join(rooms);
-    });
-
-    socket.on("baz", data => {
-      console.log("BAZ");
     });
 
     socket.on("channel-message", this.onChannelMessage.bind(this, {}));
@@ -128,6 +135,18 @@ class Chat {
 
       if (socket) {
         socket.emit("channel-created", { userId, channel });
+      }
+    });
+  }
+
+  sendMessage(messageName, message, userId) {
+    const socket = this.clients[userId];
+    return new Promise((resolve, reject) => {
+      if (socket) {
+        socket.emit(messageName, message);
+        resolve();
+      } else {
+        reject();
       }
     });
   }

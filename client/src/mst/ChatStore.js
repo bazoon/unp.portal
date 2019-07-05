@@ -2,6 +2,8 @@ import { types, flow } from "mobx-state-tree";
 import socketIOClient from "socket.io-client";
 import api from "../api/chat";
 import ChatChannel from "./models/ChatChannel";
+import { notification } from "antd";
+import moment from "moment";
 
 const ChatStore = types
   .model("ChatStore", {
@@ -10,11 +12,11 @@ const ChatStore = types
     currentMessage: types.maybeNull(types.string)
   })
   .views(self => {
-    const getActiveChannelName = function() {
+    const getActiveChannelName = function getActiveChannelName() {
       return self.activeChannel && self.activeChannel.name;
     };
 
-    const getUnreadsCount = function() {
+    const getUnreadsCount = function getUnreadsCount() {
       return self.channels.reduce((acc, channel) => {
         return acc + channel.unreads;
       }, 0);
@@ -39,6 +41,17 @@ const ChatStore = types
     }
 
     const afterCreate = function afterCreate() {
+      socket.on("notify", message => {
+        const { title, description, date } = message;
+        const formattedDate = moment(date).format("DD.MM.YY HH:mm");
+
+        notification.open({
+          message: `Уведомление о ${title} дата ${formattedDate}`,
+          description,
+          duration: 0
+        });
+      });
+
       socket.on("channel-message", message => {
         const channel = self.channels.find(ch => ch.id === message.channelId);
         if (channel) {
@@ -70,7 +83,7 @@ const ChatStore = types
       socket.on("channel-created", data => {
         const { userId } = self.currentUserStore;
         const { channel } = data;
-        console.log("channel-create", data);
+
         if (data.userId == userId) {
           self.addChannel(channel);
           joinChannels(self.channels);
@@ -78,15 +91,9 @@ const ChatStore = types
       });
 
       socket.on("connect", () => {
-        console.log("Connecting....");
         if (self.channels && self.channels.length > 0) {
           joinChannels(self.channels);
         }
-      });
-
-      socket.on("socket-connected", id => {
-        console.log(`I'am ${id}`);
-        socket.emit("socket-connected", self.currentUserStore.userId);
       });
     };
 
@@ -138,15 +145,27 @@ const ChatStore = types
 
     const createChannel = flow(function* createChannel(payload) {
       const data = yield api.createChannel(payload);
-      console.log("emit channel-created", data);
       socket.emit("channel-created", data);
     });
 
-    const connectSocket = function() {
+    const connectSocket = function connectSocket() {
+      console.log("connectSocket");
       const token = `Bearer ${localStorage.getItem("token")}`;
+      const userName = localStorage.getItem("userName");
+      const userId = localStorage.getItem("userId");
       socket.query.token = token;
-      console.log("connecting with", token);
-      socket.connect();
+      socket.query.userName = userName;
+      socket.query.userId = userId;
+
+      if (token && !socket.connected) {
+        console.log(socket.query);
+        socket.connect();
+      }
+    };
+
+    const disconnectSocket = function disconnectSocket() {
+      console.log("disconnectSocket");
+      socket.disconnect(true);
     };
 
     const setCurrentUserStore = function setCurrentUserStore(currentUserStore) {
@@ -172,7 +191,8 @@ const ChatStore = types
       createPrivateChat,
       connectSocket,
       setCurrentUserStore,
-      markAsRead
+      markAsRead,
+      disconnectSocket
     };
   });
 

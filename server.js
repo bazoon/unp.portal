@@ -23,9 +23,10 @@ const eventsRouter = require("./routes/api/events");
 const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
 const chat = new chatFactory(io);
+const eventReminder = require("./utils/eventReminder");
+eventReminder.setChat(chat);
 
 app.use(koaBody());
-
 app.use(serve("client/dist"));
 app.use(mount("/uploads", serve("uploads")));
 
@@ -59,6 +60,6 @@ app.use(async (ctx, next) => {
 
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
-// models.sequelize.sync({ force: true }).then(function() {
+// models.sequelize.sync().then(function() {
 http.listen(port, () => console.log(`Server is running on ${port}`));
 // });

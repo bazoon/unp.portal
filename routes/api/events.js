@@ -10,6 +10,7 @@ const uploadFiles = require("../../utils/uploadFiles");
 const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
+const eventReminder = require("../../utils/eventReminder");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const {
@@ -35,6 +36,11 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     accessType
   });
 
+  const remindAt = moment(date);
+  remindAt.subtract(moment.duration(+remind, "m"));
+  const delay = remindAt.diff(moment());
+  let recipientsIds = [userId];
+
   await models.File.bulkCreate(
     files.map(file => {
       return {
@@ -49,6 +55,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
 
   const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
   if (accessType == 1) {
+    recipientsIds = recipientsIds.concat(accessIds);
     await models.EventAccess.bulkCreate(
       accessIds.map(id => {
         return {
@@ -58,13 +65,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
         };
       })
     );
-
-    await notificationService.eventCreated({
-      userId,
-      title: event.title,
-      eventId: event.id,
-      recipientsIds: accessIds.concat([userId])
-    });
   } else if (accessType == 2) {
     const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
     const users = (await models.sequelize.query(usersQuery))[0];
@@ -79,20 +79,19 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       })
     );
 
-    await notificationService.eventCreated({
-      userId,
-      title: event.title,
-      eventId: event.id,
-      recipientsIds: users.map(u => u.id).concat([userId])
-    });
-  } else {
-    await notificationService.eventCreated({
-      userId,
-      title: event.title,
-      eventId: event.id,
-      recipientsIds: [userId]
-    });
+    recipientsIds = recipientsIds.concat(users.map(u => u.id).concat([userId]));
   }
+
+  // notifications
+  await notificationService.eventCreated({
+    userId,
+    title: event.title,
+    eventId: event.id,
+    recipientsIds
+  });
+
+  // reminders
+  eventReminder.remind({ title, description, date }, recipientsIds, delay);
 
   await models.EventAccess.findOrCreate({
     where: {
@@ -224,7 +223,6 @@ router.get("/upcoming", async (ctx, next) => {
             start_date >= '${from}'::date
             order by events.start_date asc
             limit 5`;
-  console.log(query);
 
   const events = (await models.sequelize.query(query))[0];
 

@@ -21,8 +21,6 @@ import Event from "./Events/Event";
 
 const { Sider, Content } = Layout;
 
-console.log(ProjectGroups);
-
 class UserLayout extends Component {
   render() {
     return (
