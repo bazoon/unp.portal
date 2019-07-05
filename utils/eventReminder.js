@@ -18,7 +18,7 @@ class EventReminder {
       console.log("Added reminder for", userId);
       this.queue.add(
         { ...event, userId },
-        { delay, attempts: 100, backoff: 5000 }
+        { delay, attempts: 10, backoff: 30000 }
       );
     });
   }
@@ -28,7 +28,7 @@ class EventReminder {
       this.queue.process(async (job, done) => {
         try {
           console.log("Sending", job.data);
-          this.chat.sendMessage(
+          await this.chat.sendMessage(
             "notify",
             { title: job.data.title, description: job.data.description },
             job.data.userId
