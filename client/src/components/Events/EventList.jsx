@@ -11,6 +11,7 @@ import CreateEventForm from "./CreateEventForm";
 import { inject, observer } from "mobx-react";
 import Events from "./Events";
 import Calendar from "../Calendar/Calendar";
+import api from "../../api/events";
 
 const { Search } = Input;
 
@@ -27,7 +28,8 @@ class EventList extends Component {
     this.state = {
       isFormVisible: false,
       isFilesVisible: {},
-      today: moment(new Date())
+      today: moment(new Date()),
+      searchEvents: []
     };
   }
 
@@ -169,6 +171,20 @@ class EventList extends Component {
     this.props.eventsStore.deleteEvent(id);
   };
 
+  handleSearch = ({ target: { value } }) => {
+    if (value) {
+      api.search(value).then(data => {
+        this.setState({
+          searchEvents: data
+        });
+      });
+    } else {
+      this.setState({
+        searchEvents: []
+      });
+    }
+  };
+
   // renders
 
   renderEvents() {
@@ -211,7 +227,19 @@ class EventList extends Component {
             {events.length > 0 && !isFormVisible ? (
               <>
                 <div className="project-groups__search">
-                  <Search placeholder="Поиск по событиям" />
+                  <Search
+                    placeholder="Поиск по событиям"
+                    onChange={this.handleSearch}
+                  />
+                  <ul className="search-results">
+                    {this.state.searchEvents.map(event => {
+                      return (
+                        <li key={event.id}>
+                          <Link to={`events/${event.id}`}>{event.title}</Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
                 {this.renderEvents()}
               </>

@@ -23,6 +23,7 @@ import { isAlive } from "mobx-state-tree";
 import ShareIcon from "../../../images/share";
 import UploadWindow from "../UploadWindow/UploadWindow";
 import RenderFiles from "../ProjectGroups/RenderFiles";
+import api from "../../api/docs";
 
 const { Search } = Input;
 
@@ -145,6 +146,12 @@ class Documents extends Component {
     });
   };
 
+  handleSearch = ({ target: { value } }) => {
+    this.props.documentsStore.search(value);
+  };
+
+  // renders
+
   renderDocs(documents) {
     return (
       <Table
@@ -207,11 +214,11 @@ class Documents extends Component {
         <Row gutter={27}>
           <Col span={16}>
             <div className="documents__search">
-              <Search placeholder="Поиск по файлам" />
+              <Search
+                placeholder="Поиск по файлам"
+                onChange={this.handleSearch}
+              />
             </div>
-            {/* <Popover trigger="click" content={this.renderColumnMenu()}>
-              <Button>Столбцы</Button>
-            </Popover> */}
             <div className="documents">
               {this.renderDocs(this.props.documentsStore.documents)}
             </div>

@@ -5,6 +5,7 @@ import { observer, inject } from "mobx-react";
 import "./Users.less";
 import MoreIcon from "../../../../images/more";
 import { Link } from "react-router-dom";
+import api from "../../../api/users";
 
 import Calendar from "../../Calendar/Calendar";
 
@@ -84,6 +85,12 @@ class Users extends Component {
     this.props.usersStore.deleteUser(id);
   };
 
+  handleSearch = ({ target: { value } }) => {
+    this.props.usersStore.search(value);
+  };
+
+  // renders
+
   renderOperationsMenu(user) {
     return (
       <>
@@ -118,7 +125,10 @@ class Users extends Component {
               <div className="section-title">Пользователи</div>
 
               <div className="project-groups__search">
-                <Search placeholder="Поиск по участникам" />
+                <Search
+                  placeholder="Поиск по участникам"
+                  onChange={this.handleSearch}
+                />
               </div>
             </div>
             <div className="admin-users">

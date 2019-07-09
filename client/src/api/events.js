@@ -36,5 +36,8 @@ export default {
   },
   uploadFiles(payload) {
     return api.post("api/events/files", payload).then(({ data }) => data);
+  },
+  search(query) {
+    return api.get(`api/events/search/${query}`).then(({ data }) => data);
   }
 };

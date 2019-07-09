@@ -11,5 +11,8 @@ export default {
   },
   deleteFile(id) {
     return api.delete(`api/files/${id}`);
+  },
+  search(query) {
+    return api.get(`api/files/search/${query}`).then(({ data }) => data);
   }
 };

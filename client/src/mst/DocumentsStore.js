@@ -14,6 +14,14 @@ const DocumentsStore = types
       }
     });
 
+    const search = flow(function* search(value) {
+      if (!value) return self.loadAll();
+      const documents = yield api.search(value);
+      if (documents) {
+        self.documents = documents;
+      }
+    });
+
     const upload = flow(function* upload(payload) {
       yield api.upload(payload);
       self.loadAll();
@@ -30,6 +38,7 @@ const DocumentsStore = types
 
     return {
       loadAll,
+      search,
       upload,
       push,
       deleteFile

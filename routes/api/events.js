@@ -203,6 +203,24 @@ router.put("/:id", async ctx => {
 //   ctx.body = events;
 // });
 
+router.get("/search/:query", async (ctx, next) => {
+  const { query } = ctx.params;
+  let searchResults = [];
+
+  if (query) {
+    searchResults = await models.sequelize.query(
+      ` select *
+        from events
+        where _search @@ to_tsquery(:query)`,
+      {
+        model: models.ProjectGroup,
+        replacements: { query: `${query} | ${query}:*` }
+      }
+    );
+  }
+  ctx.body = searchResults;
+});
+
 router.get("/", async (ctx, next) => {
   const { page, pageSize } = ctx.request.query;
   const userId = ctx.user.id;

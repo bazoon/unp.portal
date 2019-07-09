@@ -397,6 +397,24 @@ router.get("/userGroups", async ctx => {
   ctx.body = result[0];
 });
 
+router.get("/search/:query", async (ctx, next) => {
+  const { query } = ctx.params;
+  let searchResults = [];
+
+  if (query) {
+    searchResults = await models.sequelize.query(
+      ` select *
+        from project_groups
+        where _search @@ to_tsquery(:query)`,
+      {
+        model: models.ProjectGroup,
+        replacements: { query: `${query} | ${query}:*` }
+      }
+    );
+  }
+  ctx.body = searchResults;
+});
+
 router.get("/:id", async (ctx, next) => {
   const { id } = ctx.params;
   const userId = ctx.user.id;

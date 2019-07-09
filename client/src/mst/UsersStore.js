@@ -44,6 +44,15 @@ const UsersStore = types
       }
     });
 
+    const search = flow(function* search(value) {
+      if (!value) return self.loadAllUsers();
+      const users = yield api.search(value);
+
+      if (users) {
+        self.users = users;
+      }
+    });
+
     const get = flow(function* get(id) {
       self.currentUser = yield api.get(id);
     });
@@ -83,6 +92,7 @@ const UsersStore = types
 
     return {
       loadAllUsers,
+      search,
       get,
       loadUserGroups,
       setGroupsPagionation,

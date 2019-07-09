@@ -15,6 +15,7 @@ import {
 import ProjectGroup from "./ProjectGroup";
 import "./ProjectGroups.less";
 import GroupCreateModal from "./GroupCreateModal";
+import api from "../../api/projectGroups";
 
 const { TabPane } = Tabs;
 const { Search } = Input;
@@ -29,7 +30,8 @@ class ProjectGroups extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isCreateModalVisible: false
+      isCreateModalVisible: false,
+      searchGroups: []
     };
   }
 
@@ -81,6 +83,20 @@ class ProjectGroups extends Component {
     this.props.groupsStore.deleteGroup(id);
   };
 
+  handleSearch = ({ target: { value } }) => {
+    if (value) {
+      api.search(value).then(data => {
+        this.setState({
+          searchGroups: data
+        });
+      });
+    } else {
+      this.setState({
+        searchGroups: []
+      });
+    }
+  };
+
   renderGroups(groups) {
     return groups.map(g => (
       <ProjectGroup
@@ -114,7 +130,19 @@ class ProjectGroups extends Component {
         <Row gutter={27}>
           <Col span={16}>
             <div className="project-groups__search">
-              <Search placeholder="Поиск по группам" />
+              <Search
+                placeholder="Поиск по группам"
+                onChange={this.handleSearch}
+              />
+              <ul className="search-results">
+                {this.state.searchGroups.map(group => {
+                  return (
+                    <li key={group.id}>
+                      <Link to={`groups/${group.id}`}>{group.title}</Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </Col>
         </Row>

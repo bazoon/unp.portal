@@ -106,5 +106,10 @@ export default {
     return api
       .delete("api/ProjectGroups/files", payload)
       .then(({ data }) => data);
+  },
+  search(query) {
+    return api
+      .get(`api/ProjectGroups/search/${query}`)
+      .then(({ data }) => data);
   }
 };

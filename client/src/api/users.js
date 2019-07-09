@@ -25,5 +25,8 @@ export default {
     return api.delete("admin/api/users", { id }).then(({ data }) => {
       return data;
     });
+  },
+  search(query) {
+    return api.get(`api/users/search/${query}`).then(({ data }) => data);
   }
 };
