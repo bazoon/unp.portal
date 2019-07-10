@@ -51,5 +51,10 @@ export default {
     return api.post("api/chat/seen", payload).then(({ data }) => {
       return data;
     });
+  },
+  searchChannels(query) {
+    return api
+      .get(`api/chat/channels/search/${query}`)
+      .then(({ data }) => data);
   }
 };

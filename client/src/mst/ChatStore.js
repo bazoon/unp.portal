@@ -149,7 +149,6 @@ const ChatStore = types
     });
 
     const connectSocket = function connectSocket() {
-      console.log("connectSocket");
       const token = `Bearer ${localStorage.getItem("token")}`;
       const userName = localStorage.getItem("userName");
       const userId = localStorage.getItem("userId");
@@ -158,13 +157,11 @@ const ChatStore = types
       socket.query.userId = userId;
 
       if (token && !socket.connected) {
-        console.log(socket.query);
         socket.connect();
       }
     };
 
     const disconnectSocket = function disconnectSocket() {
-      console.log("disconnectSocket");
       socket.disconnect(true);
     };
 
@@ -176,6 +173,16 @@ const ChatStore = types
       yield api.markAsRead(payload);
       if (self.activeChannel.unreads > 0) {
         self.activeChannel.decUnreads();
+      }
+    });
+
+    const searchChannels = flow(function* searchChannels(value) {
+      if (!value) return self.getChannels();
+      self.activeChannel = undefined;
+      const channels = yield api.searchChannels(value);
+
+      if (channels) {
+        self.channels = channels;
       }
     });
 
@@ -192,7 +199,8 @@ const ChatStore = types
       connectSocket,
       setCurrentUserStore,
       markAsRead,
-      disconnectSocket
+      disconnectSocket,
+      searchChannels
     };
   });
 

@@ -9,8 +9,8 @@ const searchObjects = {
   files: ["file"],
   posts: ["text"],
   users: ["name"],
-  messages: ["message"]
-  // channels: ["name"]
+  messages: ["message"],
+  channels: ["name"]
 };
 
 module.exports = {

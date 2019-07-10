@@ -28,6 +28,22 @@ router.get("/channels/all", async (ctx, next) => {
   ctx.body = response;
 });
 
+router.get("/channels/search/:query", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const { query } = ctx.params;
+  const sqlQuery = `select distinct channels.name, channels.avatar, channels.id,
+                channels.first_user_id, channels.second_user_id, _search
+                from channels, user_channels
+                where (_search @@ to_tsquery(:query)) and ((user_channels.channel_id = channels.id and user_channels.user_id = :userId) or 
+ 	              (channels.first_user_id = :userId) or (channels.second_user_id = :userId))`;
+
+  const [channels] = await models.sequelize.query(sqlQuery, {
+    replacements: { query: `${query} | ${query}:*`, userId }
+  });
+
+  ctx.body = await Promise.all(getFullChannels(channels, userId));
+});
+
 router.get("/channels", async (ctx, next) => {
   const userId = ctx.user.id;
 
@@ -39,7 +55,11 @@ router.get("/channels", async (ctx, next) => {
 
   const [channels] = await models.sequelize.query(query);
 
-  const promises = channels.map(async channel => {
+  ctx.body = await Promise.all(getFullChannels(channels, userId));
+});
+
+function getFullChannels(channels, userId) {
+  return channels.map(async channel => {
     const messageQuery = `select messages.id, message, name as userName, messages.created_at as createdAt from messages
                           left join users on messages.user_id = users.id
                           where channel_id=${channel.id}
@@ -114,9 +134,8 @@ router.get("/channels", async (ctx, next) => {
       participantsCount
     });
   });
+}
 
-  ctx.body = await Promise.all(promises);
-});
 router.post("/seen", async ctx => {
   const { messageId } = ctx.request.body;
   const userId = ctx.user.id;
@@ -216,12 +235,13 @@ router.post("/channels/createPrivate", async ctx => {
   const userId = ctx.user.id;
 
   const user = await models.User.findOne({ where: userId });
+  const selectedUser = await models.User.findOne({ where: selectedUserId });
 
   const result = await models.User.findOne({
     where: { id: selectedUserId }
   }).then(selectedUser => {
     return models.Channel.create({
-      name: selectedUserId + userId,
+      name: `${user.name}:${selectedUser.name}`,
       avatar: "",
       firstUserId: userId,
       secondUserId: selectedUserId,
@@ -289,6 +309,26 @@ function getMessageFiles(message) {
     return messageFiles[0];
   });
 }
+
+router.get("/messages/search/:query", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const { query } = ctx.params;
+  const sqlQuery = `select channels.id channelId, messages.id id, message
+                    where user_channels.channel_id = channels.id and user_channels.user_id = :userId
+                    and messages.channel_id = channels.id and _search @@ to_tsquery(:query)`;
+
+  const [messages] = await models.sequelize.query(sqlQuery, {
+    replacements: { query: `${query} | ${query}:*`, userId }
+  });
+
+  ctx.body = messages.map(m => {
+    return {
+      id: m.id,
+      message: m.message,
+      channelId: m.channelid
+    };
+  });
+});
 
 router.get("/messages", async ctx => {
   const { channelId, currentPage, lastMessageId } = ctx.request.query;

@@ -19,7 +19,8 @@ import { pluralizeParticipants } from "../../utils/pluralize";
 const chatStates = {
   chat: 0,
   create: 1,
-  private: 2
+  private: 2,
+  search: 3
 };
 
 @inject("currentUserStore")
@@ -503,61 +504,71 @@ class Chat extends Component {
     });
   };
 
+  handleSearch = ({ target }) => {
+    const { value } = target;
+
+    this.props.chatStore.searchChannels(value);
+
+    if (value) {
+      this.setState({
+        chatState: chatStates.search
+      });
+    } else {
+      this.setState({
+        chatState: chatStates.chat
+      });
+    }
+  };
+
   // renders
 
   renderChatChanels() {
-    const { activeChannel } = this.props.chatStore;
     const { channels } = this.props.chatStore;
-    const content = (
-      <div>
-        <Button onClick={this.handleCreatePrivateChat}>Чат</Button>
-      </div>
-    );
+    return channels.map(channel => this.renderChannel(channel));
+  }
 
-    return channels.map(channel => {
-      const className = cn("chat__channels-item", {
-        "chat__channels-item_active":
-          (activeChannel && activeChannel.id) == channel.id
-      });
+  renderChannel(channel) {
+    const { activeChannel } = this.props.chatStore;
+    const className = cn("chat__channels-item", {
+      "chat__channels-item_active":
+        (activeChannel && activeChannel.id) == channel.id
+    });
 
-      const { name } = channel;
-      const { userName, message, createdAt } = channel.lastMessage || {};
-      const date = createdAt && moment(createdAt).format("HH:mm");
-      const { unreads } = channel;
+    const { name } = channel;
+    const { userName, message, createdAt } = channel.lastMessage || {};
+    const date = createdAt && moment(createdAt).format("HH:mm");
+    const { unreads } = channel;
 
-      return (
-        <div
-          key={channel.id}
-          className={className}
-          onClick={() => this.handleChangeChanel(channel.id)}
-        >
-          <div className="chat__channels-avatar">
-            <Popover content={content} trigger="contextMenu">
-              {this.renderChannelAvatar(channel.avatar)}
-            </Popover>
+    return (
+      <div
+        key={channel.id}
+        className={className}
+        onClick={() => this.handleChangeChanel(channel.id)}
+      >
+        <div className="chat__channels-avatar">
+          {this.renderChannelAvatar(channel.avatar)}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div className="chat__channels-wrap">
+            <div className="chat__channels-title">{name}</div>
+            <div className="chat__channels-date">{date}</div>
           </div>
-          <div style={{ flex: 1 }}>
-            <div className="chat__channels-wrap">
-              <div className="chat__channels-title">{name}</div>
-              <div className="chat__channels-date">{date}</div>
-            </div>
-            <div className="chat__channels-user-name">{userName}</div>
-            <div className="chat__channels-wrap">
-              <div className="chat__channels-last">{message}</div>
-              {unreads > 0 && (
-                <Badge
-                  count={unreads}
-                  style={{
-                    backgroundColor: "#1790ff",
-                    color: "#fff"
-                  }}
-                />
-              )}
-            </div>
+          <div className="chat__channels-user-name">{userName}</div>
+          <div className="chat__channels-wrap">
+            <div className="chat__channels-last">{message}</div>
+            {unreads > 0 && (
+              <Badge
+                count={unreads}
+                style={{
+                  backgroundColor: "#1790ff",
+                  color: "#fff"
+                }}
+              />
+            )}
           </div>
         </div>
-      );
-    });
+      </div>
+    );
   }
 
   renderUsers() {
@@ -642,6 +653,29 @@ class Chat extends Component {
     );
   };
 
+  renderFooter(chatState) {
+    return (
+      <div className="chat__footer-controls">
+        <ChatChannelsIcon
+          isActive={chatState === chatStates.chat}
+          onClick={this.handleViewMessages}
+        />
+        <AddChatIcon
+          isActive={chatState === chatStates.create}
+          onClick={this.handleCreateGroup}
+        />
+        <ChatUserIcon
+          isActive={chatState === chatStates.private}
+          onClick={this.handleToggleUsers}
+        />
+      </div>
+    );
+  }
+
+  renderSearchResults() {
+    return this.renderChatChanels();
+  }
+
   render() {
     const { visible, isLoading, socketError } = this.props;
     const { chatState } = this.state;
@@ -666,6 +700,7 @@ class Chat extends Component {
                 <Input.Search
                   placeholder="Поиск по чату"
                   style={{ width: "100%" }}
+                  onChange={this.handleSearch}
                 />
               </div>
 
@@ -681,24 +716,17 @@ class Chat extends Component {
                 <div className="chat__users">{this.renderUsers()}</div>
               )}
 
-              <div className="chat__footer-controls">
-                <ChatChannelsIcon
-                  isActive={chatState === chatStates.chat}
-                  onClick={this.handleViewMessages}
-                />
-                <AddChatIcon
-                  isActive={chatState === chatStates.create}
-                  onClick={this.handleCreateGroup}
-                />
-                <ChatUserIcon
-                  isActive={chatState === chatStates.private}
-                  onClick={this.handleToggleUsers}
-                />
-              </div>
+              {chatState === chatStates.search && (
+                <div className="chat__users">{this.renderSearchResults()}</div>
+              )}
+
+              {this.renderFooter(chatState)}
             </div>
             <div className="chat__right-panel">
               <div className="chat__talk">
-                {chatState === chatStates.chat && this.renderMessages()}
+                {(chatState === chatStates.chat ||
+                  chatState === chatStates.search) &&
+                  this.renderMessages()}
                 {chatState === chatStates.private && <div />}
                 {chatState === chatStates.create && this.renderGroupCreation()}
               </div>
