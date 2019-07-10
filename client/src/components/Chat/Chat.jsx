@@ -2,18 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import cn from "classnames";
 import moment from "moment";
-import {
-  Drawer,
-  Input,
-  Button,
-  Icon,
-  Spin,
-  Popover,
-  Tooltip,
-  Checkbox,
-  Upload,
-  Badge
-} from "antd";
+import { Drawer, Input, Button, Popover, Checkbox, Upload, Badge } from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
 import { observer, inject } from "mobx-react";
@@ -392,7 +381,6 @@ class Chat extends Component {
     this.setState({
       isNewChannelWindowOpen: false
     });
-    // return Actions.postCreateChannel(fields);
   };
 
   handleAddNewUser = () => {
@@ -411,7 +399,6 @@ class Chat extends Component {
     this.setState({
       isNewUserWindowOpen: false
     });
-    // return Actions.postCreatePrivateChannel(fields);
   };
 
   handleJoinChannel = () => {
@@ -430,7 +417,6 @@ class Chat extends Component {
     this.setState({
       isJoinWindowOpen: false
     });
-    // return Actions.postJoinChannel(fields);
   };
 
   renderChannelAvatar(avatar) {

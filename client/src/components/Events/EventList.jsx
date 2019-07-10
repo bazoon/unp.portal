@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Actions } from "jumpstate";
 import "./Events.less";
 import moment from "moment";
 import { Icon, Button, Row, Col, Breadcrumb, Input, Pagination } from "antd";

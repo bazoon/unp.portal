@@ -15,7 +15,6 @@ import {
 } from "antd";
 
 import moment from "moment";
-import { Actions } from "jumpstate";
 import groupsApi from "../../api/projectGroups";
 import usersApi from "../../api/users";
 import { observer, inject } from "mobx-react";

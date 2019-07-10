@@ -1,18 +1,5 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import {
-  Input,
-  Layout,
-  Breadcrumb,
-  Col,
-  Row,
-  Button,
-  Icon,
-  Carousel,
-  Popover,
-  Table
-} from "antd";
-import { Actions } from "jumpstate";
+import { Breadcrumb, Col, Row, Popover, Table } from "antd";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import MoreIcon from "../../../../images/more";

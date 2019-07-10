@@ -12,8 +12,17 @@ const PositionsStore = types
   .views(self => ({}))
   .actions(self => {
     const create = flow(function* create(payload) {
-      yield api.create(payload);
-      self.loadAll();
+      const position = yield api.create(payload);
+      if (position) {
+        self.items.push(position);
+      }
+    });
+
+    const update = flow(function* update(payload) {
+      const position = yield api.update(payload);
+      self.items = self.items.map(item => {
+        return item.id === position.id ? position : item;
+      });
     });
 
     const loadAll = flow(function* loadAll(payload) {
@@ -33,6 +42,7 @@ const PositionsStore = types
 
     return {
       create,
+      update,
       loadAll,
       setPage
     };

@@ -82,12 +82,14 @@ class EditWindow extends Component {
               <Button style={{ marginBottom: "10px" }} onClick={onAdd}>
                 Добавить
               </Button>
+
               <Table
                 rowKey="id"
                 dataSource={dataSource}
                 columns={columns}
                 onRow={this.onRow}
-                pagination={{ pageSize: 5 }}
+                pagination={false}
+                scroll={{ y: 240 }}
               />
             </>
           ) : (

@@ -1,34 +1,23 @@
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
+import { observer, inject } from "mobx-react";
 import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
-import { connect } from "react-redux";
-import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
+import { Layout, Icon, Popover } from "antd";
 
 import MainMenu from "./MainMenu/MainMenu";
-import ProjectGroups from "./ProjectGroups/ProjectGroups";
-import Group from "./Group/Group";
-import GroupSidebar from "./Group/GroupSidebar";
-import Feed from "./Feed/Feed";
-import Laws from "./Laws/Laws";
 import ChatIcon from "../../images/newChat";
 import Chat from "./Chat/Chat";
 import "antd/dist/antd.less";
-import logo from "./top-logo.svg";
 import "../favicon.ico";
 import "./App.less";
-import Notifications from "./Notifications/Notifications";
-import GroupFeed from "./Group/GroupFeed";
-import { Actions } from "jumpstate";
 import UserLayout from "./UserLayout";
 import AdminLayout from "./AdminLayout";
 import Logo from "../../images/logo";
 import ColorLogo from "../../images/top-logo";
 import PhoneIcon from "../../images/phone";
 
-import { observer, inject } from "mobx-react";
 import TopNotifications from "./Notifications/TopNotifications";
 
-const { Header, Sider, Footer } = Layout;
+const { Header, Footer } = Layout;
 
 @inject("notificationsStore")
 @inject("currentUserStore")

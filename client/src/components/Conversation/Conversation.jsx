@@ -6,13 +6,10 @@ import Posts from "../Group/GroupPosts";
 import "./Conversation.less";
 import { Link } from "react-router-dom";
 import Participants from "../Group/Participants";
-import JoinButton from "../ProjectGroups/JoinButton";
-import LeaveButton from "../ProjectGroups/LeaveButton";
 import Files from "../Files/Files";
 import PinnedIcon from "../../../images/pin";
 import { observer, inject } from "mobx-react";
 import GroupButton from "../ProjectGroups/GroupButton";
-const { TextArea } = Input;
 
 // @inject("projectGroups")
 @inject("groupsStore")
@@ -70,7 +67,6 @@ class Conversation extends Component {
 
   handlePin = () => {
     const { conversationId } = this.props.match.params;
-    Actions.postPinConversation({ conversationId, pinned: true });
   };
 
   renderConversation(conversation) {

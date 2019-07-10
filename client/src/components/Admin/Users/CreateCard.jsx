@@ -1,18 +1,11 @@
 import React, { Component } from "react";
-import UserForm from "./UserForm";
-import { connect } from "react-redux";
 import { Button } from "antd/lib/radio";
-import { Actions } from "jumpstate";
+import UserForm from "./UserForm";
 
 class CreateCard extends Component {
   constructor(props) {
     super(props);
     this.formRef = React.createRef();
-  }
-
-  componentDidMount() {
-    Actions.getOrganizations();
-    Actions.getPositions();
   }
 
   handleSave = () => {
@@ -46,12 +39,4 @@ class CreateCard extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    avatar: state.Login.avatar,
-    organizations: state.Admin.organizations,
-    positions: state.Admin.positions
-  };
-};
-
-export default connect(mapStateToProps)(CreateCard);
+export default CreateCard;

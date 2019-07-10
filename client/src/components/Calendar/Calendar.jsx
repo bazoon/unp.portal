@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import EventModal from "../Events/EventModal";
 import moment from "moment";
 import { observer, inject } from "mobx-react";
 import "./Calendar.less";

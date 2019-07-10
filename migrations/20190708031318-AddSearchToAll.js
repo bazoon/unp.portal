@@ -10,6 +10,7 @@ const searchObjects = {
   posts: ["text"],
   users: ["name"],
   messages: ["message"]
+  // channels: ["name"]
 };
 
 module.exports = {

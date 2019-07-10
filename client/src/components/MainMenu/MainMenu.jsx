@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Menu } from "antd";
 import { NavLink } from "react-router-dom";
-import { connect } from "react-redux";
 import GroupsIcon from "../../../images/card_view";
 import MessagesIcon from "../../../images/chat_wait";
 import DocIcon from "../../../images/document";
@@ -75,10 +74,4 @@ class MainMenu extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    login: state.Login
-  };
-};
-
-export default connect(mapStateToProps)(MainMenu);
+export default MainMenu;

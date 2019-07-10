@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Actions } from "jumpstate";
 import moment from "moment";
 
 import {
@@ -23,6 +22,7 @@ import OrganizationForm from "../Organizations/OrganizationForm";
 import { observer, inject } from "mobx-react";
 import EditWindow from "../../EditWindow/EditWindow";
 import getImageUrlFromFile from "../../../utils/getImageUrlFromFile";
+import { Observer } from "mobx-react";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -39,7 +39,9 @@ class GroupForm extends Component {
       {
         title: "Наименование",
         dataIndex: "name",
-        key: "name"
+        key: "name",
+        // HACK: оборачиваем рендер в Observer чтобы отслеживать изменения внутри таблицы
+        render: (text, record) => <Observer>{() => record.name}</Observer>
       },
       {
         title: "",
@@ -60,7 +62,8 @@ class GroupForm extends Component {
       {
         title: "Наименование",
         dataIndex: "name",
-        key: "name"
+        key: "name",
+        render: (text, record) => <Observer>{() => record.name}</Observer>
       },
       {
         title: "",
@@ -112,9 +115,9 @@ class GroupForm extends Component {
 
   handleSaveOrganization = fields => {
     if (fields.id) {
-      Actions.editOrganization(fields);
+      this.props.organizationsStore.update(fields);
     } else {
-      Actions.createOrganization(fields);
+      this.props.organizationsStore.create(fields);
     }
 
     this.setState({
@@ -151,9 +154,9 @@ class GroupForm extends Component {
 
   handleSavePosition = fields => {
     if (fields.id) {
-      Actions.editPosition(fields);
+      this.props.positionsStore.update(fields);
     } else {
-      Actions.createPosition(fields);
+      this.props.positionsStore.create(fields);
     }
 
     this.setState({

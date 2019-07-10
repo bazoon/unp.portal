@@ -1,12 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "@babel/polyfill";
-import { Provider } from "react-redux";
 import { Provider as MobxProvider } from "mobx-react";
 import { LocaleProvider } from "antd";
 import ruRU from "antd/lib/locale-provider/ru_RU";
 import App from "./components/App";
-import store from "./store";
 import GroupsStore from "./mst/GroupsStore";
 import DocumentsStore from "./mst/DocumentsStore";
 import currentUserStore from "./mst/CurrentUserStore";
@@ -44,11 +42,9 @@ ReactDOM.render(
     notificationsStore={notificationsStore}
     chatStore={chatStore}
   >
-    <Provider store={store}>
-      <LocaleProvider locale={ruRU}>
-        <App />
-      </LocaleProvider>
-    </Provider>
+    <LocaleProvider locale={ruRU}>
+      <App />
+    </LocaleProvider>
   </MobxProvider>,
   document.getElementById("app")
 );

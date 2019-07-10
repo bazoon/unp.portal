@@ -246,6 +246,19 @@ router.delete("/:id/subscriptions", async ctx => {
     };
   } else {
     // notifications
+
+    const group = await models.ProjectGroup.findOne({
+      where: {
+        id: groupId
+      }
+    });
+
+    const user = await models.User.findOne({
+      where: {
+        id: userId
+      }
+    });
+
     await notificationService.groupParticipantLeft({
       userId,
       title: group.title,

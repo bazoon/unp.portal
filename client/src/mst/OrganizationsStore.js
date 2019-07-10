@@ -12,8 +12,17 @@ const OrganizationsStore = types
   .views(self => ({}))
   .actions(self => {
     const create = flow(function* create(payload) {
-      yield api.create(payload);
-      self.loadAll();
+      const organization = yield api.create(payload);
+      if (organization) {
+        self.items.push(organization);
+      }
+    });
+
+    const update = flow(function* update(payload) {
+      const organization = yield api.update(payload);
+      self.items = self.items.map(item => {
+        return item.id === organization.id ? organization : item;
+      });
     });
 
     const loadAll = flow(function* loadAll(payload) {
@@ -33,6 +42,7 @@ const OrganizationsStore = types
 
     return {
       create,
+      update,
       loadAll,
       setPage
     };

@@ -10,20 +10,12 @@ import {
   Carousel,
   Popover
 } from "antd";
-import { ProjectGroup } from "../ProjectGroups/ProjectGroup";
-import { pluralizeComments } from "../../utils/pluralize";
-import Posts from "./GroupPosts";
+
 import { Link } from "react-router-dom";
 import moment from "moment";
-import ConversationModal from "./Conversation/ConversationModal";
-import ChatWaitIcon from "../../../images/chat_wait";
 import RightIcon from "../../../images/arrow_right";
 import UpIcon from "../../../images/arrow_up";
-import JoinButton from "../ProjectGroups/JoinButton";
-import LeaveButton from "../ProjectGroups/LeaveButton";
-import RequestButton from "../ProjectGroups/RequestButton";
 import Participants from "./Participants";
-import FileIcon from "../../../images/file";
 import { pluralizeFiles } from "../../utils/pluralize";
 import cn from "classnames";
 import SelectBgIcon from "../../../images/selectBg";
@@ -32,13 +24,12 @@ import EditIcon from "../../../images/edit";
 import DoneEditIcon from "../../../images/done-edit";
 import ConversationForm from "./Conversation/ConversationForm";
 import Files from "../Files/Files";
-import MoreIcon from "../../../images/more";
 import ChatIcon from "../../../images/chat";
 import { observer, inject } from "mobx-react";
-import projectGroups from "../ProjectGroups/reducer";
 import GroupButton from "../ProjectGroups/GroupButton";
 import Conversation from "./Conversation/Conversation";
 import UploadWindow from "../UploadWindow/UploadWindow";
+import "./Group.less";
 
 const maxDescriptionSentences = 10;
 
@@ -88,39 +79,6 @@ class GroupFeed extends Component {
     this.setState({
       isConversationModalVisible: false
     });
-  };
-
-  handleSend = (text, uploadFiles) => {
-    const { id } = this.props.match.params;
-    const { userId } = this.props;
-
-    const formData = new FormData();
-    formData.append("groupId", id);
-    formData.append("userId", userId);
-    formData.append("text", text);
-    uploadFiles.forEach(f => {
-      formData.append("file", f);
-    });
-
-    return Actions.sendGroupPost({ id, formData });
-  };
-
-  handleReplySend = (comment, post, files = []) => {
-    const { id } = this.props.match.params;
-    const { userId } = this.props;
-
-    const formData = new FormData();
-
-    formData.append("groupId", id);
-    formData.append("postId", post.id);
-    formData.append("userId", userId);
-    formData.append("text", comment);
-
-    files.forEach(f => {
-      formData.append("file", f);
-    });
-
-    return Actions.sendGroupPost({ id, formData });
   };
 
   handleToggleMore = () => {

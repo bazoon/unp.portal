@@ -6,7 +6,7 @@ router.get("/", async (ctx, next) => {
   ctx.body = await models.Position.findAll();
 });
 
-router.post("/create", async (ctx, next) => {
+router.post("/", async (ctx, next) => {
   const { name } = ctx.request.body;
   const position = await models.Position.create({
     name
@@ -18,7 +18,7 @@ router.post("/create", async (ctx, next) => {
   };
 });
 
-router.post("/update", async (ctx, next) => {
+router.put("/", async (ctx, next) => {
   const { id, name } = ctx.request.body;
   const position = await models.Position.findOne({
     where: {

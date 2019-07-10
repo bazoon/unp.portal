@@ -15,12 +15,8 @@ import {
 
 import moment from "moment";
 import { observer, inject } from "mobx-react";
-import { Actions } from "jumpstate";
 import UploadWindow from "../../UploadWindow/UploadWindow";
 import RenderFiles from "../../ProjectGroups/RenderFiles";
-
-const { Option } = Select;
-const { TextArea } = Input;
 
 @inject("groupsStore")
 @observer
@@ -28,7 +24,6 @@ class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      files: [],
       isUploadVisible: false
     };
   }

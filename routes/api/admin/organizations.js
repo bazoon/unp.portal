@@ -6,7 +6,7 @@ router.get("/", async (ctx, next) => {
   ctx.body = await models.Organization.findAll();
 });
 
-router.post("/create", async (ctx, next) => {
+router.post("/", async (ctx, next) => {
   const { name, inn } = ctx.request.body;
   const organization = await models.Organization.create({
     name,
@@ -20,7 +20,7 @@ router.post("/create", async (ctx, next) => {
   };
 });
 
-router.post("/update", async (ctx, next) => {
+router.put("/", async (ctx, next) => {
   const { id, name, inn } = ctx.request.body;
   const organization = await models.Organization.findOne({
     where: {

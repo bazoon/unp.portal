@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "antd";
-import { Actions } from "jumpstate";
 
 export default props => {
   return (

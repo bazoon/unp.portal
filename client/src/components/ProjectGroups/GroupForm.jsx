@@ -18,19 +18,16 @@ import {
 import UploadWindow from "../UploadWindow/UploadWindow";
 
 import moment from "moment";
-import { Actions } from "jumpstate";
 import ChooseIcon from "../../../images/success";
 
 import RenderFiles from "./RenderFiles";
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 class GroupForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      docs: [],
       isUploadVisible: false
     };
   }

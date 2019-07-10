@@ -6,11 +6,7 @@ import {
   pluralizeParticipants,
   pluralizeConversations
 } from "../../utils/pluralize";
-import JoinButton from "./JoinButton";
-import LeaveButton from "./LeaveButton";
-import RequestButton from "./RequestButton";
 import { observer, inject } from "mobx-react";
-import WaitButton from "./WaitButton";
 import GroupButton from "./GroupButton";
 
 @inject("currentUserStore")

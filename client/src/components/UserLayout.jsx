@@ -1,12 +1,8 @@
 import React, { Component } from "react";
 import { Route, Link, Switch, BrowserRouter } from "react-router-dom";
-import { connect } from "react-redux";
 import { Layout, Icon, Input, Badge, Popover, Row, Col } from "antd";
-import MainMenu from "./MainMenu/MainMenu";
 import ProjectGroups from "./ProjectGroups/ProjectGroups";
-import Group from "./Group/Group";
 import Feed from "./Feed/Feed";
-import Laws from "./Laws/Laws";
 import "antd/dist/antd.less";
 import "../favicon.ico";
 import "./App.less";
@@ -18,8 +14,6 @@ import Participants from "./Group/Participants/Participants";
 import Notifications from "./Notifications/Notifications";
 import EditEventForm from "./Events/EditEventForm";
 import Event from "./Events/Event";
-
-const { Sider, Content } = Layout;
 
 class UserLayout extends Component {
   render() {
