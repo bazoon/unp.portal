@@ -10,10 +10,8 @@ const ChatChannel = types
     avatar: types.maybeNull(types.string),
     messages: types.array(ChatMessage),
     page: types.optional(types.integer, 1),
-    // userName: types.maybeNull(types.string),
-    // lastMessage: types.maybeNull(types.string),
-    // lastMessageId: types.maybeNull(types.integer),
-    hasMoreMessages: types.optional(types.maybeNull(types.boolean), true),
+    hasMoreMessagesTop: types.optional(types.maybeNull(types.boolean), true),
+    hasMoreMessagesBottom: types.optional(types.maybeNull(types.boolean), true),
     lastMessage: types.maybeNull(ChatMessage),
     unreads: types.optional(types.integer, 0),
     participantsCount: types.optional(types.integer, 2)
@@ -21,16 +19,17 @@ const ChatChannel = types
   .actions(self => {
     const loadMessages = flow(function* loadMessages() {
       if (self.messages.length === 0) {
+        self.isLoading = true;
         const messages = yield api.getChannellMessages({
           channelId: self.id,
           currentPage: self.page
         });
+        self.isLoading = false;
 
         if (messages) {
           self.messages = messages;
           const lastMessage = messages && messages[messages.length - 1];
           self.lastMessageId = lastMessage && lastMessage.id;
-          self.hasMoreMessages = true;
           self.firstMessageId = messages && messages[0] && messages[0].id;
         }
       }
@@ -42,25 +41,27 @@ const ChatChannel = types
         messageId
       });
 
+      self.hasMoreMessagesBottom = true;
+      self.hasMoreMessagesTop = true;
+
       if (messages) {
         self.messages = messages;
-        const lastMessage = messages && messages[messages.length - 1];
-        self.lastMessageId = lastMessage && lastMessage.id;
-        self.hasMoreMessages = true;
         self.firstMessageId = messages && messages[0] && messages[0].id;
+        self.lastMessageId =
+          messages &&
+          messages[messages.length - 1] &&
+          messages[messages.length - 1].id;
       }
     });
 
-    const loadMoreMessages = flow(function* loadMoreMessages() {
-      self.page += 1;
-
+    const loadMoreMessagesTop = flow(function* loadMoreMessagesTop() {
+      debugger;
       if (self.isLoading) return;
 
       self.isLoading = true;
       const messages = yield api.getMoreMessages({
         channelId: self.id,
-        currentPage: self.page,
-        lastMessageId: self.firstMessageId
+        firstMessageId: self.firstMessageId
       });
       self.isLoading = false;
 
@@ -69,9 +70,36 @@ const ChatChannel = types
         self.firstMessageId = messages && messages[0] && messages[0].id;
 
         if (messages.length > 0) {
-          self.hasMoreMessages = true;
+          self.hasMoreMessagesTop = true;
         } else {
-          self.hasMoreMessages = false;
+          self.hasMoreMessagesTop = false;
+        }
+      }
+    });
+
+    const loadMoreMessagesBottom = flow(function* loadMoreMessagesBottom() {
+      if (self.isLoading) return;
+
+      self.isLoading = true;
+
+      const messages = yield api.getMoreMessages({
+        channelId: self.id,
+        lastMessageId: self.lastMessageId
+      });
+
+      self.isLoading = false;
+
+      if (messages) {
+        self.messages = self.messages.concat(messages);
+        self.lastMessageId =
+          messages &&
+          messages[messages.length - 1] &&
+          messages[messages.length - 1].id;
+
+        if (messages.length > 0) {
+          self.hasMoreMessagesBottom = true;
+        } else {
+          self.hasMoreMessagesBottom = false;
         }
       }
     });
@@ -100,7 +128,8 @@ const ChatChannel = types
       loadMessages,
       findMessages,
       addMessage,
-      loadMoreMessages,
+      loadMoreMessagesTop,
+      loadMoreMessagesBottom,
       sendChatFiles,
       setLastMessage,
       incUnreads,

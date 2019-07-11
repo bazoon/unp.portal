@@ -340,12 +340,24 @@ class Chat extends Component {
     }
   };
 
-  loadMore() {
+  loadMoreTop() {
     if (
       this.props.chatStore.activeChannel &&
-      this.props.chatStore.activeChannel.hasMoreMessages
+      this.props.chatStore.activeChannel.hasMoreMessagesTop
     ) {
-      this.props.chatStore.activeChannel.loadMoreMessages();
+      this.props.chatStore.activeChannel.loadMoreMessagesTop();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  loadMoreBottom() {
+    if (
+      this.props.chatStore.activeChannel &&
+      this.props.chatStore.activeChannel.hasMoreMessagesBottom
+    ) {
+      this.props.chatStore.activeChannel.loadMoreMessagesBottom();
       return true;
     } else {
       return false;
@@ -356,6 +368,7 @@ class Chat extends Component {
 
   handleListScroll = ({ clientHeight, scrollHeight, scrollTop }) => {
     const list = this.listRef.current;
+
     if (scrollTop <= 100) {
       this.loadMore();
       // setTimeout(() => {
@@ -371,13 +384,16 @@ class Chat extends Component {
 
   handleChatScroll = e => {
     const { target } = e;
-    const { scrollTop } = target;
+    const { scrollTop, scrollHeight, offsetHeight } = target;
+
     if (scrollTop === 0) {
-      if (this.loadMore() !== false) {
+      if (this.loadMoreTop() !== false) {
         setTimeout(() => {
           target.scrollTop = 100;
         });
       }
+    } else if (offsetHeight + scrollTop == scrollHeight) {
+      this.loadMoreBottom();
     }
   };
 

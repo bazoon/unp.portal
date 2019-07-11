@@ -37,11 +37,11 @@ export default {
         return data;
       });
   },
-  getMoreMessages({ channelId, currentPage, lastMessageId }) {
+  getMoreMessages({ channelId, lastMessageId, firstMessageId }) {
     return api
       .get("api/chat/messages", {
         channelId,
-        currentPage,
+        firstMessageId,
         lastMessageId
       })
       .then(({ data }) => {

@@ -337,7 +337,7 @@ router.get("/messages/exact", async ctx => {
   const { channelId, messageId } = ctx.request.query;
   const userId = ctx.user.id;
 
-  // for (let i = 1; i < 10000; i++) {
+  // for (let i = 1; i < 1000; i++) {
   //   await models.Message.create({
   //     channelId: 3,
   //     UserId: 1,
@@ -351,52 +351,55 @@ router.get("/messages/exact", async ctx => {
             join users on (messages.user_id = users.id)
             left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
             where (messages.channel_id = ${channelId}) and messages.id >= ${messageId}
-            order by messages.created_at desc`;
+            order by messages.created_at
+            limit 20`;
 
+  console.log(query);
   const [messages] = await models.sequelize.query(query);
   ctx.body = await Promise.all(getFullMessages(messages));
 });
 
 router.get("/messages", async ctx => {
-  const {
-    channelId,
-    currentPage,
-    lastMessageId,
-    foundMessageId
-  } = ctx.request.query;
+  const { channelId, lastMessageId, firstMessageId } = ctx.request.query;
   const userId = ctx.user.id;
   const limit = 20;
-  const offset = limit * (currentPage - 1);
-
   let query;
 
   // Используем id последнего сообщения чтобы не посылать дублирующие записи
   // такая ситуация может возникнуть если загрузили первые сообщения, ввели новое сообщение
   // и потом снова подгрузили
-  if (lastMessageId) {
+  if (firstMessageId) {
+    query = `select *from (select distinct messages.id, message, type, messages.user_id, name,
+            avatar, messages.created_at, seen from messages 
+            join users on (messages.user_id = users.id)
+            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
+            where (messages.channel_id = ${channelId}) and (messages.id < ${firstMessageId})
+            order by created_at desc
+            limit ${limit}) as t order by created_at`;
+  } else if (lastMessageId) {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
             left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId}) and (messages.id < ${lastMessageId})
-            order by messages.created_at desc
+            where (messages.channel_id = ${channelId}) and (messages.id > ${lastMessageId})
+            order by messages.created_at 
             limit ${limit}`;
   } else {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
             left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId})
-            order by messages.created_at desc
-            limit ${limit} offset ${offset}`;
+            where (messages.channel_id = ${channelId}) and (messages.id < 60) and (messages.id > 40)
+            order by messages.created_at 
+            limit ${limit}`;
   }
-  console.log(query);
+
   const [messages] = await models.sequelize.query(query);
   ctx.body = await Promise.all(getFullMessages(messages));
 });
 
 function getFullMessages(messages) {
-  return messages.reverse().map(message => {
+  return messages.map(message => {
     return getMessageFiles(message).then(messageFiles => {
       return {
         id: message.id,
