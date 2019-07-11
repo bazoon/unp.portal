@@ -2,6 +2,7 @@ import { types, flow } from "mobx-state-tree";
 import socketIOClient from "socket.io-client";
 import api from "../api/chat";
 import ChatChannel from "./models/ChatChannel";
+import FoundChatMessage from "./models/FoundChatMessage";
 import { notification } from "antd";
 import moment from "moment";
 
@@ -9,7 +10,12 @@ const ChatStore = types
   .model("ChatStore", {
     activeChannel: types.maybeNull(types.reference(ChatChannel)),
     channels: types.optional(types.array(ChatChannel), []),
-    currentMessage: types.maybeNull(types.string)
+    foundChannels: types.optional(
+      types.array(types.reference(ChatChannel)),
+      []
+    ),
+    currentMessage: types.maybeNull(types.string),
+    foundMessages: types.optional(types.array(FoundChatMessage), [])
   })
   .views(self => {
     const getActiveChannelName = function getActiveChannelName() {
@@ -108,7 +114,15 @@ const ChatStore = types
 
     const setActiveChannel = function setActiveChannel(channelId) {
       self.activeChannel = channelId;
-      self.activeChannel.loadMessages();
+      return self.activeChannel.loadMessages();
+    };
+
+    const openChannelAtMessage = function openChannelAtMessage(
+      channelId,
+      messageId
+    ) {
+      self.activeChannel = channelId;
+      return self.activeChannel.findMessages(messageId);
     };
 
     const addChannel = function addChannel(channel) {
@@ -180,9 +194,16 @@ const ChatStore = types
       if (!value) return self.getChannels();
       self.activeChannel = undefined;
       const channels = yield api.searchChannels(value);
-
       if (channels) {
-        self.channels = channels;
+        self.foundChannels = channels;
+      }
+    });
+
+    const searchMessages = flow(function* searchMessages(value) {
+      if (!value) return;
+      const messages = yield api.searchMessages(value);
+      if (messages) {
+        self.foundMessages = messages;
       }
     });
 
@@ -192,6 +213,7 @@ const ChatStore = types
       afterCreate,
       getChannels,
       setActiveChannel,
+      openChannelAtMessage,
       setCurrentMessage,
       sendChatMessage,
       sendChatFiles,
@@ -200,7 +222,8 @@ const ChatStore = types
       setCurrentUserStore,
       markAsRead,
       disconnectSocket,
-      searchChannels
+      searchChannels,
+      searchMessages
     };
   });
 

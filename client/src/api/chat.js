@@ -30,6 +30,13 @@ export default {
         return data;
       });
   },
+  findChannelMessages({ channelId, messageId }) {
+    return api
+      .get("api/chat/messages/exact", { channelId, messageId })
+      .then(({ data }) => {
+        return data;
+      });
+  },
   getMoreMessages({ channelId, currentPage, lastMessageId }) {
     return api
       .get("api/chat/messages", {
@@ -55,6 +62,11 @@ export default {
   searchChannels(query) {
     return api
       .get(`api/chat/channels/search/${query}`)
+      .then(({ data }) => data);
+  },
+  searchMessages(query) {
+    return api
+      .get(`api/chat/messages/search/${query}`)
       .then(({ data }) => data);
   }
 };

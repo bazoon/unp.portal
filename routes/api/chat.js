@@ -31,8 +31,7 @@ router.get("/channels/all", async (ctx, next) => {
 router.get("/channels/search/:query", async (ctx, next) => {
   const userId = ctx.user.id;
   const { query } = ctx.params;
-  const sqlQuery = `select distinct channels.name, channels.avatar, channels.id,
-                channels.first_user_id, channels.second_user_id, _search
+  const sqlQuery = `select distinct(channels.id)
                 from channels, user_channels
                 where (_search @@ to_tsquery(:query)) and ((user_channels.channel_id = channels.id and user_channels.user_id = :userId) or 
  	              (channels.first_user_id = :userId) or (channels.second_user_id = :userId))`;
@@ -41,7 +40,7 @@ router.get("/channels/search/:query", async (ctx, next) => {
     replacements: { query: `${query} | ${query}:*`, userId }
   });
 
-  ctx.body = await Promise.all(getFullChannels(channels, userId));
+  ctx.body = channels.map(c => c.id);
 });
 
 router.get("/channels", async (ctx, next) => {
@@ -313,9 +312,10 @@ function getMessageFiles(message) {
 router.get("/messages/search/:query", async (ctx, next) => {
   const userId = ctx.user.id;
   const { query } = ctx.params;
-  const sqlQuery = `select channels.id channelId, messages.id id, message
+  const sqlQuery = `select users.avatar, users.name, messages.created_at, channels.id channelId, messages.id id, message from messages, channels, user_channels, users
                     where user_channels.channel_id = channels.id and user_channels.user_id = :userId
-                    and messages.channel_id = channels.id and _search @@ to_tsquery(:query)`;
+                    and messages.channel_id = channels.id and messages._search @@ to_tsquery(:query)
+                    and messages.user_id = users.id`;
 
   const [messages] = await models.sequelize.query(sqlQuery, {
     replacements: { query: `${query} | ${query}:*`, userId }
@@ -324,14 +324,46 @@ router.get("/messages/search/:query", async (ctx, next) => {
   ctx.body = messages.map(m => {
     return {
       id: m.id,
+      createdAt: m.created_at,
+      avatar: getUploadFilePath(m.avatar),
       message: m.message,
+      userName: m.name,
       channelId: m.channelid
     };
   });
 });
 
+router.get("/messages/exact", async ctx => {
+  const { channelId, messageId } = ctx.request.query;
+  const userId = ctx.user.id;
+
+  // for (let i = 1; i < 10000; i++) {
+  //   await models.Message.create({
+  //     channelId: 3,
+  //     UserId: 1,
+  //     message: `${i} ${faker.lorem.sentences(3)}`,
+  //     type: "text"
+  //   });
+  // }
+
+  const query = `select distinct messages.id, message, type, messages.user_id, name,
+            avatar, messages.created_at, seen from messages 
+            join users on (messages.user_id = users.id)
+            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
+            where (messages.channel_id = ${channelId}) and messages.id >= ${messageId}
+            order by messages.created_at desc`;
+
+  const [messages] = await models.sequelize.query(query);
+  ctx.body = await Promise.all(getFullMessages(messages));
+});
+
 router.get("/messages", async ctx => {
-  const { channelId, currentPage, lastMessageId } = ctx.request.query;
+  const {
+    channelId,
+    currentPage,
+    lastMessageId,
+    foundMessageId
+  } = ctx.request.query;
   const userId = ctx.user.id;
   const limit = 20;
   const offset = limit * (currentPage - 1);
@@ -348,7 +380,7 @@ router.get("/messages", async ctx => {
             left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
             where (messages.channel_id = ${channelId}) and (messages.id < ${lastMessageId})
             order by messages.created_at desc
-            limit ${limit} offset ${offset}`;
+            limit ${limit}`;
   } else {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
@@ -358,31 +390,33 @@ router.get("/messages", async ctx => {
             order by messages.created_at desc
             limit ${limit} offset ${offset}`;
   }
+  console.log(query);
+  const [messages] = await models.sequelize.query(query);
+  ctx.body = await Promise.all(getFullMessages(messages));
+});
 
-  const result = await models.sequelize.query(query).then(function(messages) {
-    return messages[0].reverse().map(message => {
-      return getMessageFiles(message).then(messageFiles => {
-        return {
-          id: message.id,
-          message: message.message,
-          type: message.type,
-          userName: message.name,
-          userId: message.user_id,
-          avatar: getUploadFilePath(message.avatar),
-          createdAt: message.created_at,
-          seen: message.seen,
-          files: messageFiles.map(f => ({
-            id: f.id,
-            url: getUploadFilePath(f.file),
-            name: f.file,
-            size: f.size
-          }))
-        };
-      });
+function getFullMessages(messages) {
+  return messages.reverse().map(message => {
+    return getMessageFiles(message).then(messageFiles => {
+      return {
+        id: message.id,
+        message: message.message,
+        type: message.type,
+        userName: message.name,
+        userId: message.user_id,
+        avatar: getUploadFilePath(message.avatar),
+        createdAt: message.created_at,
+        seen: message.seen,
+        files: messageFiles.map(f => ({
+          id: f.id,
+          url: getUploadFilePath(f.file),
+          name: f.file,
+          size: f.size
+        }))
+      };
     });
   });
-  ctx.body = await Promise.all(result);
-});
+}
 
 router.get("/list", (req, res) => {
   const readable = fs.createReadStream(fileName, "utf8");

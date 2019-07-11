@@ -31,21 +31,42 @@ const ChatChannel = types
           const lastMessage = messages && messages[messages.length - 1];
           self.lastMessageId = lastMessage && lastMessage.id;
           self.hasMoreMessages = true;
+          self.firstMessageId = messages && messages[0] && messages[0].id;
         }
+      }
+    });
+
+    const findMessages = flow(function* findMessages(messageId) {
+      const messages = yield api.findChannelMessages({
+        channelId: self.id,
+        messageId
+      });
+
+      if (messages) {
+        self.messages = messages;
+        const lastMessage = messages && messages[messages.length - 1];
+        self.lastMessageId = lastMessage && lastMessage.id;
+        self.hasMoreMessages = true;
+        self.firstMessageId = messages && messages[0] && messages[0].id;
       }
     });
 
     const loadMoreMessages = flow(function* loadMoreMessages() {
       self.page += 1;
 
+      if (self.isLoading) return;
+
+      self.isLoading = true;
       const messages = yield api.getMoreMessages({
         channelId: self.id,
         currentPage: self.page,
-        lastMessageId: self.lastMessageId
+        lastMessageId: self.firstMessageId
       });
+      self.isLoading = false;
 
       if (messages) {
         self.messages = messages.concat(self.messages);
+        self.firstMessageId = messages && messages[0] && messages[0].id;
 
         if (messages.length > 0) {
           self.hasMoreMessages = true;
@@ -77,6 +98,7 @@ const ChatChannel = types
 
     return {
       loadMessages,
+      findMessages,
       addMessage,
       loadMoreMessages,
       sendChatFiles,

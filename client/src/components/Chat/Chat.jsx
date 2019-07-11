@@ -142,7 +142,12 @@ class Chat extends Component {
     const isOwnMessage = this.props.currentUserStore.userId == m.userId;
 
     return isOwnMessage ? (
-      <div className="chat__message_own" key={m.id} data-id={messageId}>
+      <div
+        id={`message-${m.id}`}
+        className="chat__message_own"
+        key={m.id}
+        data-id={messageId}
+      >
         <div className="chat__message_own-author">{m.userName}</div>
         <div className="chat__message_own-avatar">
           {m.avatar && <img src={m.avatar} alt={m.userName} />}
@@ -156,7 +161,12 @@ class Chat extends Component {
         </div>
       </div>
     ) : (
-      <div className="chat__message" key={m.id} data-id={messageId}>
+      <div
+        id={`message-${m.id}`}
+        className="chat__message"
+        key={m.id}
+        data-id={messageId}
+      >
         <div className="chat__message-avatar">
           {m.avatar && <img src={m.avatar} alt={m.userName} />}
         </div>
@@ -303,8 +313,15 @@ class Chat extends Component {
     });
   };
 
-  handleChangeChanel = channelId => {
+  handleChangeChanel = (channelId, messageId) => {
     this.props.chatStore.setActiveChannel(channelId);
+  };
+
+  handleOpenChannelAtMessage = (channelId, messageId) => {
+    this.props.chatStore.openChannelAtMessage(channelId, messageId).then(() => {
+      const messageElement = document.querySelector(`#message-${messageId}`);
+      messageElement && messageElement.scrollIntoView();
+    });
   };
 
   handleMessageIntersection = e => {
@@ -324,7 +341,10 @@ class Chat extends Component {
   };
 
   loadMore() {
-    if (this.props.chatStore.activeChannel.hasMoreMessages) {
+    if (
+      this.props.chatStore.activeChannel &&
+      this.props.chatStore.activeChannel.hasMoreMessages
+    ) {
       this.props.chatStore.activeChannel.loadMoreMessages();
       return true;
     } else {
@@ -508,6 +528,7 @@ class Chat extends Component {
     const { value } = target;
 
     this.props.chatStore.searchChannels(value);
+    this.props.chatStore.searchMessages(value);
 
     if (value) {
       this.setState({
@@ -525,6 +546,41 @@ class Chat extends Component {
   renderChatChanels() {
     const { channels } = this.props.chatStore;
     return channels.map(channel => this.renderChannel(channel));
+  }
+
+  renderFoundChanels() {
+    const { foundChannels } = this.props.chatStore;
+    return foundChannels.map(channel => this.renderChannel(channel));
+  }
+
+  renderFoundMessages = () => {
+    const { foundMessages } = this.props.chatStore;
+    return foundMessages.map(m => this.renderFoundMessage(m));
+  };
+
+  renderFoundMessage(m) {
+    const { id, avatar, createdAt, channelId, message, userName } = m;
+    const date = createdAt && moment(createdAt).format("HH:mm");
+    return (
+      <div
+        key={id}
+        className="chat__channels-item"
+        onClick={() => this.handleOpenChannelAtMessage(channelId, id)}
+      >
+        <div className="chat__channels-avatar">
+          {this.renderChannelAvatar(avatar)}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div className="chat__channels-wrap">
+            <div className="chat__channels-title">{userName}</div>
+            <div className="chat__channels-date">{date}</div>
+          </div>
+          <div className="chat__channels-wrap">
+            <div className="chat__channels-last">{message}</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   renderChannel(channel) {
@@ -673,7 +729,12 @@ class Chat extends Component {
   }
 
   renderSearchResults() {
-    return this.renderChatChanels();
+    return (
+      <>
+        <div>{this.renderFoundChanels()}</div>
+        <div>{this.renderFoundMessages()}</div>
+      </>
+    );
   }
 
   render() {
