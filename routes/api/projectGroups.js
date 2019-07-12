@@ -91,7 +91,7 @@ router.put("/backgrounds", async ctx => {
               from project_groups 
               left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
               left join files on project_group_backgrounds.file_id = files.id 
-              where project_groups.id = ${groupId}`;
+              where project_groups.id = :groupId`;
 
   const group = await models.ProjectGroup.findOne({
     where: {
@@ -112,7 +112,11 @@ router.put("/backgrounds", async ctx => {
     groupId
   });
 
-  const file = await models.sequelize.query(query);
+  const file = await models.sequelize.query(query, {
+    replacements: {
+      groupId
+    }
+  });
   ctx.body = file && getUploadFilePath(file[0][0].file);
 });
 
@@ -343,24 +347,25 @@ router.get("/", async (ctx, next) => {
   const limit = pageSize;
 
   const query = `select title, avatar, id, is_open, user_id from
-              project_groups limit ${limit} offset ${offset}`;
+              project_groups limit :limit offset :offset`;
 
   const countQuery = `select project_groups.id, count(*) from project_groups, participants
                     where (project_groups.id = participants.project_group_id)
                     group by project_groups.id`;
 
-  const groupsResult = await models.sequelize.query(query);
+  const groupsResult = await models.sequelize.query(query, {
+    replacements: {
+      limit,
+      offset
+    }
+  });
 
   const groupsCount = await models.ProjectGroup.count();
 
   const groups = groupsResult[0].map(async group => {
-    const participantsQuery = `select count(*) from participants where project_group_id=${
-      group.id
-    }`;
+    const participantsQuery = `select count(*) from participants where project_group_id=:groupId`;
 
-    const conversationsQuery = `select count(*) from conversations where project_group_id=${
-      group.id
-    }`;
+    const conversationsQuery = `select count(*) from conversations where project_group_id=:groupId`;
 
     const participant = await models.Participant.findOne({
       where: {
@@ -368,9 +373,18 @@ router.get("/", async (ctx, next) => {
       }
     });
 
-    const participantsResult = await models.sequelize.query(participantsQuery);
+    const participantsResult = await models.sequelize.query(participantsQuery, {
+      replacements: {
+        groupId: group.id
+      }
+    });
     const conversationsResult = await models.sequelize.query(
-      conversationsQuery
+      conversationsQuery,
+      {
+        replacements: {
+          groupId: group.id
+        }
+      }
     );
 
     return {
@@ -404,8 +418,12 @@ router.get("/userGroups", async ctx => {
   const userId = ctx.user.id;
   const query = `select id, title from project_groups 
             where id in (select participants.project_group_id from participants
-            where user_id = ${userId} and state = 1)`;
-  const result = await models.sequelize.query(query);
+            where user_id = :userId and state = 1)`;
+  const result = await models.sequelize.query(query, {
+    replacements: {
+      userId
+    }
+  });
 
   ctx.body = result[0];
 });
@@ -436,14 +454,14 @@ router.get("/:id", async (ctx, next) => {
               from project_groups 
               left join project_group_backgrounds on project_groups.background_id = project_group_backgrounds.id
               left join files on project_group_backgrounds.file_id = files.id 
-              where project_groups.id = ${id}`;
+              where project_groups.id = :id`;
 
   const conversationsQuery = `select conversations.id, title, is_commentable, is_pinned, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
                               left join posts
                               on conversations.id = posts.conversation_id
                               left join users 
                               on conversations."user_id" = users.id
-                              where conversations.project_group_id = ${id}
+                              where conversations.project_group_id = :id
                               group by conversations.id, users."name"
                               `;
   const participantsQuery = `select participants."id", participants.is_admin, participants.state, users."name", users."id" as user_id, participant_roles."name" as role_name,
@@ -452,14 +470,26 @@ router.get("/:id", async (ctx, next) => {
                           left join users on (participants.user_id = users.id)
                           left join participant_roles on (participants.participant_role_id = participant_roles.id)
                           left join positions on (users.position_id = positions.id)
-                          where (participants.project_group_id = ${id})
+                          where (participants.project_group_id = :id)
                           order by state desc, level`;
 
-  const groupResult = await models.sequelize.query(query);
+  const groupResult = await models.sequelize.query(query, {
+    replacements: {
+      id
+    }
+  });
   const group = groupResult[0][0];
-  const conversationResult = await models.sequelize.query(conversationsQuery);
+  const conversationResult = await models.sequelize.query(conversationsQuery, {
+    replacements: {
+      id
+    }
+  });
   const conversations = conversationResult[0];
-  const participantsResult = await models.sequelize.query(participantsQuery);
+  const participantsResult = await models.sequelize.query(participantsQuery, {
+    replacements: {
+      id
+    }
+  });
   const participants = participantsResult[0];
 
   const participant = await models.Participant.findOne({
@@ -590,17 +620,17 @@ router.post("/:id/subscriptions", async ctx => {
 });
 
 // TODO где оно?
-router.get("/:id/posts", async (ctx, next) => {
-  const { id } = ctx.params;
+// router.get("/:id/posts", async (ctx, next) => {
+//   const { id } = ctx.params;
 
-  const query = `select posts.id, posts.parent_id, text, users.name, 
-                users.avatar, users.position_id, positions.name as position, posts.created_at
-                from posts, users, positions
-                where (group_id=${id}) and (posts.user_id = users.id) and (users.position_id = positions.id)
-                order by posts.created_at asc`;
+//   const query = `select posts.id, posts.parent_id, text, users.name,
+//                 users.avatar, users.position_id, positions.name as position, posts.created_at
+//                 from posts, users, positions
+//                 where (group_id=${id}) and (posts.user_id = users.id) and (users.position_id = positions.id)
+//                 order by posts.created_at asc`;
 
-  ctx.body = await getPosts({ query });
-});
+//   ctx.body = await getPosts({ query });
+// });
 
 router.post("/:id/posts", koaBody({ multipart: true }), async ctx => {
   const { text, userId, postId } = ctx.request.body;

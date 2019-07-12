@@ -6,7 +6,6 @@ const getUploadFilePath = require("../utils/getUploadFilePath");
 
 module.exports = {
   writeMessage(channelId, message, type, userId, files = []) {
-    console.log(`Write to ${channelId}`);
     return new Promise((resolve, reject) => {
       models.Message.create({
         message,

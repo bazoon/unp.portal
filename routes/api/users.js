@@ -18,18 +18,16 @@ router.get("/list/all", async (ctx, next) => {
 router.get("/search/:query", async (ctx, next) => {
   const { query } = ctx.params;
   const sqlQuery = `
-    SELECT "User"."id", "User"."name", "User"."login", "User"."password", "User"."avatar", "User"."position_id" AS "positionId",
-    "User"."organization_id" AS "organizationId", "User"."is_admin" AS "isAdmin", "User"."created_at" AS "createdAt",
-    "User"."updated_at" AS "updatedAt", "User"."position_id" AS "PositionId", "User"."organization_id" AS "OrganizationId",
-    "Position"."id" AS "Position.id", "Position"."name" AS "Position.name", "Position"."created_at" AS "Position.createdAt",
-    "Position"."updated_at" AS "Position.updatedAt", "Organization"."id" AS "Organization.id", "Organization"."name" as
-    "Organization.name", "Organization"."full_name" AS "Organization.fullName", "Organization"."inn" AS "Organization.inn",
-    "Organization"."address" AS "Organization.address", "Organization"."created_at" AS "Organization.createdAt", "Organization"."updated_at"
-    AS "Organization.updatedAt" FROM "users" AS "User" 
-    LEFT JOIN "positions" AS "Position" ON "User"."position_id" = "Position"."id"
-    LEFT JOIN "organizations" AS "Organization" ON "User"."organization_id" = "Organization"."id"
+    select "user"."id", "user"."name", "user"."login", "user"."avatar", "user"."position_id" as "positionid",
+    "user"."organization_id" as "organizationid", "user"."is_admin" as "isadmin",
+    "user"."position_id" as "positionid", "user"."organization_id" as "organizationid",
+    "position"."id" as "position.id", "position"."name" as "position.name", "organization"."id" as "organization.id", "organization"."name" as
+    "organization.name", "organization"."full_name" as "organization.fullname", "organization"."inn" as "organization.inn",
+    "organization"."address" as "organization.address" from "users" as "user" 
+    left join "positions" as "position" on "user"."position_id" = "position"."id"
+    left join "organizations" as "organization" on "user"."organization_id" = "organization"."id"
     where _search @@ to_tsquery(:query)
-    ORDER BY "User"."name" ASC
+    order by "user"."name" asc
   `;
   const users = await models.sequelize.query(sqlQuery, {
     replacements: { query: `${query} | ${query}:*` }

@@ -66,8 +66,12 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       })
     );
   } else if (accessType == 2) {
-    const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
-    const users = (await models.sequelize.query(usersQuery))[0];
+    const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
+    const users = (await models.sequelize.query(usersQuery, {
+      replacements: {
+        accessEntitiesIds
+      }
+    }))[0];
 
     await models.EventAccess.bulkCreate(
       accessIds.map(id => {
@@ -153,8 +157,12 @@ router.put("/:id", async ctx => {
       recipientsIds: accessEntitiesIds.concat([userId])
     });
   } else if (accessType == 2) {
-    const usersQuery = `select distinct user_id from participants where project_group_id in (${accessEntitiesIds})`;
-    const users = (await models.sequelize.query(usersQuery))[0];
+    const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
+    const users = (await models.sequelize.query(usersQuery, {
+      replacements: {
+        accessEntitiesIds
+      }
+    }))[0];
 
     await models.EventAccess.bulkCreate(
       accessEntitiesIds.map(id => {
@@ -236,13 +244,18 @@ router.get("/upcoming", async (ctx, next) => {
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
   const query = `select *from events where id in (select event_id from event_accesses 
-            where ((access_type = 2 and entity_id in (select project_group_id from participants where user_id = ${userId})) or 
-            (access_type = 1 and entity_id = ${userId})) or user_id = ${userId}) and
-            start_date >= '${from}'::date
+            where ((access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
+            (access_type = 1 and entity_id = :userId)) or user_id = :userId) and
+            start_date >= :from::date
             order by events.start_date asc
             limit 5`;
 
-  const events = (await models.sequelize.query(query))[0];
+  const events = (await models.sequelize.query(query, {
+    replacements: {
+      userId,
+      from: from.toString()
+    }
+  }))[0];
 
   ctx.body = await Promise.all(getFullEvents(events));
 });
@@ -265,19 +278,33 @@ async function getEvents(userId, from, to, page, pageSize) {
     //         order by events.start_date asc
     //         limit ${limit} offset ${offset}`;
   } else {
-    countQuery = `select count(*) from participants where project_group_id 
-                  in (select entity_id from event_accesses where event_id = 24 and access_type = 2)
-                  `;
+    countQuery = `select count(*) from events where id in (select event_id from event_accesses 
+            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
+            (access_type = 1 and entity_id = :userId)) or user_id = :userId
+            `;
 
     query = `select *from events where id in (select event_id from event_accesses 
-            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = ${userId})) or 
-            (access_type = 1 and entity_id = ${userId})) or user_id = ${userId}
+            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
+            (access_type = 1 and entity_id = :userId)) or user_id = :userId
             order by events.start_date asc
-            limit ${limit} offset ${offset}`;
+            limit :limit offset :offset`;
   }
 
-  const events = (await models.sequelize.query(query))[0];
-  const total = +(await models.sequelize.query(countQuery))[0][0].count;
+  const [events] = await models.sequelize.query(query, {
+    replacements: {
+      userId,
+      limit,
+      offset
+    }
+  });
+
+  const total = +(await models.sequelize.query(countQuery, {
+    replacements: {
+      userId,
+      limit,
+      offset
+    }
+  }))[0][0].count;
 
   return {
     events: await Promise.all(getFullEvents(events)),
@@ -290,16 +317,20 @@ async function getEvents(userId, from, to, page, pageSize) {
 function getFullEvents(events) {
   return events.map(async event => {
     const groupsCountQuery = `select count(*) from participants where project_group_id in 
-                      (select entity_id from event_accesses where event_id = ${
-                        event.id
-                      } and access_type = 2)`;
-    const usersCountQuery = `select count(*) from event_accesses where access_type = 1 and event_id=${
-      event.id
-    }`;
+                      (select entity_id from event_accesses where event_id = :eventId and access_type = 2)`;
+    const usersCountQuery = `select count(*) from event_accesses where access_type = 1 and event_id= :eventId`;
 
     const count =
-      +(await models.sequelize.query(groupsCountQuery))[0][0].count +
-      +(await models.sequelize.query(usersCountQuery))[0][0].count;
+      +(await models.sequelize.query(groupsCountQuery, {
+        replacements: {
+          eventId: event.id
+        }
+      }))[0][0].count +
+      +(await models.sequelize.query(usersCountQuery, {
+        replacements: {
+          eventId: event.id
+        }
+      }))[0][0].count;
 
     return {
       id: event.id,

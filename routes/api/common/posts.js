@@ -17,7 +17,7 @@ const createPost = async function createPost({
   const userQuery = `select users.name, users.avatar, users.position_id, positions.name as position
                     from users
                     left join positions on users.position_id = positions.id
-                    where users.id=${userId} 
+                    where users.id=:userId
                     `;
 
   await uploadFiles(files);
@@ -31,7 +31,11 @@ const createPost = async function createPost({
     userId
   });
 
-  const users = await models.sequelize.query(userQuery);
+  const users = await models.sequelize.query(userQuery, {
+    replacements: {
+      userId
+    }
+  });
   const user = users[0][0];
 
   // notification
@@ -88,14 +92,24 @@ const createPost = async function createPost({
   };
 };
 
-const getPosts = async function getPosts(query) {
-  const posts = (await models.sequelize.query(query))[0];
+const getPosts = async function getPosts(query, id) {
+  const posts = (await models.sequelize.query(query, {
+    replacements: {
+      id
+    }
+  }))[0];
 
   const postFilesPromises = posts.map(async post => {
     const filesQuery = `select files.id, files.file, files.size
                         from files
-                        where files.entity_id = ${post.id}`;
-    const files = await models.sequelize.query(filesQuery).then(f => f[0]);
+                        where files.entity_id = :postId`;
+    const files = await models.sequelize
+      .query(filesQuery, {
+        replacements: {
+          postId: post.id
+        }
+      })
+      .then(f => f[0]);
 
     return {
       id: post.id,

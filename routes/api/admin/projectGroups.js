@@ -23,25 +23,30 @@ router.get("/user", async (ctx, next) => {
   const query = `select title, avatar, id, is_open, user_id from
               project_groups 
               where id in (select project_group_id from participants where user_id = ${id})
-              limit ${limit} offset ${offset}`;
+              limit :limit offset :offset`;
 
   const countQuery = `select count(id) from
               project_groups 
-              where id in (select project_group_id from participants where user_id = ${id})
+              where id in (select project_group_id from participants where user_id = :id)
               `;
 
-  const groupsResult = await models.sequelize.query(query);
+  const groupsResult = await models.sequelize.query(query, {
+    replacements: {
+      limit,
+      offset
+    }
+  });
 
-  const groupsCount = +(await models.sequelize.query(countQuery))[0][0].count;
+  const groupsCount = +(await models.sequelize.query(countQuery, {
+    replacements: {
+      id
+    }
+  }))[0][0].count;
 
   const groups = groupsResult[0].map(async group => {
-    const participantsQuery = `select count(*) from participants where project_group_id=${
-      group.id
-    }`;
+    const participantsQuery = `select count(*) from participants where project_group_id=:groupId`;
 
-    const conversationsQuery = `select count(*) from conversations where project_group_id=${
-      group.id
-    }`;
+    const conversationsQuery = `select count(*) from conversations where project_group_id=:groupId`;
 
     const participant = await models.Participant.findOne({
       where: {
@@ -49,9 +54,18 @@ router.get("/user", async (ctx, next) => {
       }
     });
 
-    const participantsResult = await models.sequelize.query(participantsQuery);
+    const participantsResult = await models.sequelize.query(participantsQuery, {
+      replacements: {
+        groupId: group.id
+      }
+    });
     const conversationsResult = await models.sequelize.query(
-      conversationsQuery
+      conversationsQuery,
+      {
+        replacements: {
+          groupId: group.id
+        }
+      }
     );
 
     return {

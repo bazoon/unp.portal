@@ -49,10 +49,14 @@ router.get("/channels", async (ctx, next) => {
   const query = `select distinct channels.name, channels.avatar, channels.id,
                 channels.first_user_id, channels.second_user_id
                 from channels, user_channels
-                where (user_channels.channel_id = channels.id and user_channels.user_id = ${userId}) or 
- 	              (channels.first_user_id = ${userId}) or (channels.second_user_id = ${userId})`;
+                where (user_channels.channel_id = channels.id and user_channels.user_id = :userId) or 
+ 	              (channels.first_user_id = :userId) or (channels.second_user_id = :userId)`;
 
-  const [channels] = await models.sequelize.query(query);
+  const [channels] = await models.sequelize.query(query, {
+    replacements: {
+      userId
+    }
+  });
 
   ctx.body = await Promise.all(getFullChannels(channels, userId));
 });
@@ -61,20 +65,20 @@ function getFullChannels(channels, userId) {
   return channels.map(async channel => {
     const messageQuery = `select messages.id, message, name as userName, messages.created_at as createdAt from messages
                           left join users on messages.user_id = users.id
-                          where channel_id=${channel.id}
+                          where channel_id=:channelId
                           order by messages.created_at desc
                           limit 1`;
 
     const unreadsQuery = `select count(id) from messages 
-                  where channel_id = ${
-                    channel.id
-                  } and id not in (select message_id from "reads" where user_id = ${userId} and seen = true)`;
+                  where channel_id = :channelId and id not in (select message_id from "reads" where user_id = :userId and seen = true)`;
 
-    const participantsCountQuery = `select  count(*) from user_channels where channel_id=${
-      channel.id
-    }`;
+    const participantsCountQuery = `select  count(*) from user_channels where channel_id=:channelId`;
 
-    const messageResult = await models.sequelize.query(messageQuery);
+    const messageResult = await models.sequelize.query(messageQuery, {
+      replacements: {
+        channelId: channel.id
+      }
+    });
     const message = messageResult[0][0] && messageResult[0][0];
     const lastMessage = message && {
       id: message.id,
@@ -83,11 +87,21 @@ function getFullChannels(channels, userId) {
       createdAt: message.createdat
     };
 
-    const unreadsResult = await models.sequelize.query(unreadsQuery);
+    const unreadsResult = await models.sequelize.query(unreadsQuery, {
+      replacements: {
+        channelId: channel.id,
+        userId
+      }
+    });
     const unreads = unreadsResult[0][0] && +unreadsResult[0][0].count;
 
     const participantsCountResult = await models.sequelize.query(
-      participantsCountQuery
+      participantsCountQuery,
+      {
+        replacements: {
+          channelId: channel.id
+        }
+      }
     );
     const participantsCount =
       participantsCountResult[0][0] && +participantsCountResult[0][0].count;
@@ -201,8 +215,6 @@ router.post("/channels", koaBody({ multipart: true }), async ctx => {
     new Set(JSON.parse(usersIds).concat([userId]))
   );
 
-  // console.log(channelName, avatar, usersIds, usersIdsWithUser);
-
   const channel = await models.Channel.create({
     name: channelName,
     avatar: avatar
@@ -303,10 +315,16 @@ function getMessageFiles(message) {
   if (message.type !== "file") return Promise.resolve([]);
   const filesQuery = `select files.id, files.file, files.size
                       from files
-                      where files.entity_id = ${message.id}`;
-  return models.sequelize.query(filesQuery).then(function(messageFiles) {
-    return messageFiles[0];
-  });
+                      where files.entity_id = :messageId`;
+  return models.sequelize
+    .query(filesQuery, {
+      replacements: {
+        messageId: message.id
+      }
+    })
+    .then(function(messageFiles) {
+      return messageFiles[0];
+    });
 }
 
 router.get("/messages/search/:query", async (ctx, next) => {
@@ -349,13 +367,18 @@ router.get("/messages/exact", async ctx => {
   const query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId}) and messages.id >= ${messageId}
+            left join reads on (reads.message_id = messages.id and reads.user_id=:userId) 
+            where (messages.channel_id = :channelId) and messages.id >= :messageId
             order by messages.created_at
             limit 20`;
 
-  console.log(query);
-  const [messages] = await models.sequelize.query(query);
+  const [messages] = await models.sequelize.query(query, {
+    replacements: {
+      userId,
+      channelId,
+      messageId
+    }
+  });
   ctx.body = await Promise.all(getFullMessages(messages));
 });
 
@@ -372,29 +395,37 @@ router.get("/messages", async ctx => {
     query = `select *from (select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId}) and (messages.id < ${firstMessageId})
+            left join reads on (reads.message_id = messages.id and reads.user_id=:userId) 
+            where (messages.channel_id = :channelId) and (messages.id < :firstMessageId)
             order by created_at desc
-            limit ${limit}) as t order by created_at`;
+            limit :limit) as t order by created_at`;
   } else if (lastMessageId) {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId}) and (messages.id > ${lastMessageId})
+            left join reads on (reads.message_id = messages.id and reads.user_id=:userId) 
+            where (messages.channel_id = :channelId) and (messages.id > :lastMessageId)
             order by messages.created_at 
-            limit ${limit}`;
+            limit :limit`;
   } else {
     query = `select distinct messages.id, message, type, messages.user_id, name,
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
-            left join reads on (reads.message_id = messages.id and reads.user_id=${userId}) 
-            where (messages.channel_id = ${channelId}) and (messages.id < 60) and (messages.id > 40)
+            left join reads on (reads.message_id = messages.id and reads.user_id=:userId) 
+            where (messages.channel_id = :channelId) and (messages.id < 60) and (messages.id > 40)
             order by messages.created_at 
-            limit ${limit}`;
+            limit :limit`;
   }
 
-  const [messages] = await models.sequelize.query(query);
+  const [messages] = await models.sequelize.query(query, {
+    replacements: {
+      userId,
+      channelId,
+      firstMessageId,
+      lastMessageId,
+      limit
+    }
+  });
   ctx.body = await Promise.all(getFullMessages(messages));
 });
 
