@@ -169,7 +169,7 @@ const ChatStore = types
       socket.query.token = token;
       socket.query.userName = userName;
       socket.query.userId = userId;
-
+      console.log("connectSocket", token, socket.connected);
       if (token && !socket.connected) {
         socket.connect();
       }

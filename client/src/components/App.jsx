@@ -14,6 +14,7 @@ import { addMiddleware } from "mobx-state-tree";
 @inject("notificationsStore")
 @inject("currentUserStore")
 @inject("eventsStore")
+@inject("groupsStore")
 @inject("chatStore")
 @inject("usersStore")
 @observer
@@ -33,14 +34,13 @@ class App extends Component {
       this.props.currentUserStore,
       (call, next) => {
         if (call.name === "setData") {
-          console.log("middlware", call.name);
           this.props.eventsStore.loadAll();
           this.props.notificationsStore.load();
           this.props.chatStore.getChannels();
+          this.props.groupsStore.loadGroups();
           this.props.usersStore.loadAllUsers();
           this.props.chatStore.connectSocket();
         } else if (call.name === "logout") {
-          console.log("Logout");
           this.props.chatStore.disconnectSocket();
         }
 

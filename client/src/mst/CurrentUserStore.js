@@ -13,7 +13,6 @@ const CurrentUserStore = types
   })
   .actions(self => {
     const login = flow(function* login(payload) {
-      console.log("login");
       const data = yield api.login(payload);
       self.setData(data);
     });
@@ -39,14 +38,13 @@ const CurrentUserStore = types
       self.userId = -1;
       self.token = "";
       self.userName = "";
-      self.userId = "";
+      self.userId = -1;
       self.avatar = "";
-      self.isAdmin = "";
+      self.isAdmin = false;
       self.token = "";
     };
 
     const logout = function logout() {
-      api.logout();
       self.clearData({
         token: "",
         userName: "",
@@ -54,6 +52,11 @@ const CurrentUserStore = types
         avatar: "",
         isAdmin: false
       });
+      localStorage.removeItem("token");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("avatar");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("isAdmin");
     };
 
     const update = function update(user) {

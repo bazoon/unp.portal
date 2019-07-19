@@ -18,6 +18,7 @@ const http = require("http").Server(app.callback());
 const io = require("socket.io")(http);
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");
+const testRouter = require("./routes/api/test");
 const eventsRouter = require("./routes/api/events");
 
 const port = process.env.PORT || 5000;
@@ -30,6 +31,8 @@ app.use(koaBody());
 app.use(serve("client/dist"));
 app.use(mount("/uploads", serve("uploads")));
 
+app.use(testRouter.routes()).use(testRouter.allowedMethods());
+
 app.use(async (ctx, next) => {
   const requestPath = ctx.request.path;
   if (requestPath.indexOf("api") > 0 || requestPath.indexOf("graphql") > 0) {
@@ -39,6 +42,7 @@ app.use(async (ctx, next) => {
 });
 
 app.use(authRouter.routes()).use(authRouter.allowedMethods());
+
 app.use(koaJwt({ secret: process.env.API_TOKEN }));
 
 app.use(async (ctx, next) => {

@@ -22,7 +22,7 @@ const GroupsStore = types
     pageSize: types.optional(types.maybeNull(types.number), 10),
     current: types.maybeNull(types.reference(Group)),
     currentConversation: types.maybeNull(types.reference(Conversation)),
-    backgrounds: types.maybeNull(types.array(Background))
+    backgrounds: types.maybeNull(types.optional(types.array(Background), []))
   })
   .views(self => ({
     get all() {

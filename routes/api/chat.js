@@ -412,7 +412,7 @@ router.get("/messages", async ctx => {
             avatar, messages.created_at, seen from messages 
             join users on (messages.user_id = users.id)
             left join reads on (reads.message_id = messages.id and reads.user_id=:userId) 
-            where (messages.channel_id = :channelId) and (messages.id < 60) and (messages.id > 40)
+            where (messages.channel_id = :channelId) 
             order by messages.created_at 
             limit :limit`;
   }

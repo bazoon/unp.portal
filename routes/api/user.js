@@ -8,7 +8,7 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const fileName = __dirname + "/users.json";
 const expiresIn = 60 * 60 * 24;
 
-async function login(login, password) {
+async function login(login, password, ctx) {
   const user = await models.User.findOne({ where: { login } });
 
   if (!user) {
@@ -50,7 +50,7 @@ router.post("/login", async ctx => {
     return;
   }
 
-  ctx.body = await login(userName, password);
+  ctx.body = await login(userName, password, ctx);
 });
 
 router.post("/signup", async ctx => {
