@@ -65,6 +65,7 @@ const CurrentUserStore = types
       self.isAdmin = user.isAdmin;
       localStorage.setItem("userName", user.name);
       localStorage.setItem("avatar", user.avatar);
+      localStorage.setItem("isAdmin", user.isAdmin);
     };
 
     return {

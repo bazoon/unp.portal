@@ -12,6 +12,7 @@ import Calendar from "../../Calendar/Calendar";
 const { Search } = Input;
 
 @inject("usersStore")
+@inject("currentUserStore")
 @observer
 class Users extends Component {
   constructor(props) {
@@ -41,17 +42,19 @@ class Users extends Component {
                   </div>
                 </div>
               </div>
-              <div>
-                <Popover
-                  placement="bottom"
-                  content={this.renderOperationsMenu(record)}
-                  trigger="click"
-                >
-                  <div style={{ cursor: "pointer" }}>
-                    <MoreIcon style={{ cursor: "pointer" }} />
-                  </div>
-                </Popover>
-              </div>
+              {this.props.currentUserStore.isAdmin && (
+                <div>
+                  <Popover
+                    placement="bottom"
+                    content={this.renderOperationsMenu(record)}
+                    trigger="click"
+                  >
+                    <div style={{ cursor: "pointer" }}>
+                      <MoreIcon style={{ cursor: "pointer" }} />
+                    </div>
+                  </Popover>
+                </div>
+              )}
             </div>
           );
         }

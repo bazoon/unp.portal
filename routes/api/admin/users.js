@@ -170,7 +170,7 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
   const userId = ctx.user.id;
   const isSuperAdmin = ctx.user.isAdmin;
 
-  if (!(isSuperAdmin || id == ctx.user.id)) {
+  if (!(isSuperAdmin || id == ctx.user.id) || (!isSuperAdmin && isAdmin)) {
     ctx.status = 403;
     ctx.body = "Not authorized!";
     return;
@@ -213,8 +213,6 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
     });
   }
 
-  // notification
-
   if (newUser.isAdmin) {
     notificationService.superAdminAdded({
       userId,
@@ -242,7 +240,7 @@ router.put("/", koaBody({ multipart: true }), async (ctx, next) => {
   };
 });
 
-router.post("/delete", async (ctx, next) => {
+router.delete("/", async (ctx, next) => {
   const { isAdmin } = ctx.user;
   if (!isAdmin) {
     ctx.status = 403;

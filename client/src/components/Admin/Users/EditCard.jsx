@@ -27,6 +27,11 @@ class CreateCard extends Component {
     this.props.positionsStore.loadAll();
   }
 
+  componentDidUpdate() {
+    const { id } = this.props.match.params;
+    this.props.usersStore.get(id);
+  }
+
   handleSave = () => {
     const { id } = this.props.match.params;
     const form = this.formRef.current;

@@ -64,7 +64,9 @@ const UsersStore = types
 
     const updateUser = flow(function* updateUser(payload) {
       self.currentUser = yield api.update(payload);
-      self.currentUserStore.update(self.currentUser);
+      if (self.currentUser && self.currentUser.id == self.currentUserStore.id) {
+        self.currentUserStore.update(self.currentUser);
+      }
     });
 
     const loadUserGroups = flow(function* load(id) {

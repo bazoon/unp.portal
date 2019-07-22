@@ -44,9 +44,11 @@ const api = {
         currentUserStore.logout();
       }
 
-      notification.error({
-        message: JSON.stringify(e.message)
-      });
+      if (e.request.status !== 403) {
+        notification.error({
+          message: JSON.stringify(e.message)
+        });
+      }
 
       throw e;
     });
@@ -106,10 +108,12 @@ const api = {
         if (e.request.status === 401) {
           currentUserStore.logout();
         }
-
-        notification.error({
-          message: JSON.stringify(e.message)
-        });
+        // Ошибки связанные с правами обрабатываются уровнем выше
+        if (e.request.status !== 403) {
+          notification.error({
+            message: JSON.stringify(e.message)
+          });
+        }
         throw e;
       });
   }

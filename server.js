@@ -49,16 +49,15 @@ app.use(async (ctx, next) => {
   const token = ctx.request.header.authorization || "";
   const tokenOnly = token.split(" ")[1];
   if (tokenOnly) {
-    const user = jwt.verify(tokenOnly, process.env.API_TOKEN);
-    // const isAdminUrl = ctx.request.url.indexOf("admin/api") > 0;
+    const { id } = jwt.verify(tokenOnly, process.env.API_TOKEN);
+    ctx.user = await models.User.findOne({
+      where: {
+        id
+      }
+    });
 
-    // if (isAdminUrl && !user.isAdmin) {
-    //   ctx.status = 403;
-    //   ctx.body = "Not authorized!";
-    // } else {
-    ctx.user = user;
+    console.log("ctx.user.isAdmin", ctx.user.isAdmin);
     await next();
-    // }
   }
 });
 

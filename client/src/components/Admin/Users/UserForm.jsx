@@ -17,12 +17,14 @@ import {
   Avatar,
   Select
 } from "antd";
+
 import PositionForm from "../Positions/PositionsForm";
 import OrganizationForm from "../Organizations/OrganizationForm";
 import { observer, inject } from "mobx-react";
 import EditWindow from "../../EditWindow/EditWindow";
 import getImageUrlFromFile from "../../../utils/getImageUrlFromFile";
 import { Observer } from "mobx-react";
+import { Link } from "react-router-dom";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -192,6 +194,10 @@ class GroupForm extends Component {
 
     const { isPaswordRequired } = this.props;
     const { organizations, positions } = this.props;
+
+    const isEditingHimself = this.props.currentUserStore.id == user.id;
+    const canEdit = this.props.currentUserStore.isAdmin || isEditingHimself;
+
     const {
       isEditingOrganization,
       organizationEditRecord,
@@ -340,16 +346,15 @@ class GroupForm extends Component {
             {getFieldDecorator("password", {})(<Input />)}
           </Form.Item>
         </Row>
-        {this.props.currentUserStore.isAdmin && (
-          <Row>
-            <Form.Item label="Администратор" {...formItemLayout}>
-              {getFieldDecorator("isAdmin", {
-                valuePropName: "checked",
-                initialValue: user.isAdmin
-              })(<Checkbox />)}
-            </Form.Item>
-          </Row>
-        )}
+
+        <Row>
+          <Form.Item label="Администратор" {...formItemLayout}>
+            {getFieldDecorator("isAdmin", {
+              valuePropName: "checked",
+              initialValue: user.isAdmin
+            })(<Checkbox disabled={!this.props.currentUserStore.isAdmin} />)}
+          </Form.Item>
+        </Row>
 
         <Row>
           <Form.Item {...tailFormItemLayout}>
@@ -357,10 +362,14 @@ class GroupForm extends Component {
               onClick={this.props.onSave}
               style={{ marginRight: "8px" }}
               type="primary"
+              disabled={!canEdit}
             >
               Сохранить
             </Button>
-            <Button>Отмена</Button>
+
+            <Link to="/admin/users">
+              <Button>Отмена</Button>
+            </Link>
           </Form.Item>
         </Row>
       </Form>

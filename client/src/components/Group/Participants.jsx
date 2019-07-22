@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { pluralizeParticipants } from "../../utils/pluralize";
 
 class Participants extends Component {
   renderParticipants(participants, projectGroupId) {
@@ -53,7 +54,7 @@ class Participants extends Component {
               </div>
             ) : (
               <Link to={`${projectGroupId}/participants`}>
-                Всего {participants.length}
+                {pluralizeParticipants(participants.length)}
               </Link>
             )}
           </div>
