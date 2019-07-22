@@ -69,7 +69,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
     const users = (await models.sequelize.query(usersQuery, {
       replacements: {
-        accessEntitiesIds
+        accessEntitiesIds: accessIds
       }
     }))[0];
 

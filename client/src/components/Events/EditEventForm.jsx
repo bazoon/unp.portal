@@ -21,6 +21,7 @@ import eventsApi from "../../api/events";
 import { observer, inject } from "mobx-react";
 import UploadWindow from "../UploadWindow/UploadWindow";
 import RenderFiles from "../ProjectGroups/RenderFiles";
+import { Link } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -42,9 +43,9 @@ class EditEventForm extends Component {
 
   componentDidMount() {
     const id = this.props.match.params.id;
-    groupsApi.getUserGroups().then(data => {
+    groupsApi.getAll().then(({ groups }) => {
       this.setState({
-        groups: data
+        groups
       });
     });
     usersApi.loadAll().then(data => {
@@ -96,7 +97,6 @@ class EditEventForm extends Component {
 
   handleCancel = () => {
     this.props.form.resetFields();
-    this.props.onCancel();
   };
 
   handleDocsChanged = info => {
@@ -284,9 +284,6 @@ class EditEventForm extends Component {
                         : this.renderSelectGroups(accesses)
                     )}
                   </Col>
-                  <Col offset={2} span={5}>
-                    <Button type="primary">Найти</Button>
-                  </Col>
                 </Row>
               </Form.Item>
             </div>
@@ -300,7 +297,9 @@ class EditEventForm extends Component {
               >
                 Опубликовать
               </Button>
-              <Button onClick={this.handleCancel}>Отмена</Button>
+              <Link to="/events">
+                <Button onClick={this.handleCancel}>Отмена</Button>
+              </Link>
             </Col>
           </Row>
         </Form>

@@ -346,8 +346,11 @@ router.get("/", async (ctx, next) => {
   const offset = (page - 1) * pageSize;
   const limit = pageSize;
 
-  const query = `select title, avatar, id, is_open, user_id from
-              project_groups limit :limit offset :offset`;
+  const query =
+    page || pageSize
+      ? `select title, avatar, id, is_open, user_id from
+              project_groups limit :limit offset :offset`
+      : "select title, avatar, id, is_open, user_id from project_groups";
 
   const countQuery = `select project_groups.id, count(*) from project_groups, participants
                     where (project_groups.id = participants.project_group_id)
