@@ -295,6 +295,10 @@ router.delete("/:id", async ctx => {
   if (!canEdit) return;
 
   // notifications
+  const group = models.ProjectGroup.findOne({
+    where: { id }
+  });
+
   await notificationService.groupRemoved({
     userId,
     title: group.title,

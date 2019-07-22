@@ -38,9 +38,9 @@ class CreateEventForm extends Component {
   }
 
   componentDidMount() {
-    groupsApi.getUserGroups().then(data => {
+    groupsApi.getAll().then(({ groups }) => {
       this.setState({
-        groups: data
+        groups
       });
     });
     usersApi.loadAll().then(data => {

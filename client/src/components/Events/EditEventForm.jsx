@@ -129,11 +129,18 @@ class EditEventForm extends Component {
 
   renderSelectGroups(accesses) {
     const { getFieldDecorator } = this.props.form;
+
+    // TODO
+    // потенциально медленный код
+    const initialValue = accesses
+      .filter(a => this.state.groups.find(g => g.id === a.entityId))
+      .map(a => a.entityId);
+
     return (
       <>
         {getFieldDecorator("accessEntitiesIds", {
           valuePropName: "value",
-          initialValue: accesses.map(a => a.entityId)
+          initialValue
         })(
           <Select
             mode="multiple"

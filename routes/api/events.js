@@ -83,9 +83,11 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       })
     );
 
-    recipientsIds = recipientsIds.concat(users.map(u => u.id).concat([userId]));
+    recipientsIds = Array.from(
+      new Set(recipientsIds.concat(users.map(u => u.user_id)))
+    );
   }
-
+  console.log(recipientsIds);
   // notifications
   await notificationService.eventCreated({
     userId,
@@ -99,7 +101,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
 
   await models.EventAccess.findOrCreate({
     where: {
-      [Op.and]: [{ eventId: event.id }, { entityId: userId }]
+      [Op.and]: [{ eventId: event.id }, { entityId: userId }, { accessType: 1 }]
     },
     defaults: {
       eventId: event.id,
@@ -372,6 +374,21 @@ router.get("/:id", async (ctx, next) => {
     return;
   }
 
+  const condition = {
+    where: {
+      eventId: id
+    }
+  };
+
+  // если доступ групповой, то нужно ограничить множество идентификаторов доступов
+  // только идентификаторами групп, и не отсылать идентификатор самого пользователя
+  // который тоже по умолчанию добавляется в таблицу доступов (event_accesses)
+  if (event.accessType == 2) {
+    condition.where.accessType = 2;
+  }
+
+  const eventAccesses = await models.EventAccess.findAll(condition);
+
   ctx.body = {
     id: event.id,
     userId: event.UserId,
@@ -389,9 +406,7 @@ router.get("/:id", async (ctx, next) => {
       };
     }),
     accessType: event.accessType,
-    accesses: await models.EventAccess.findAll({
-      where: { eventId: id }
-    }).map(ea => ({
+    accesses: eventAccesses.map(ea => ({
       id: ea.id,
       accessType: ea.accessType,
       entityId: ea.entityId

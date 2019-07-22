@@ -34,27 +34,14 @@ class Chat {
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
 
-    console.log("");
-    console.log("");
-    console.log("");
-    console.log("onConnection");
-    console.log(`with token ${tokenOnly && tokenOnly.slice(0, 10)}`);
-
     try {
       decoded = jwt.verify(tokenOnly, process.env.API_TOKEN);
       this.clients[userId] = socket;
-      console.log(`User: ${userId} connected`);
-      console.log(`Connected ${Object.keys(this.clients).length}`);
-      console.log(`Sockets: ${Object.keys(this.clients)}`);
     } catch (e) {
       console.log(userId, "failed");
       socket.disconnect(true);
       return;
     }
-
-    console.log("");
-    console.log("");
-    console.log("");
 
     socket.on("disconnect", this.onDisconnect.bind(this, socket));
 

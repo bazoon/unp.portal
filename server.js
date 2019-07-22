@@ -56,7 +56,6 @@ app.use(async (ctx, next) => {
       }
     });
 
-    console.log("ctx.user.isAdmin", ctx.user.isAdmin);
     await next();
   }
 });
