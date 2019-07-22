@@ -97,7 +97,9 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   });
 
   // reminders
-  eventReminder.remind({ title, description, date }, recipientsIds, delay);
+  if (remind) {
+    eventReminder.remind({ title, description, date }, recipientsIds, delay);
+  }
 
   await models.EventAccess.findOrCreate({
     where: {

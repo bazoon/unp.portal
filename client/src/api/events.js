@@ -1,4 +1,5 @@
 import api from "./api";
+import { notification } from "antd";
 
 export default {
   loadAll(payload) {
@@ -23,6 +24,9 @@ export default {
   },
   update(id, payload) {
     return api.put(`api/events/${id}`, payload).then(({ data }) => {
+      notification.success({
+        message: "Данные события сохранены."
+      });
       return data;
     });
   },
