@@ -29,9 +29,6 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "RESTRICT"
       },
-      accessType: {
-        type: Sequelize.INTEGER
-      },
       remind: {
         type: Sequelize.INTEGER
       },

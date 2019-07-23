@@ -39,7 +39,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   const remindAt = moment(date);
   remindAt.subtract(moment.duration(+remind, "m"));
   const delay = remindAt.diff(moment());
-  let recipientsIds = [userId];
+  let recipientsIds = [];
 
   await models.File.bulkCreate(
     files.map(file => {
@@ -53,15 +53,18 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     })
   );
 
-  const accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
+  let accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
+
   if (accessType == 1) {
-    recipientsIds = recipientsIds.concat(accessIds);
+    accessIds.push(userId);
+    accessIds = Array.from(new Set(accessIds));
+    recipientsIds = accessIds;
+
     await models.EventAccess.bulkCreate(
       accessIds.map(id => {
         return {
           eventId: event.id,
-          entityId: id,
-          accessType: 1
+          userId: id
         };
       })
     );
@@ -77,17 +80,26 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
       accessIds.map(id => {
         return {
           eventId: event.id,
-          entityId: id,
-          accessType: 2
+          groupId: id
         };
       })
     );
+
+    await models.EventAccess.findOrCreate({
+      where: {
+        [Op.and]: [{ eventId: event.id }, { userId }]
+      },
+      defaults: {
+        eventId: event.id,
+        userId
+      }
+    });
 
     recipientsIds = Array.from(
       new Set(recipientsIds.concat(users.map(u => u.user_id)))
     );
   }
-  console.log(recipientsIds);
+
   // notifications
   await notificationService.eventCreated({
     userId,
@@ -101,22 +113,11 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     eventReminder.remind({ title, description, date }, recipientsIds, delay);
   }
 
-  await models.EventAccess.findOrCreate({
-    where: {
-      [Op.and]: [{ eventId: event.id }, { entityId: userId }, { accessType: 1 }]
-    },
-    defaults: {
-      eventId: event.id,
-      entityId: userId,
-      accessType: 1
-    }
-  });
-
   ctx.body = event;
 });
 
 router.put("/:id", async ctx => {
-  const {
+  let {
     title,
     description,
     accessType,
@@ -144,12 +145,15 @@ router.put("/:id", async ctx => {
   });
 
   if (accessType == 1) {
+    accessEntitiesIds.push(userId);
+    accessEntitiesIds = Array.from(new Set(accessEntitiesIds));
+    recipientsIds = accessEntitiesIds;
+
     await models.EventAccess.bulkCreate(
       accessEntitiesIds.map(id => {
         return {
           eventId: event.id,
-          entityId: id,
-          accessType: 1
+          userId: id
         };
       })
     );
@@ -164,7 +168,7 @@ router.put("/:id", async ctx => {
     const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
     const users = (await models.sequelize.query(usersQuery, {
       replacements: {
-        accessEntitiesIds
+        accessEntitiesIds: accessEntitiesIds
       }
     }))[0];
 
@@ -172,11 +176,20 @@ router.put("/:id", async ctx => {
       accessEntitiesIds.map(id => {
         return {
           eventId: event.id,
-          entityId: id,
-          accessType: 2
+          groupId: id
         };
       })
     );
+
+    await models.EventAccess.findOrCreate({
+      where: {
+        [Op.and]: [{ eventId: event.id }, { userId }]
+      },
+      defaults: {
+        eventId: event.id,
+        userId
+      }
+    });
 
     await notificationService.eventUpdated({
       userId,
@@ -185,16 +198,6 @@ router.put("/:id", async ctx => {
       recipientsIds: users.map(u => u.id).concat([userId])
     });
   }
-
-  await models.EventAccess.findOrCreate({
-    where: {
-      [Op.and]: [{ eventId: event.id }, { entityId: userId }]
-    },
-    defaults: {
-      eventId: event.id,
-      entityId: userId
-    }
-  });
 
   ctx.body = event;
 });
@@ -248,8 +251,8 @@ router.get("/upcoming", async (ctx, next) => {
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
   const query = `select *from events where id in (select event_id from event_accesses 
-            where ((access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
-            (access_type = 1 and entity_id = :userId)) or user_id = :userId) and
+            where ((group_id in (select project_group_id from participants where user_id = :userId)) or 
+            (event_accesses.user_id = :userId)) or events.user_id = :userId) and
             start_date >= :from::date
             order by events.start_date asc
             limit 5`;
@@ -283,13 +286,13 @@ async function getEvents(userId, from, to, page, pageSize) {
     //         limit ${limit} offset ${offset}`;
   } else {
     countQuery = `select count(*) from events where id in (select event_id from event_accesses 
-            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
-            (access_type = 1 and entity_id = :userId)) or user_id = :userId
-            `;
+                  where (group_id in (select project_group_id from participants where user_id = :userId)) or 
+                  (event_accesses.user_id = :userId)) or user_id = :userId
+                `;
 
     query = `select *from events where id in (select event_id from event_accesses 
-            where (access_type = 2 and entity_id in (select project_group_id from participants where user_id = :userId)) or 
-            (access_type = 1 and entity_id = :userId)) or user_id = :userId
+            where (group_id in (select project_group_id from participants where user_id = :userId)) or 
+            (event_accesses.user_id = :userId)) or user_id = :userId
             order by events.start_date asc
             limit :limit offset :offset`;
   }
@@ -321,8 +324,8 @@ async function getEvents(userId, from, to, page, pageSize) {
 function getFullEvents(events) {
   return events.map(async event => {
     const groupsCountQuery = `select count(*) from participants where project_group_id in 
-                      (select entity_id from event_accesses where event_id = :eventId and access_type = 2)`;
-    const usersCountQuery = `select count(*) from event_accesses where access_type = 1 and event_id= :eventId`;
+                      (select group_id from event_accesses where event_id = :eventId)`;
+    const usersCountQuery = `select count(*) from event_accesses where event_id= :eventId and user_id is not null`;
 
     const count =
       +(await models.sequelize.query(groupsCountQuery, {
@@ -376,20 +379,21 @@ router.get("/:id", async (ctx, next) => {
     return;
   }
 
-  const condition = {
-    where: {
-      eventId: id
-    }
-  };
+  let query;
 
-  // если доступ групповой, то нужно ограничить множество идентификаторов доступов
-  // только идентификаторами групп, и не отсылать идентификатор самого пользователя
-  // который тоже по умолчанию добавляется в таблицу доступов (event_accesses)
-  if (event.accessType == 2) {
-    condition.where.accessType = 2;
+  if (event.accessType == 1) {
+    query = `select id, user_id, group_id from event_accesses 
+             where user_id is not null and event_id=:eventId`;
+  } else {
+    query = `select id, user_id, group_id from event_accesses 
+             where group_id is not null and event_id=:eventId`;
   }
 
-  const eventAccesses = await models.EventAccess.findAll(condition);
+  const [eventAccesses] = await models.sequelize.query(query, {
+    replacements: {
+      eventId: id
+    }
+  });
 
   ctx.body = {
     id: event.id,
@@ -410,8 +414,8 @@ router.get("/:id", async (ctx, next) => {
     accessType: event.accessType,
     accesses: eventAccesses.map(ea => ({
       id: ea.id,
-      accessType: ea.accessType,
-      entityId: ea.entityId
+      userId: ea.user_id,
+      groupId: ea.group_id
     }))
   };
 });

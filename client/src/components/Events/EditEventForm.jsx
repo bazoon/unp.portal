@@ -43,7 +43,7 @@ class EditEventForm extends Component {
 
   componentDidMount() {
     const id = this.props.match.params.id;
-    groupsApi.getAll().then(({ groups }) => {
+    groupsApi.getUserGroups().then(groups => {
       this.setState({
         groups
       });
@@ -68,28 +68,10 @@ class EditEventForm extends Component {
 
     form.validateFields((err, fields) => {
       if (err) return;
-      // let files = [];
-
-      // if (fields.files) {
-      //   files = fields.files.map(f => f.originFileObj);
-      //   delete fields.files;
-      // }
 
       if (fields.date) {
         fields.date = fields.date.toISOString();
       }
-
-      // const keys = Object.keys(fields);
-
-      // keys.forEach(key => {
-      //   if (fields[key]) {
-      //     formData.append(key, fields[key]);
-      //   }
-      // });
-
-      // files.forEach(file => {
-      //   formData.append("file", file);
-      // });
 
       this.props.eventsStore.update(id, fields).then(() => {});
     });
@@ -133,8 +115,8 @@ class EditEventForm extends Component {
     // TODO
     // потенциально медленный код
     const initialValue = accesses
-      .filter(a => this.state.groups.find(g => g.id === a.entityId))
-      .map(a => a.entityId);
+      .filter(a => this.state.groups.find(g => g.id === a.groupId))
+      .map(a => a.groupId);
 
     return (
       <>
@@ -165,7 +147,7 @@ class EditEventForm extends Component {
       <>
         {getFieldDecorator("accessEntitiesIds", {
           valuePropName: "value",
-          initialValue: accesses.map(a => a.entityId)
+          initialValue: accesses.map(a => a.userId)
         })(
           <Select
             mode="multiple"

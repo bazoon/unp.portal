@@ -4,8 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     "EventAccess",
     {
       eventId: DataTypes.INTEGER,
-      accessType: DataTypes.INTEGER,
-      entityId: DataTypes.INTEGER
+      userId: DataTypes.INTEGER,
+      groupId: DataTypes.INTEGER
     },
     {}
   );
