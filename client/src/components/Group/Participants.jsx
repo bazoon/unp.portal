@@ -24,6 +24,9 @@ class Participants extends Component {
                 <div className="group__participant-description">
                   <div className="group__participant-role">
                     {participant.roleName}
+                    {participant.isAdmin && (
+                      <span className="admin-user__admin">(Админ)</span>
+                    )}
                   </div>
                   <div className="group__participant-name">
                     {participant.name}

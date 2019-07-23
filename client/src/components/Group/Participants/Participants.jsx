@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import moment from "moment";
 import MoreIcon from "../../../../images/more";
 import { observer, inject } from "mobx-react";
+import cn from "classnames";
 import "./Participants.less";
 
 @inject("groupsStore")
@@ -26,8 +27,11 @@ class Participants extends Component {
         dataIndex: "position",
         key: "position",
         render: (value, record) => {
+          const className = cn({
+            "page-participant__name_waiting": record.state === 2
+          });
           return (
-            <div>
+            <div className={className}>
               <div>
                 {record.name}
                 {record.isAdmin && (
@@ -85,7 +89,14 @@ class Participants extends Component {
     this.props.groupsStore.approve({ id });
   };
 
+  handleDecline = id => {
+    this.props.groupsStore.decline({ id });
+  };
+
   renderMenu(id, isAdmin, state) {
+    const canApprove = state === 2 || state === 3;
+    const canDecline = state === 2;
+
     return (
       <div>
         {state === 1 && (
@@ -114,12 +125,20 @@ class Participants extends Component {
           </>
         )}
 
-        {state === 2 && (
+        {canApprove && (
           <div
             className="page-participants__link"
             onClick={() => this.handleApprove(id)}
           >
             Одобрить заявку
+          </div>
+        )}
+        {canDecline && (
+          <div
+            className="page-participants__link"
+            onClick={() => this.handleDecline(id)}
+          >
+            Отклонить заявку
           </div>
         )}
       </div>

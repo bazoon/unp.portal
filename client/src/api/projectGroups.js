@@ -79,6 +79,11 @@ export default {
       .post("api/projectGroups/requests", payload)
       .then(({ data }) => data.id);
   },
+  decline(payload) {
+    return api
+      .delete("api/projectGroups/requests", payload)
+      .then(({ data }) => data.id);
+  },
   createConversation(payload) {
     return api
       .post(`api/projectGroups/conversations`, payload)

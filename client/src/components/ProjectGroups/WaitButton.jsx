@@ -8,7 +8,7 @@ export default props => {
       className="project-group__leave-button"
       style={props.style}
     >
-      На рассмотрении
+      {props.children}
     </Button>
   );
 };

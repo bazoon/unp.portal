@@ -140,6 +140,46 @@ router.put("/backgrounds", async ctx => {
 //   });
 // });
 
+router.delete("/requests", async ctx => {
+  const { id } = ctx.request.query;
+  const userId = ctx.user.id;
+
+  const participant = await models.Participant.findOne({ where: { id } });
+
+  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  if (!canEdit) return;
+
+  const currentParticipant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [
+        { userId: userId },
+        { projectGroupId: participant.projectGroupId }
+      ]
+    }
+  });
+
+  await participant.update({
+    state: 3
+  });
+
+  // Notification setup
+
+  // const group = await models.ProjectGroup.findOne({
+  //   id: participant.projectGroupId
+  // });
+
+  // notificationService.groupRequestApproved({
+  //   userId,
+  //   recipientId: participant.userId,
+  //   groupId: group.id,
+  //   groupTitle: group.title
+  // });
+
+  // end
+
+  ctx.body = { id: participant.id };
+});
+
 router.delete("/participants", async ctx => {
   const { id } = ctx.request.query;
   const userId = ctx.user.id;
@@ -478,7 +518,7 @@ router.get("/:id", async (ctx, next) => {
                           left join participant_roles on (participants.participant_role_id = participant_roles.id)
                           left join positions on (users.position_id = positions.id)
                           where (participants.project_group_id = :id)
-                          order by state desc, level`;
+                          order by is_admin, state desc, level`;
 
   const groupResult = await models.sequelize.query(query, {
     replacements: {

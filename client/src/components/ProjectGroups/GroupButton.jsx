@@ -20,6 +20,7 @@ class GroupButton extends Component {
     const canRequest = !isOpen && state === 0;
     const canLeave = state === 1;
     const isWaiting = state === 2;
+    const isDeclined = state === 3;
 
     return (
       <div>
@@ -29,7 +30,8 @@ class GroupButton extends Component {
 
         {canRequest && <RequestButton style={style} onClick={onRequest} />}
 
-        {isWaiting && <WaitButton style={style} />}
+        {isWaiting && <WaitButton style={style}>На рассмотрении</WaitButton>}
+        {isDeclined && <WaitButton style={style}>Отказано</WaitButton>}
       </div>
     );
   }

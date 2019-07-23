@@ -200,6 +200,20 @@ const GroupsStore = types
       self.current.participants = participants;
     });
 
+    const decline = flow(function* decline(payload) {
+      yield api.decline(payload);
+      const participants = self.current.participants.map(p => {
+        if (p.id == payload.id) {
+          // TODO разобраться нужен ли isMember вообще
+          p.isMember = true;
+          p.state = 3;
+          return Participant.create(getSnapshot(p));
+        }
+        return p;
+      });
+      self.current.participants = participants;
+    });
+
     const removeFromGroup = flow(function* removeFromGroup(payload) {
       yield api.removeFromGroup(payload);
       self.current.participants = self.current.participants.filter(
@@ -265,6 +279,7 @@ const GroupsStore = types
       makeAdmin,
       removeAdmin,
       approve,
+      decline,
       removeFromGroup,
       createConversation,
       setCurrentConversation,

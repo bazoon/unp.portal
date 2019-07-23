@@ -11,8 +11,23 @@ module.exports = {
       event_id: {
         type: Sequelize.INTEGER
       },
-      entity_id: {
-        type: Sequelize.INTEGER
+      user_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "users",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
+      },
+      group_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "project_groups",
+          key: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
       },
       created_at: {
         allowNull: false,
