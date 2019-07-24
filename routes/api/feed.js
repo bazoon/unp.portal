@@ -20,7 +20,7 @@ router.get("/", async (ctx, next) => {
     left join users 
     on conversations.user_id = users.id
     where project_group_id in (select participants.project_group_id from participants
-    where user_id = 1 and state = 1) group by conversations.id, users.name, project_groups.title
+    where user_id = :userId and state = 1) group by conversations.id, users.name, project_groups.title
 `;
 
   const [conversations] = await models.sequelize.query(query, {
