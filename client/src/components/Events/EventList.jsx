@@ -31,6 +31,10 @@ class EventList extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.eventsStore.loadAll();
+  }
+
   handleToggleFiles = id => {
     const { isFilesVisible } = this.state;
     isFilesVisible[id] = !isFilesVisible[id];
@@ -186,7 +190,8 @@ class EventList extends Component {
   // renders
 
   renderEvents() {
-    const groups = this.props.eventsStore.groupedByDays;
+    const groups = { ...this.props.eventsStore.groupedByDays };
+
     return (
       <div className="event-list">
         <Events

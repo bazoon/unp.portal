@@ -264,7 +264,8 @@ router.delete("/admins", async ctx => {
 
   ctx.body = { id: participant.id };
 });
-// unsubscribe
+
+// unsubscribe from group
 router.delete("/:id/subscriptions", async ctx => {
   const userId = ctx.user.id;
   const groupId = ctx.params.id;
@@ -290,7 +291,6 @@ router.delete("/:id/subscriptions", async ctx => {
     };
   } else {
     // notifications
-
     const group = await models.ProjectGroup.findOne({
       where: {
         id: groupId
@@ -310,6 +310,34 @@ router.delete("/:id/subscriptions", async ctx => {
       applicantId: userId,
       applicantName: user.name,
       recipientsIds: await getGroupUsersIds(groupId)
+    });
+
+    // end notifications
+
+    // events update
+    // 1) Переписать все события этого пользователя которые относятся
+    // к этой группе на админа этой группы
+    const groupAdmin = await models.Participant.findOne({
+      where: {
+        [Op.and]: {
+          projectGroupId: groupId,
+          isAdmin: true
+        }
+      }
+    });
+
+    const q = `select event_id from event_accesses where group_id=:groupId and user_id=:userId`;
+
+    // Если пользователь вышел из групы
+    const query = `update events set user_id = :adminId where user_id=:userId
+                  and id in (select event_id from event_accesses where group_id=:groupId)
+                  `;
+    const [events] = await models.sequelize.query(query, {
+      replacements: {
+        adminId: groupAdmin.userId,
+        userId,
+        groupId
+      }
     });
 
     participant.destroy();

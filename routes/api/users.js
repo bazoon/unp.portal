@@ -71,11 +71,11 @@ router.get("/search/:query", async (ctx, next) => {
 router.get("/", async (ctx, next) => {
   const { isAdmin } = ctx.user;
 
-  if (!ctx.user.isAdmin) {
-    ctx.status = 403;
-    ctx.body = "Not authorized!";
-    return;
-  }
+  // if (!ctx.user.isAdmin) {
+  //   ctx.status = 403;
+  //   ctx.body = "Not authorized!";
+  //   return;
+  // }
 
   const users = await models.User.findAll({
     include: [

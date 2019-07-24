@@ -4,6 +4,7 @@ import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
 import { Popover } from "antd";
 import { Link } from "react-router-dom";
+import { Observer } from "mobx-react";
 
 class Events extends Component {
   renderOperationsMenu(event) {
@@ -53,13 +54,19 @@ class Events extends Component {
                           </div>
                         </div>
                       </div>
-                      <Popover
-                        placement="bottom"
-                        content={this.renderOperationsMenu(event)}
-                        trigger="click"
-                      >
-                        <MoreIcon style={{ cursor: "pointer" }} />
-                      </Popover>
+                      <Observer>
+                        {() =>
+                          event.canEdit && (
+                            <Popover
+                              placement="bottom"
+                              content={this.renderOperationsMenu(event)}
+                              trigger="click"
+                            >
+                              <MoreIcon style={{ cursor: "pointer" }} />
+                            </Popover>
+                          )
+                        }
+                      </Observer>
                     </div>
                   );
                 })}

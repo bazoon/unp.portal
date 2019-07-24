@@ -215,8 +215,6 @@ router.put("/:id", async ctx => {
 //   to.tz("Etc/GMT-0");
 
 //   const events = await getEvents(userId, from, to);
-//   ctx.body = events;
-// });
 
 router.get("/search/:query", async (ctx, next) => {
   const { query } = ctx.params;
@@ -238,13 +236,20 @@ router.get("/search/:query", async (ctx, next) => {
 
 router.get("/", async (ctx, next) => {
   const { page, pageSize } = ctx.request.query;
-  const userId = ctx.user.id;
-  const events = await getEvents(userId, undefined, undefined, page, pageSize);
+  const { id: userId, isAdmin } = ctx.user;
+
+  const events = await getEvents({
+    userId,
+    isAdmin,
+    page,
+    pageSize
+  });
+
   ctx.body = events;
 });
 
 router.get("/upcoming", async (ctx, next) => {
-  const userId = ctx.user.id;
+  const { id: userId, isAdmin } = ctx.user;
   const { date } = ctx.request.query;
   const from = (date && moment(date)) || moment(new Date());
   from.tz("Etc/GMT-0");
@@ -264,10 +269,10 @@ router.get("/upcoming", async (ctx, next) => {
     }
   }))[0];
 
-  ctx.body = await Promise.all(getFullEvents(events));
+  ctx.body = await Promise.all(getFullEvents({ events, userId, isAdmin }));
 });
 
-async function getEvents(userId, from, to, page, pageSize) {
+async function getEvents({ userId, from, to, page, pageSize, isAdmin }) {
   let query, countQuery;
   const offset = (page - 1) * pageSize;
   const limit = pageSize;
@@ -314,14 +319,14 @@ async function getEvents(userId, from, to, page, pageSize) {
   }))[0][0].count;
 
   return {
-    events: await Promise.all(getFullEvents(events)),
+    events: await Promise.all(getFullEvents({ events, userId, isAdmin })),
     pagination: {
       total: total
     }
   };
 }
 
-function getFullEvents(events) {
+function getFullEvents({ events, userId, isAdmin }) {
   return events.map(async event => {
     const groupsCountQuery = `select count(*) from participants where project_group_id in 
                       (select group_id from event_accesses where event_id = :eventId)`;
@@ -342,6 +347,7 @@ function getFullEvents(events) {
     return {
       id: event.id,
       title: event.title,
+      canEdit: isAdmin || userId == event.user_id,
       description: event.description,
       startDate: event.start_date,
       remind: event.remind,
@@ -399,6 +405,7 @@ router.get("/:id", async (ctx, next) => {
     id: event.id,
     userId: event.UserId,
     userName: user.name,
+    canEdit: event.userId == userId,
     userAvatar: getUploadFilePath(user.avatar),
     description: event.description,
     remind: event.remind,
