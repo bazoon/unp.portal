@@ -97,17 +97,29 @@ class GroupPosts extends Component {
   };
 
   handleKeyPress = e => {
+    if (e.charCode === 13) {
+      this.handleSend(e);
+    }
+  };
+
+  handleSend = e => {
     const { onSend } = this.props;
     const { uploadFiles } = this.state;
-    if (e.charCode === 13) {
-      const originFiles = uploadFiles.map(f => f.originFileObj);
-      onSend(e.target.value, originFiles).then(() => {
-        this.setState({
-          currentPost: "",
-          uploadFiles: []
-        });
-      });
+    const originFiles = uploadFiles.map(f => f.originFileObj);
+    const { target } = e;
+    let value;
+    if (target.tagName === "INPUT") {
+      value = target.value;
+    } else {
+      value = target.closest("svg").parentElement.previousSibling.value;
     }
+
+    onSend(value, originFiles).then(() => {
+      this.setState({
+        currentPost: "",
+        uploadFiles: []
+      });
+    });
   };
 
   handlePostReply = postId => {
@@ -125,24 +137,37 @@ class GroupPosts extends Component {
   };
 
   handleReplyKeyPress = (e, post) => {
+    if (e.charCode === 13) {
+      this.handleReplySend(e, post);
+    }
+  };
+
+  handleReplySend = (e, post) => {
+    const { target } = e;
+    let value;
+
+    if (target.tagName === "INPUT") {
+      value = target.value;
+    } else {
+      value = target.closest("svg").parentElement.previousSibling.value;
+    }
+
     const { onReplySend } = this.props;
     const uploadFiles = this.state.replyUploadFiles[post.id];
 
-    if (e.charCode === 13) {
-      const originFiles = uploadFiles && uploadFiles.map(f => f.originFileObj);
-      onReplySend(e.target.value, post, originFiles).then(() => {
-        const postReplies = { ...this.state.postReplies };
-        const replyUploadFiles = { ...this.state.replyUploadFiles };
+    const originFiles = uploadFiles && uploadFiles.map(f => f.originFileObj);
+    onReplySend(value, post, originFiles).then(() => {
+      const postReplies = { ...this.state.postReplies };
+      const replyUploadFiles = { ...this.state.replyUploadFiles };
 
-        postReplies[post.id] = "";
-        replyUploadFiles[post.id] = [];
+      postReplies[post.id] = "";
+      replyUploadFiles[post.id] = [];
 
-        this.setState({
-          postReplies,
-          replyUploadFiles
-        });
+      this.setState({
+        postReplies,
+        replyUploadFiles
       });
-    }
+    });
   };
 
   handleShowMorePosts = (id, posts) => {
@@ -222,7 +247,10 @@ class GroupPosts extends Component {
                   onClick={() => this.handleReplyFileUpload(post.id)}
                   style={{ marginRight: "12px" }}
                 />
-                <SendIcon />
+                <SendIcon
+                  style={{ cursor: "pointer" }}
+                  onClick={e => this.handleReplySend(e, post)}
+                />
               </>
             }
           />
@@ -361,7 +389,10 @@ class GroupPosts extends Component {
                   onClick={this.handleToggleUpload}
                   style={{ marginRight: "12px" }}
                 />
-                <SendIcon />
+                <SendIcon
+                  style={{ cursor: "pointer" }}
+                  onClick={this.handleSend}
+                />
               </>
             }
           />

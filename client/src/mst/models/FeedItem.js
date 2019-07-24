@@ -10,7 +10,8 @@ const FeedItem = types.model("FeedItem", {
   createdAt: types.string,
   description: types.string,
   isCommentable: types.maybeNull(types.boolean),
-  title: types.string
+  title: types.string,
+  groupTitle: types.string
 });
 
 export default FeedItem;

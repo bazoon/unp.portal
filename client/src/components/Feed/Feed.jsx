@@ -12,7 +12,6 @@ import {
   Table
 } from "antd";
 
-import api from "../../api/api";
 import "./Feed.less";
 import { observer, inject } from "mobx-react";
 import Calendar from "../Calendar/Calendar";
@@ -29,6 +28,7 @@ const columns = [
       const url = `/groups/${record.groupId}/conversations/${record.id}`;
       return (
         <div className="feed__table-row">
+          <div className="feed__item-group">{record.groupTitle}</div>
           <span className="feed__item-author">{record.userName}</span>, &nbsp;
           <span className="feed__item-date">{date}</span>
           <div className="feed__item-title">

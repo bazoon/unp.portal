@@ -1,6 +1,5 @@
 import axios from "axios";
 import currentUserStore from "../mst/CurrentUserStore";
-import { notification } from "antd";
 
 const api = {
   get: (url, params = {}, skipTokenCheck) => {
@@ -16,13 +15,11 @@ const api = {
       params
     };
 
-    return axios.get("/" + url, config).catch(e => {
+    return axios.get(`/${url}`, config).catch(e => {
       if (e.request.status === 401) {
         currentUserStore.logout();
       }
-      notification.error({
-        message: JSON.stringify(e.message)
-      });
+      console.error(e.message);
       throw e;
     });
   },
@@ -39,15 +36,13 @@ const api = {
       params
     };
 
-    return axios.delete("/" + url, config).catch(e => {
+    return axios.delete(`/${url}`, config).catch(e => {
       if (e.request.status === 401) {
         currentUserStore.logout();
       }
 
       if (e.request.status !== 403) {
-        notification.error({
-          message: JSON.stringify(e.message)
-        });
+        console.error(e.message);
       }
 
       throw e;
@@ -66,11 +61,8 @@ const api = {
     };
 
     return axios
-      .post("/" + url, data, config)
+      .post(`/${url}`, data, config)
       .then(data => {
-        // notification.success({
-        //   message: "Запись успешно создана"
-        // });
         return data;
       })
       .catch(e => {
@@ -78,9 +70,7 @@ const api = {
           currentUserStore.logout();
         }
 
-        notification.error({
-          message: JSON.stringify(e.message)
-        });
+        console.error(e.message);
         throw e;
       });
   },
@@ -97,11 +87,8 @@ const api = {
     };
 
     return axios
-      .put("/" + url, data, config)
+      .put(`/${url}`, data, config)
       .then(data => {
-        // notification.success({
-        //   message: "Данные успешно обновлены"
-        // });
         return data;
       })
       .catch(e => {
@@ -110,9 +97,7 @@ const api = {
         }
         // Ошибки связанные с правами обрабатываются уровнем выше
         if (e.request.status !== 403) {
-          notification.error({
-            message: JSON.stringify(e.message)
-          });
+          console.error(e.message);
         }
         throw e;
       });

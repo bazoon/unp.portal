@@ -103,12 +103,14 @@ class Users extends Component {
         >
           Редактировать
         </div>
-        <div
-          className="admin-user__menu-item"
-          onClick={() => this.handleDelete(user.id)}
+        <Popconfirm
+          title="Are you sure delete this task?"
+          onConfirm={() => this.handleDelete(user.id)}
+          okText="Yes"
+          cancelText="No"
         >
-          Удалить
-        </div>
+          <div className="admin-user__menu-item">Удалить</div>
+        </Popconfirm>
       </>
     );
   }
