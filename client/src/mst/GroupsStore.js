@@ -202,15 +202,10 @@ const GroupsStore = types
 
     const decline = flow(function* decline(payload) {
       yield api.decline(payload);
-      const participants = self.current.participants.map(p => {
-        if (p.id == payload.id) {
-          // TODO разобраться нужен ли isMember вообще
-          p.isMember = true;
-          p.state = 3;
-          return Participant.create(getSnapshot(p));
-        }
-        return p;
+      const participants = self.current.participants.filter(p => {
+        return p.id != payload.id;
       });
+
       self.current.participants = participants;
     });
 

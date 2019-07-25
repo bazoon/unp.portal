@@ -163,6 +163,16 @@ module.exports = {
       recipientId
     );
   },
+  groupRequestDeclined: function(config) {
+    const { userId, recipientId, groupId, groupTitle } = config;
+    const description = `Ваша заявка в группу #${groupTitle}:group:${groupId}# отклонена.`;
+    return createNotification(
+      userId,
+      description,
+      constants.notifications.type.private,
+      recipientId
+    );
+  },
   groupAdminAssigned: function(config) {
     const {
       userId,

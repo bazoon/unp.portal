@@ -149,34 +149,24 @@ router.delete("/requests", async ctx => {
   const canEdit = await canEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
-  const currentParticipant = await models.Participant.findOne({
+  // Notification setup
+
+  const group = await models.ProjectGroup.findOne({
     where: {
-      [Op.and]: [
-        { userId: userId },
-        { projectGroupId: participant.projectGroupId }
-      ]
+      id: participant.projectGroupId
     }
   });
 
-  await participant.update({
-    state: 3
+  notificationService.groupRequestDeclined({
+    userId,
+    recipientId: participant.userId,
+    groupId: group.id,
+    groupTitle: group.title
   });
-
-  // Notification setup
-
-  // const group = await models.ProjectGroup.findOne({
-  //   id: participant.projectGroupId
-  // });
-
-  // notificationService.groupRequestApproved({
-  //   userId,
-  //   recipientId: participant.userId,
-  //   groupId: group.id,
-  //   groupTitle: group.title
-  // });
 
   // end
 
+  participant.destroy();
   ctx.body = { id: participant.id };
 });
 
@@ -326,19 +316,20 @@ router.delete("/:id/subscriptions", async ctx => {
       }
     });
 
-    const q = `select event_id from event_accesses where group_id=:groupId and user_id=:userId`;
-
     // Если пользователь вышел из групы
-    const query = `update events set user_id = :adminId where user_id=:userId
-                  and id in (select event_id from event_accesses where group_id=:groupId)
-                  `;
-    const [events] = await models.sequelize.query(query, {
-      replacements: {
-        adminId: groupAdmin.userId,
-        userId,
-        groupId
-      }
-    });
+    if (groupAdmin) {
+      const q = `select event_id from event_accesses where group_id=:groupId and user_id=:userId`;
+      const query = `update events set user_id = :adminId where user_id=:userId
+                    and id in (select event_id from event_accesses where group_id=:groupId)
+                    `;
+      const [events] = await models.sequelize.query(query, {
+        replacements: {
+          adminId: groupAdmin.userId,
+          userId,
+          groupId
+        }
+      });
+    }
 
     participant.destroy();
     ctx.body = { success: true };
@@ -966,7 +957,9 @@ router.post("/requests", async ctx => {
   // Notification setup
 
   const group = await models.ProjectGroup.findOne({
-    id: participant.projectGroupId
+    where: {
+      id: participant.projectGroupId
+    }
   });
 
   notificationService.groupRequestApproved({
