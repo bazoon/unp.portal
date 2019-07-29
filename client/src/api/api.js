@@ -19,7 +19,7 @@ const api = {
       if (e.request.status === 401) {
         currentUserStore.logout();
       }
-      console.error(e.message);
+
       throw e;
     });
   },

@@ -68,7 +68,19 @@ class GroupForm extends Component {
               {getFieldDecorator("title", {
                 rules: [
                   { required: true, message: "Название группы" },
-                  { max: 150, message: "Не больше 150 символов" }
+                  { max: 150, message: "Не больше 150 символов" },
+                  {
+                    validator: (rule, value, callback) => {
+                      this.props
+                        .checkExistingGroup(value)
+                        .then(() => {
+                          callback();
+                        })
+                        .catch(e => {
+                          callback(e.response.data);
+                        });
+                    }
+                  }
                 ]
               })(<Input placeholder="Название группы" />)}
             </Form.Item>

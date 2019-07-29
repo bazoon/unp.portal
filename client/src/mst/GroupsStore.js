@@ -256,6 +256,10 @@ const GroupsStore = types
       self.current.files = self.current.files.filter(file => file.id != fileId);
     });
 
+    const checkExistingGroup = flow(function* checkExistingGroup(title) {
+      yield api.checkExistingGroup(title);
+    });
+
     return {
       setPage,
       createGroup,
@@ -282,7 +286,8 @@ const GroupsStore = types
       sendPost,
       deleteGroup,
       uploadFiles,
-      deleteFile
+      deleteFile,
+      checkExistingGroup
     };
   });
 

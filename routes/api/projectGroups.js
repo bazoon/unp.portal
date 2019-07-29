@@ -23,6 +23,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
     shortDescription,
     backgroundId
   } = ctx.request.body;
+
   const { file, doc } = ctx.request.files;
   const docs = doc ? (Array.isArray(doc) ? doc : [doc]) : [];
 
@@ -69,6 +70,25 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   ctx.body = {
     id: group.id
   };
+});
+
+router.get("/existingGroup", async ctx => {
+  const { title } = ctx.request.query;
+
+  const existingProjectGroup = await models.ProjectGroup.findOne({
+    where: {
+      title
+    }
+  });
+
+  console.log(existingProjectGroup);
+
+  if (existingProjectGroup) {
+    ctx.status = 409;
+    ctx.body = "Группа с таким заголовком уже существует";
+    return;
+  }
+  ctx.body = "";
 });
 
 router.get("/backgrounds", async ctx => {

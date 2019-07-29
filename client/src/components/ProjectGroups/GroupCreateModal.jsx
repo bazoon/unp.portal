@@ -131,6 +131,7 @@ class GroupCreateModal extends Component {
           onSubmit={this.handleSubmit}
           docs={this.state.docs}
           onDocsChanged={this.handleDocsChanged}
+          checkExistingGroup={this.props.groupsStore.checkExistingGroup}
         />
       </Modal>
     );

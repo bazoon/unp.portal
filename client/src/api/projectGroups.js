@@ -116,5 +116,8 @@ export default {
     return api
       .get(`api/ProjectGroups/search/${query}`)
       .then(({ data }) => data);
+  },
+  checkExistingGroup(title) {
+    return api.get("api/projectGroups/existingGroup", { title });
   }
 };
