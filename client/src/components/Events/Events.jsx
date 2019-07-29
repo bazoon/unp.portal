@@ -50,7 +50,12 @@ class Events extends Component {
                             </Link>
                           </div>
                           <div className="event__day-users-count">
-                            {pluralizeParticipants(event.usersCount)}
+                            <b>Участники:</b>
+                            <ul>
+                              {event.participants.map(p => (
+                                <li key={p.id}>{p.name}</li>
+                              ))}
+                            </ul>
                           </div>
                         </div>
                       </div>

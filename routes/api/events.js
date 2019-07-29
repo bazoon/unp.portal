@@ -329,21 +329,17 @@ async function getEvents({ userId, from, to, page, pageSize, isAdmin }) {
 
 function getFullEvents({ events, userId, isAdmin }) {
   return events.map(async event => {
-    const groupsCountQuery = `select count(*) from participants where project_group_id in 
-                      (select group_id from event_accesses where event_id = :eventId)`;
-    const usersCountQuery = `select count(*) from event_accesses where event_id= :eventId and user_id is not null`;
+    const query = `select id, title as name from project_groups where id in 
+                  (select group_id from event_accesses where event_id = :eventId)
+                  union
+                  (select id, name from users where id in 
+                  (select user_id from event_accesses where event_id = :eventId))`;
 
-    const count =
-      +(await models.sequelize.query(groupsCountQuery, {
-        replacements: {
-          eventId: event.id
-        }
-      }))[0][0].count +
-      +(await models.sequelize.query(usersCountQuery, {
-        replacements: {
-          eventId: event.id
-        }
-      }))[0][0].count;
+    const [eventParticipants] = await models.sequelize.query(query, {
+      replacements: {
+        eventId: event.id
+      }
+    });
 
     return {
       id: event.id,
@@ -352,7 +348,9 @@ function getFullEvents({ events, userId, isAdmin }) {
       description: event.description,
       startDate: event.start_date,
       remind: event.remind,
-      usersCount: count
+      usersCount: 0,
+      participants: eventParticipants,
+      isPublic: event.access_type === 0
     };
   });
 }
