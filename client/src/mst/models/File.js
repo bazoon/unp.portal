@@ -6,7 +6,8 @@ const File = types.model("File", {
   url: types.maybeNull(types.string),
   size: types.maybeNull(types.number),
   description: types.maybeNull(types.string),
-  author: types.maybeNull(types.string)
+  author: types.maybeNull(types.string),
+  canDelete: types.optional(types.boolean, false)
 });
 
 export default File;

@@ -11,7 +11,8 @@ const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
 
 router.get("/", async ctx => {
-  const query = `select files.id, file, size,entity_type, project_groups.title as t1, conversations.title as t2, posts.text as t3, events.title as t4, messages.message as t5, entity_id, name from files
+  const { id: userId, isAdmin } = ctx.user;
+  const query = `select files.id, files.user_id, file, size, entity_type, project_groups.title as t1, conversations.title as t2, posts.text as t3, events.title as t4, messages.message as t5, entity_id, name from files
                 left join project_groups on project_groups.id = entity_id and entity_type = 0
                 left join conversations on conversations.id = entity_id and entity_type = 1
                 left join posts on posts.id = entity_id and entity_type = 2
@@ -26,6 +27,7 @@ router.get("/", async ctx => {
 
   ctx.body = files[0].map(file => {
     const title = file.t1 || file.t2 || file.t3 || file.t4 || file.t5;
+
     return {
       id: file.id,
       name: file.file,
@@ -35,7 +37,8 @@ router.get("/", async ctx => {
       description:
         (title && `${owners[file.entity_type]} "${title}"`) ||
         "Файл не имеет описания",
-      author: file.name
+      author: file.name,
+      canDelete: isAdmin || file.user_id === userId
     };
   });
 });
@@ -75,9 +78,10 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
 
 router.get("/search/:query", async (ctx, next) => {
   const { query } = ctx.params;
+  const { id: userId, isAdmin } = ctx.user;
   let searchResults = [];
 
-  const sqlQuery = `select files.id, file, size,entity_type, project_groups.title as t1, conversations.title as t2, posts.text as t3, events.title as t4, messages.message as t5, entity_id, name from files
+  const sqlQuery = `select files.id, files.user_id, file, size,entity_type, project_groups.title as t1, conversations.title as t2, posts.text as t3, events.title as t4, messages.message as t5, entity_id, name from files
                 left join project_groups on project_groups.id = entity_id and entity_type = 0
                 left join conversations on conversations.id = entity_id and entity_type = 1
                 left join posts on posts.id = entity_id and entity_type = 2
@@ -104,21 +108,29 @@ router.get("/search/:query", async (ctx, next) => {
       description:
         (title && `${owners[file.entity_type]} "${title}"`) ||
         "Файл не имеет описания",
-      author: file.name
+      author: file.name,
+      canDelete: isAdmin || file.user_id === userId
     };
   });
 });
 
 router.delete("/:id", async ctx => {
   const { id } = ctx.params;
-  const userId = ctx.user.id;
+  const { id: userId, isAdmin } = ctx.user;
 
-  // notifications
   const file = await models.File.findOne({
     where: {
       id
     }
   });
+
+  if (!(isAdmin || file.userId === userId)) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return false;
+  }
+
+  // notifications
 
   notificationService.documentRemoved({
     userId,

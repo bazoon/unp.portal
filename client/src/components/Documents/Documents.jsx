@@ -86,6 +86,7 @@ class Documents extends Component {
           key: "delete",
           fixed: "right",
           render: (value, record) => {
+            if (!record.canDelete) return null;
             return (
               <Popconfirm
                 title="Удалить файл?"
