@@ -241,7 +241,7 @@ class GroupFeed extends Component {
     );
   }
 
-  renderConversations(conversations = []) {
+  renderConversations(conversations = [], isAdmin = false) {
     const { id } = this.props.match.params;
 
     if (!conversations || conversations.length === 0) {
@@ -268,6 +268,8 @@ class GroupFeed extends Component {
               description={conversation.description}
               count={conversation.count}
               isCommentable={conversation.isCommentable}
+              canDelete={conversation.canDelete}
+              isAdmin={isAdmin}
             />
           );
         })}
@@ -424,19 +426,19 @@ class GroupFeed extends Component {
       shortDescription,
       participant,
       participants = [],
-      // files = [],
       isOpen,
       isAdmin,
+      canPost,
       state
     } = currentGroup;
 
     const files = (currentGroup.files && currentGroup.files.slice()) || [];
 
     const { isShortMode } = this.state;
-    const isSuperAdmin = this.props.currentUserStore.isAdmin;
 
-    const canPost = isSuperAdmin || isAdmin || state === 1;
-    const canEdit = isSuperAdmin || isAdmin;
+    const conversations =
+      this.props.groupsStore.current &&
+      this.props.groupsStore.current.conversations;
 
     const titleCls = cn("group__feed-title", {
       "group__feed-title_over": this.state.isTitleOver
@@ -468,10 +470,10 @@ class GroupFeed extends Component {
                   onMouseLeave={this.handleTitleOut}
                   className={titleCls}
                 >
-                  {canEdit ? this.renderTitleEditControls(title) : title}
+                  {isAdmin ? this.renderTitleEditControls(title) : title}
                 </div>
                 <div className="group__feed-description">
-                  {canEdit
+                  {isAdmin
                     ? this.renderShortDescriptionControls(shortDescription)
                     : shortDescription}
                 </div>
@@ -492,7 +494,7 @@ class GroupFeed extends Component {
                       </span>
                     )}
                   </div>
-                  {canEdit ? (
+                  {isAdmin ? (
                     this.renderBgSelect()
                   ) : (
                     <div className="group__feed-files-info">
@@ -550,10 +552,7 @@ class GroupFeed extends Component {
             )}
             {canPost &&
               !this.state.isConversationModalVisible &&
-              this.renderConversations(
-                this.props.groupsStore.current &&
-                  this.props.groupsStore.current.conversations
-              )}
+              this.renderConversations(conversations, isAdmin)}
           </Col>
           <Col span={8}>
             {canPost &&

@@ -14,6 +14,29 @@ const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
 const { getGroupUsersIds, getGroupAdminsIds } = require("./common/groups");
 
+router.delete("/conversations", async ctx => {
+  const { id, groupId } = ctx.request.query;
+  const userId = ctx.user.id;
+
+  const conversation = await models.Conversation.findOne({
+    where: {
+      id
+    }
+  });
+
+  const canEdit = await canEditGroup(groupId, ctx);
+
+  if (!(canEdit || conversation.userId === userId)) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return;
+  }
+
+  await conversation.destroy();
+
+  ctx.body = "ok";
+});
+
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
   const {
@@ -119,7 +142,7 @@ router.put("/backgrounds", async ctx => {
     }
   });
 
-  const canEdit = await canEditGroup(groupId, ctx);
+  const canEdit = await checkEditGroup(groupId, ctx);
   if (!canEdit) return;
 
   group.update({
@@ -166,7 +189,7 @@ router.delete("/requests", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
-  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
   // Notification setup
@@ -200,7 +223,7 @@ router.delete("/participants", async ctx => {
     }
   });
 
-  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
   // Notifications
@@ -240,7 +263,7 @@ router.delete("/admins", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
-  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
   // Notifications setup
@@ -370,7 +393,7 @@ router.delete("/:id", async ctx => {
   const { id } = ctx.params;
   const userId = ctx.user.id;
 
-  const canEdit = await canEditGroup(id, ctx);
+  const canEdit = await checkEditGroup(id, ctx);
   if (!canEdit) return;
 
   // notifications
@@ -534,7 +557,7 @@ router.get("/search/:query", async (ctx, next) => {
 
 router.get("/:id", async (ctx, next) => {
   const { id } = ctx.params;
-  const userId = ctx.user.id;
+  const { id: userId, isAdmin: isSuperAdmin } = ctx.user;
 
   const query = `select title, file, project_groups.id, is_open, description, short_description, project_groups.user_id 
               from project_groups 
@@ -542,7 +565,7 @@ router.get("/:id", async (ctx, next) => {
               left join files on project_group_backgrounds.file_id = files.id 
               where project_groups.id = :id`;
 
-  const conversationsQuery = `select conversations.id, title, is_commentable, is_pinned, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
+  const conversationsQuery = `select conversations.user_id, conversations.id, title, is_commentable, is_pinned, count(posts.id), min(posts.created_at) as     lastPostDate, users."name", conversations."description", conversations."created_at" from conversations
                               left join posts
                               on conversations.id = posts.conversation_id
                               left join users 
@@ -564,6 +587,7 @@ router.get("/:id", async (ctx, next) => {
       id
     }
   });
+
   const group = groupResult[0][0];
   const conversationResult = await models.sequelize.query(conversationsQuery, {
     replacements: {
@@ -584,6 +608,9 @@ router.get("/:id", async (ctx, next) => {
     }
   });
 
+  const isGroupAdmin =
+    Boolean(participant && participant.isAdmin) || isSuperAdmin;
+
   const files = await models.File.findAll({
     where: {
       entityType: fileOwners.group,
@@ -599,7 +626,8 @@ router.get("/:id", async (ctx, next) => {
     shortDescription: group.short_description || "",
     avatar: getUploadFilePath(group.file) || "",
     isOpen: Boolean(group.is_open),
-    isAdmin: Boolean(participant && participant.isAdmin),
+    isAdmin: isGroupAdmin,
+    canPost: participant.state === 1,
     state: (participant && participant.state) || 0,
     conversations: conversations.map(c => ({
       id: c.id,
@@ -609,7 +637,8 @@ router.get("/:id", async (ctx, next) => {
       count: +c.count,
       name: c.name,
       description: c.description || "",
-      createdAt: c.created_at
+      createdAt: c.created_at,
+      canDelete: c.user_id === userId || isGroupAdmin
     })),
     files: files.map(file => {
       return {
@@ -735,10 +764,10 @@ router.post("/:id/posts", koaBody({ multipart: true }), async ctx => {
 
 router.post("/conversations", koaBody({ multipart: true }), async ctx => {
   const { title, projectGroupId, description, isNews } = ctx.request.body;
-  const userId = ctx.user.id;
+  const { id: userId } = ctx.user;
   const { file } = ctx.request.files;
 
-  const canEdit = await canEditGroup(projectGroupId, ctx);
+  const canEdit = await canPostToGroup(projectGroupId, ctx);
   if (!canEdit) return;
 
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
@@ -799,7 +828,8 @@ router.post("/conversations", koaBody({ multipart: true }), async ctx => {
       url: getUploadFilePath(f.file)
     })),
     isCommentable: conversation.isCommentable,
-    createdAt: conversation.createdAt
+    createdAt: conversation.createdAt,
+    canDelete: true
   };
 });
 
@@ -810,7 +840,7 @@ router.put("/:id/title", async ctx => {
   const userId = ctx.user.id;
   const isAdmin = ctx.user.isAdmin;
 
-  const canEdit = await canEditGroup(groupId, ctx);
+  const canEdit = await checkEditGroup(groupId, ctx);
   if (!canEdit) return;
 
   const group = await models.ProjectGroup.findOne({
@@ -842,7 +872,7 @@ router.put("/:id/shortDescription", async ctx => {
   const groupId = ctx.params.id;
   const userId = ctx.user.id;
 
-  const canEdit = await canEditGroup(groupId, ctx);
+  const canEdit = await checkEditGroup(groupId, ctx);
   if (!canEdit) return;
 
   const group = await models.ProjectGroup.findOne({
@@ -873,7 +903,8 @@ router.post("/conversations/pins", async ctx => {
     }
   });
 
-  const canEdit = await canEditGroup(conversation.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(conversation.projectGroupId, ctx);
+
   if (!canEdit) return;
 
   await conversation.update({
@@ -892,7 +923,7 @@ router.delete("/conversations/pins", async ctx => {
     }
   });
 
-  const canEdit = await canEditGroup(conversation.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(conversation.projectGroupId, ctx);
   if (!canEdit) return;
 
   await conversation.update({
@@ -908,7 +939,7 @@ router.post("/admins", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
-  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
   // notifications
@@ -958,7 +989,7 @@ router.post("/requests", async ctx => {
 
   const participant = await models.Participant.findOne({ where: { id } });
 
-  const canEdit = await canEditGroup(participant.projectGroupId, ctx);
+  const canEdit = await checkEditGroup(participant.projectGroupId, ctx);
   if (!canEdit) return;
 
   const currentParticipant = await models.Participant.findOne({
@@ -1045,6 +1076,45 @@ async function canEditGroup(groupId, ctx) {
   });
 
   if (!(user.isAdmin || participant.isAdmin)) {
+    return false;
+  }
+
+  return true;
+}
+
+async function checkEditGroup(groupId, ctx) {
+  if (!(await canEditGroup(groupId, ctx))) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return false;
+  }
+
+  return true;
+}
+
+async function canPostToGroup(groupId, ctx) {
+  const userId = ctx.user.id;
+
+  const user = await models.User.findOne({
+    where: {
+      id: userId
+    }
+  });
+
+  const participant = await models.Participant.findOne({
+    where: {
+      [Op.and]: [
+        {
+          projectGroupId: groupId
+        },
+        {
+          userId
+        }
+      ]
+    }
+  });
+
+  if (!(user.isAdmin || participant.isAdmin || participant.state === 1)) {
     ctx.status = 403;
     ctx.body = "Unauthorized!";
     return false;

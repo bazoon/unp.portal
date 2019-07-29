@@ -10,6 +10,7 @@ const Group = types
     title: types.optional(types.maybeNull(types.string), ""),
     conversationsCount: types.optional(types.number, 0),
     isAdmin: types.optional(types.boolean, false),
+    canPost: types.optional(types.boolean, false),
     state: types.optional(types.number, 0),
     isOpen: types.optional(types.boolean, true),
     participant: types.optional(types.boolean, false),

@@ -12,7 +12,8 @@ const Conversation = types.model("Conversation", {
   isPinned: types.boolean,
   title: types.string,
   files: types.array(File),
-  postsTree: types.array(Post)
+  postsTree: types.array(Post),
+  canDelete: types.optional(types.boolean, false)
 });
 
 export default Conversation;

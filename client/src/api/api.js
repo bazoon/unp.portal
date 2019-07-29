@@ -1,5 +1,6 @@
 import axios from "axios";
 import currentUserStore from "../mst/CurrentUserStore";
+import { notification } from "antd";
 
 const api = {
   get: (url, params = {}, skipTokenCheck) => {
@@ -18,6 +19,12 @@ const api = {
     return axios.get(`/${url}`, config).catch(e => {
       if (e.request.status === 401) {
         currentUserStore.logout();
+      }
+
+      if (e.request.status === 403) {
+        notification.error({
+          message: "У вас не прав на совершение этой операции"
+        });
       }
 
       throw e;
@@ -39,6 +46,12 @@ const api = {
     return axios.delete(`/${url}`, config).catch(e => {
       if (e.request.status === 401) {
         currentUserStore.logout();
+      }
+
+      if (e.request.status === 403) {
+        notification.error({
+          message: "У вас не прав на совершение этой операции"
+        });
       }
 
       if (e.request.status !== 403) {
@@ -70,7 +83,12 @@ const api = {
           currentUserStore.logout();
         }
 
-        console.error(e.message);
+        if (e.request.status === 403) {
+          notification.error({
+            message: "У вас не прав на совершение этой операции"
+          });
+        }
+
         throw e;
       });
   },

@@ -256,6 +256,13 @@ const GroupsStore = types
       self.current.files = self.current.files.filter(file => file.id != fileId);
     });
 
+    const deleteConversation = flow(function* deleteConversation(id) {
+      yield api.deleteConversation({ id, groupId: self.current.id });
+      self.current.conversations = self.current.conversations.filter(
+        conversation => conversation.id != id
+      );
+    });
+
     const checkExistingGroup = flow(function* checkExistingGroup(title) {
       yield api.checkExistingGroup(title);
     });
@@ -287,7 +294,8 @@ const GroupsStore = types
       deleteGroup,
       uploadFiles,
       deleteFile,
-      checkExistingGroup
+      checkExistingGroup,
+      deleteConversation
     };
   });
 

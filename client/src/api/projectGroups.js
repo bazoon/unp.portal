@@ -89,6 +89,11 @@ export default {
       .post(`api/projectGroups/conversations`, payload)
       .then(({ data }) => data);
   },
+  deleteConversation(payload) {
+    return api
+      .delete(`api/projectGroups/conversations`, payload)
+      .then(({ data }) => data);
+  },
   getUserGroups() {
     return api.get("api/projectGroups/userGroups").then(({ data }) => {
       return data;
