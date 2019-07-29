@@ -414,6 +414,7 @@ router.delete("/:id", async ctx => {
       id
     }
   });
+
   ctx.body = "ok";
 });
 
@@ -1055,7 +1056,7 @@ router.post("/files", koaBody({ multipart: true }), async ctx => {
 module.exports = router;
 
 async function canEditGroup(groupId, ctx) {
-  const userId = ctx.user.id;
+  const { id: userId, isAdmin } = ctx.user;
 
   const user = await models.User.findOne({
     where: {
@@ -1076,7 +1077,7 @@ async function canEditGroup(groupId, ctx) {
     }
   });
 
-  if (!(user.isAdmin || participant.isAdmin)) {
+  if (!(isAdmin || (participant && participant.isAdmin))) {
     return false;
   }
 
