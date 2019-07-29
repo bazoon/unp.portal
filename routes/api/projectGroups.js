@@ -572,6 +572,7 @@ router.get("/:id", async (ctx, next) => {
                               on conversations."user_id" = users.id
                               where conversations.project_group_id = :id
                               group by conversations.id, users."name"
+                              order by conversations.created_at desc
                               `;
   const participantsQuery = `select participants."id", participants.is_admin, participants.state, users."name", users."id" as user_id, participant_roles."name" as role_name,
                           level, positions."name" as position, users."avatar"

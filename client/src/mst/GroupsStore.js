@@ -218,7 +218,7 @@ const GroupsStore = types
 
     const createConversation = flow(function* createConversation(payload) {
       const data = yield api.createConversation(payload);
-      self.current.conversations.push(data);
+      self.current.conversations.unshift(data);
     });
 
     const getConversation = flow(function* getConversation(id) {
