@@ -151,13 +151,20 @@ class Participants extends Component {
   }
 
   render() {
-    const { title, participants = [], avatar, isAdmin, isOpen, isMember } =
-      this.props.groupsStore.current || {};
+    const {
+      title,
+      participants = [],
+      avatar,
+      isAdmin,
+      isOpen,
+      isMember,
+      canView
+    } = this.props.groupsStore.current || {};
 
     const isSuperAdmin = this.props.currentUserStore.isAdmin;
 
     const { id } = this.props.match.params;
-    const canView = isSuperAdmin || isAdmin || isOpen || isMember;
+
     if (!canView) {
       return <div>Нет доступа</div>;
     }

@@ -610,6 +610,8 @@ router.get("/:id", async (ctx, next) => {
     }
   });
 
+  const state = participant && participant.state;
+
   const isGroupAdmin =
     Boolean(participant && participant.isAdmin) || isSuperAdmin;
 
@@ -629,7 +631,8 @@ router.get("/:id", async (ctx, next) => {
     avatar: getUploadFilePath(group.file) || "",
     isOpen: Boolean(group.is_open),
     isAdmin: isGroupAdmin,
-    canPost: participant.state === 1,
+    canPost: state === 1,
+    canView: isGroupAdmin || state === 1,
     state: (participant && participant.state) || 0,
     conversations: conversations.map(c => ({
       id: c.id,

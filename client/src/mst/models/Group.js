@@ -11,6 +11,7 @@ const Group = types
     conversationsCount: types.optional(types.number, 0),
     isAdmin: types.optional(types.boolean, false),
     canPost: types.optional(types.boolean, false),
+    canView: types.optional(types.boolean, false),
     state: types.optional(types.number, 0),
     isOpen: types.optional(types.boolean, true),
     participant: types.optional(types.boolean, false),
