@@ -26,6 +26,7 @@ class App extends Component {
 
   componentDidMount() {
     this.props.eventsStore.loadAll();
+    this.props.eventsStore.loadUpcoming();
     this.props.notificationsStore.load();
 
     console.log("App did mount");
@@ -40,6 +41,7 @@ class App extends Component {
           this.props.groupsStore.loadGroups();
           this.props.usersStore.loadAllUsers();
           this.props.chatStore.connectSocket();
+          this.props.eventsStore.loadUpcoming();
         } else if (call.name === "logout") {
           this.props.chatStore.disconnectSocket();
         }

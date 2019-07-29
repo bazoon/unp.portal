@@ -27,6 +27,7 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
+  console.log(ctx.request.body);
   const event = await models.Event.create({
     title,
     description,
@@ -292,12 +293,12 @@ async function getEvents({ userId, from, to, page, pageSize, isAdmin }) {
   } else {
     countQuery = `select count(*) from events where id in (select event_id from event_accesses 
                   where (group_id in (select project_group_id from participants where user_id = :userId)) or 
-                  (event_accesses.user_id = :userId)) or user_id = :userId
+                  (event_accesses.user_id = :userId)) or user_id = :userId or access_type=0
                 `;
 
     query = `select *from events where id in (select event_id from event_accesses 
             where (group_id in (select project_group_id from participants where user_id = :userId)) or 
-            (event_accesses.user_id = :userId)) or user_id = :userId
+            (event_accesses.user_id = :userId)) or user_id = :userId or access_type=0
             order by events.start_date asc
             limit :limit offset :offset`;
   }

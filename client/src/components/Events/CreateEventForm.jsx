@@ -70,7 +70,7 @@ class CreateEventForm extends Component {
       const keys = Object.keys(fields);
 
       keys.forEach(key => {
-        if (fields[key]) {
+        if (fields[key] !== undefined) {
           formData.append(key, fields[key]);
         }
       });
@@ -244,7 +244,7 @@ class CreateEventForm extends Component {
                 initialValue: 0
               })(
                 <Select onChange={this.handleChangeAccessType}>
-                  <Option value={0}>Никто</Option>
+                  <Option value={0}>Все</Option>
                   <Option value={1}>Точечный выбор</Option>
                   <Option value={2}>Группы</Option>
                 </Select>

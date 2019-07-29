@@ -52,7 +52,6 @@ class Feed extends Component {
   componentDidMount = () => {
     const { userId } = this.props;
     this.props.feedStore.load();
-    this.props.eventsStore.loadUpcoming();
   };
 
   // RENDERS
