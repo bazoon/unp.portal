@@ -27,7 +27,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
 
-  console.log(ctx.request.body);
   const event = await models.Event.create({
     title,
     description,
@@ -57,7 +56,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   let accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
 
   if (accessType == 1) {
-    accessIds.push(userId);
     accessIds = Array.from(new Set(accessIds));
     recipientsIds = accessIds;
 
@@ -85,16 +83,6 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
         };
       })
     );
-
-    await models.EventAccess.findOrCreate({
-      where: {
-        [Op.and]: [{ eventId: event.id }, { userId }]
-      },
-      defaults: {
-        eventId: event.id,
-        userId
-      }
-    });
 
     recipientsIds = Array.from(
       new Set(recipientsIds.concat(users.map(u => u.user_id)))
@@ -256,9 +244,9 @@ router.get("/upcoming", async (ctx, next) => {
   from.tz("Etc/GMT-0");
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
-  const query = `select *from events where id in (select event_id from event_accesses 
+  const query = `select *from events where (id in (select event_id from event_accesses 
             where ((group_id in (select project_group_id from participants where user_id = :userId)) or 
-            (event_accesses.user_id = :userId)) or events.user_id = :userId) and
+            (event_accesses.user_id = :userId)) or events.user_id = :userId) or (events.access_type=0)) and
             start_date >= :from::date
             order by events.start_date asc
             limit 5`;
@@ -333,7 +321,8 @@ function getFullEvents({ events, userId, isAdmin }) {
                   (select group_id from event_accesses where event_id = :eventId)
                   union
                   (select id, name from users where id in 
-                  (select user_id from event_accesses where event_id = :eventId))`;
+                  (select user_id from event_accesses where event_id = :eventId))
+                  order by name`;
 
     const [eventParticipants] = await models.sequelize.query(query, {
       replacements: {

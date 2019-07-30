@@ -24,6 +24,7 @@ import RenderFiles from "../ProjectGroups/RenderFiles";
 const { Option } = Select;
 
 @inject("eventsStore")
+@inject("currentUserStore")
 @observer
 class CreateEventForm extends Component {
   constructor(props) {
@@ -143,9 +144,16 @@ class CreateEventForm extends Component {
   renderSelectUsers() {
     const { getFieldDecorator } = this.props.form;
     return (
-      <>
+      <Form.Item>
         {getFieldDecorator("accessEntitiesIds", {
-          valuePropName: "value"
+          valuePropName: "value",
+          initialValue: this.props.currentUserStore.id,
+          rules: [
+            {
+              required: true,
+              message: "Выберите пользователей!"
+            }
+          ]
         })(
           <Select
             mode="multiple"
@@ -160,7 +168,7 @@ class CreateEventForm extends Component {
             ))}
           </Select>
         )}
-      </>
+      </Form.Item>
     );
   }
 

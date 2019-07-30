@@ -50,12 +50,16 @@ class Events extends Component {
                             </Link>
                           </div>
                           <div className="event__day-users-count">
-                            <b>Участники:</b>
-                            <ul>
-                              {event.participants.map(p => (
-                                <li key={p.id}>{p.name}</li>
-                              ))}
-                            </ul>
+                            {!event.isPublic && (
+                              <>
+                                <b>Участники:</b>
+                                <ul>
+                                  {event.participants.map(p => (
+                                    <li key={p.id}>{p.name}</li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
