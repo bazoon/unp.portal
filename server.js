@@ -2,6 +2,7 @@ require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const Koa = require("koa");
+const cors = require("@koa/cors");
 const koaJwt = require("koa-jwt");
 const jwt = require("jsonwebtoken");
 const serve = require("koa-static");
@@ -14,6 +15,7 @@ const uploadFiles = require("./utils/uploadFiles");
 const models = require("./models");
 
 const app = new Koa();
+app.use(cors());
 const http = require("http").Server(app.callback());
 const io = require("socket.io")(http);
 const apiRouter = require("./routes/router");
@@ -35,7 +37,18 @@ app.use(testRouter.routes()).use(testRouter.allowedMethods());
 
 app.use(async (ctx, next) => {
   const requestPath = ctx.request.path;
-  if (requestPath.indexOf("api") > 0 || requestPath.indexOf("graphql") > 0) {
+  if (requestPath.indexOf("token_link") > 0) {
+    console.log("TOKEN LINK");
+    ctx.cookies.set("name", "tobi");
+    await send(ctx, path.resolve("/client/dist", "index.html"));
+  } else {
+    return await next();
+  }
+});
+
+app.use(async (ctx, next) => {
+  const requestPath = ctx.request.path;
+  if (requestPath.indexOf("api") > 0) {
     return await next();
   }
   await send(ctx, path.resolve("/client/dist", "index.html"));
