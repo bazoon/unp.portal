@@ -27,7 +27,7 @@ export default {
         return data;
       })
       .catch(e => {
-        if (e.request.status) {
+        if (e.request.status === 403) {
           notification.error({
             message: "У вас нет прав на редактирование пользователя!"
           });
@@ -45,7 +45,7 @@ export default {
         return data;
       })
       .catch(e => {
-        if (e.request.status) {
+        if (e.request.status === 403) {
           notification.error({
             message: "У вас нет прав на удаление пользователя!"
           });
