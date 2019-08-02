@@ -45,6 +45,12 @@ app.use(async (ctx, next) => {
     ctx.cookies.set("token", token, { httpOnly: false });
 
     console.log(token, groupName);
+    try {
+      jwt.verify(token, process.env.API_TOKEN);
+      console.log("token verified");
+    } catch (e) {
+      console.log("Failed verification", e);
+    }
 
     if (groupName) {
       const group = await models.ProjectGroup.findOne({
