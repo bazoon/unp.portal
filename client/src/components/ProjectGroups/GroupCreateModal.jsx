@@ -127,6 +127,7 @@ class GroupCreateModal extends Component {
         <GroupForm
           backgrounds={backgrounds}
           step={currentStep}
+          defaultGroupName={this.props.defaultGroupName}
           ref={this.formRef}
           onSubmit={this.handleSubmit}
           docs={this.state.docs}

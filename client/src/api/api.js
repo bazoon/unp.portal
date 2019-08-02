@@ -1,10 +1,11 @@
 import axios from "axios";
 import currentUserStore from "../mst/CurrentUserStore";
 import { notification } from "antd";
+import utils from "../utils";
 
 const api = {
   get: (url, params = {}, skipTokenCheck) => {
-    const storedToken = localStorage.getItem("token");
+    const storedToken = utils.getToken();
 
     if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
       return Promise.resolve({ data: null });
@@ -31,7 +32,7 @@ const api = {
     });
   },
   delete: (url, params = {}, skipTokenCheck) => {
-    const storedToken = localStorage.getItem("token");
+    const storedToken = utils.getToken();
 
     if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
       return Promise.resolve({ data: null });
@@ -62,7 +63,7 @@ const api = {
     });
   },
   post: (url, data, skipTokenCheck) => {
-    const storedToken = localStorage.getItem("token");
+    const storedToken = utils.getToken();
     if (!skipTokenCheck) {
       if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
         return Promise.resolve({ data: null });
@@ -93,7 +94,7 @@ const api = {
       });
   },
   put: (url, data, skipTokenCheck) => {
-    const storedToken = localStorage.getItem("token");
+    const storedToken = utils.getToken();
     if (!skipTokenCheck) {
       if (!skipTokenCheck && (!storedToken || storedToken === "undefined")) {
         return Promise.resolve({ data: null });

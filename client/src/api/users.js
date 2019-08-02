@@ -59,5 +59,8 @@ export default {
   },
   search(query) {
     return api.get(`api/users/search/${query}`).then(({ data }) => data);
+  },
+  getCurrent() {
+    return api.get(`api/users/current`).then(({ data }) => data);
   }
 };

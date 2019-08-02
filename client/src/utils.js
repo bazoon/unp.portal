@@ -1,9 +1,11 @@
+import cookies from "./utils/cookies";
+
 const utils = {
   isLoggedIn() {
     return utils.getToken() != null;
   },
   getToken() {
-    return localStorage.getItem("token");
+    return cookies.getCookie("token");
   }
 };
 

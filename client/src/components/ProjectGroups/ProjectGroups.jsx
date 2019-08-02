@@ -72,6 +72,13 @@ class ProjectGroups extends Component {
   componentDidMount = () => {
     this.props.groupsStore.loadGroups({ page: 1, pageSize: 10 });
     this.props.groupsStore.getBackgrounds();
+    const groupName = this.props.match.params.name;
+    if (groupName) {
+      this.setState({
+        isCreateModalVisible: true,
+        defaultGroupName: groupName
+      });
+    }
   };
 
   handleChangePagination = (page, pageSize) => {
@@ -126,6 +133,7 @@ class ProjectGroups extends Component {
           onCancel={this.handleCancel}
           onOk={this.handleOk}
           userId={this.props.userId}
+          defaultGroupName={this.state.defaultGroupName}
         />
         <Row gutter={27}>
           <Col span={16}>

@@ -5,24 +5,30 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const models = require("../../models");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
-const fileName = __dirname + "/users.json";
 const expiresIn = 60 * 60 * 24;
 
 async function login(login, password, ctx) {
+  const userDataKey =
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata";
   const user = await models.User.findOne({ where: { login } });
+  const payload = {
+    [userDataKey]: {
+      PersonasFullName: user.name,
+      Login: user.login,
+      Email: user.email
+    }
+  };
 
   if (!user) {
     ctx.status = 404;
     return;
   }
 
-  const token = jwt.sign(
-    { userName: user.name, id: user.id, isAdmin: user.isAdmin },
-    process.env.API_TOKEN,
-    {
-      expiresIn: expiresIn
-    }
-  );
+  const token = jwt.sign(payload, process.env.API_TOKEN, {
+    expiresIn: expiresIn
+  });
+
+  ctx.cookies.set("token", token, { httpOnly: false });
   const hashedPassword = bcrypt.hashSync(password, 8);
   const isCorrect = bcrypt.compare(password, user.password);
 
@@ -51,6 +57,11 @@ router.post("/login", async ctx => {
   }
 
   ctx.body = await login(userName, password, ctx);
+});
+
+router.post("/logout", async ctx => {
+  ctx.cookies.set("token", "", { httpOnly: false });
+  ctx.body = "ok";
 });
 
 router.post("/signup", async ctx => {

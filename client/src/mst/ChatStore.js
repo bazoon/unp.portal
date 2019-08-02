@@ -5,6 +5,7 @@ import ChatChannel from "./models/ChatChannel";
 import FoundChatMessage from "./models/FoundChatMessage";
 import { notification } from "antd";
 import moment from "moment";
+import utils from "../utils";
 
 const ChatStore = types
   .model("ChatStore", {
@@ -36,7 +37,7 @@ const ChatStore = types
   .actions(self => {
     const socket = socketIOClient(location.host, {
       query: {
-        token: `Bearer ${localStorage.getItem("token")}`,
+        token: `Bearer ${utils.getToken()}`,
         userName: localStorage.getItem("userName"),
         userId: localStorage.getItem("userId")
       }
@@ -163,7 +164,7 @@ const ChatStore = types
     });
 
     const connectSocket = function connectSocket() {
-      const token = `Bearer ${localStorage.getItem("token")}`;
+      const token = `Bearer ${utils.getToken()}`;
       const userName = localStorage.getItem("userName");
       const userId = localStorage.getItem("userId");
       socket.query.token = token;

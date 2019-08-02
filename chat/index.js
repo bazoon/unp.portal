@@ -36,6 +36,7 @@ class Chat {
 
     try {
       decoded = jwt.verify(tokenOnly, process.env.API_TOKEN);
+      console.log(userId, "Ok");
       this.clients[userId] = socket;
     } catch (e) {
       console.log(userId, "failed");

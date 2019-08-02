@@ -105,4 +105,21 @@ router.get("/", async (ctx, next) => {
   });
 });
 
+router.get("/current", async (ctx, next) => {
+  const { id } = ctx.user;
+  const user = await models.User.findOne({
+    where: {
+      id
+    }
+  });
+
+  ctx.body = {
+    userId: user.id,
+    name: user.name,
+    login: user.login,
+    avatar: user.avatar,
+    isAdmin: user.isAdmin
+  };
+});
+
 module.exports = router;

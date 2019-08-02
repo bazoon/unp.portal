@@ -28,6 +28,7 @@ class UserLayout extends Component {
               component={Conversation}
             />
             <Route path="/groups/:id/participants" component={Participants} />
+            <Route path="/groups/new/:name" component={ProjectGroups} />
             <Route path="/groups/:id" component={GroupFeed} />
             <Route path="/docs/" component={Documents} />
             <Route path="/notifications/" component={Notifications} />

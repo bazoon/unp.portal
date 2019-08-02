@@ -1,6 +1,9 @@
 import { types, flow } from "mobx-state-tree";
 import File from "./models/File";
 import api from "../api/login";
+import usersApi from "../api/users";
+import utils from "../utils";
+import cookies from "../utils/cookies";
 
 const CurrentUserStore = types
   .model("CurrentUserStore", {
@@ -33,8 +36,7 @@ const CurrentUserStore = types
       self.token = token;
     };
 
-    const clearData = function clearData(data) {
-      const { token, userName, userId, avatar, isAdmin } = data;
+    const clearData = function clearData() {
       self.userId = -1;
       self.token = "";
       self.userName = "";
@@ -44,29 +46,27 @@ const CurrentUserStore = types
       self.token = "";
     };
 
-    const logout = function logout() {
-      self.clearData({
-        token: "",
-        userName: "",
-        userId: -1,
-        avatar: "",
-        isAdmin: false
-      });
-      localStorage.removeItem("token");
-      localStorage.removeItem("userName");
-      localStorage.removeItem("avatar");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("isAdmin");
-    };
-
+    const logout = flow(function* logout() {
+      self.clearData();
+      yield api.logout();
+      self.setData({});
+    });
     const update = function update(user) {
+      if (!user) return;
+      self.userId = user.userId;
       self.name = user.name;
       self.avatar = user.avatar;
       self.isAdmin = user.isAdmin;
+      localStorage.setItem("userId", user.userId);
       localStorage.setItem("userName", user.name);
       localStorage.setItem("avatar", user.avatar);
       localStorage.setItem("isAdmin", user.isAdmin);
     };
+
+    const getCurrent = flow(function* getCurrent() {
+      const data = yield usersApi.getCurrent();
+      self.update(data);
+    });
 
     return {
       login,
@@ -74,12 +74,13 @@ const CurrentUserStore = types
       logout,
       setData,
       update,
-      clearData
+      clearData,
+      getCurrent
     };
   });
 
 export default CurrentUserStore.create({
-  token: localStorage.getItem("token"),
+  token: utils.getToken("token"),
   userName: localStorage.getItem("userName"),
   id: +localStorage.getItem("userId"),
   userId: +localStorage.getItem("userId"),

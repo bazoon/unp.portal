@@ -66,11 +66,13 @@ class GroupForm extends Component {
           <Col span={24}>
             <Form.Item>
               {getFieldDecorator("title", {
+                initialValue: this.props.defaultGroupName,
                 rules: [
                   { required: true, message: "Название группы" },
                   { max: 150, message: "Не больше 150 символов" },
                   {
                     validator: (rule, value, callback) => {
+                      if (!value) return;
                       this.props
                         .checkExistingGroup(value)
                         .then(() => {
@@ -91,7 +93,7 @@ class GroupForm extends Component {
           <Col span={24}>
             {getFieldDecorator("isOpen", {
               valuePropName: "checked",
-              initialValue: true
+              initialValue: false
             })(<Checkbox>Открытая группа</Checkbox>)}
           </Col>
         </Row>

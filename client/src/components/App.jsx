@@ -25,6 +25,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+    this.props.currentUserStore.getCurrent();
     this.props.eventsStore.loadAll();
     this.props.eventsStore.loadUpcoming();
     this.props.notificationsStore.load();

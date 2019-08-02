@@ -22,5 +22,8 @@ export default {
       localStorage.setItem("isAdmin", isAdmin);
       return data;
     });
+  },
+  logout() {
+    return api.post("api/user/logout");
   }
 };
