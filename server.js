@@ -18,6 +18,8 @@ const models = require("./models");
 const app = new Koa();
 app.use(cors());
 const http = require("http").Server(app.callback());
+const https = require("https");
+
 const io = require("socket.io")(http);
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");
@@ -105,6 +107,18 @@ app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 // models.sequelize.sync().then(function() {
 http.listen(port, () => console.log(`Server is running on ${port}`));
 // });
+
+https
+  .createServer(
+    {
+      key: fs.readFileSync("./ssl/server.key"),
+      cert: fs.readFileSync("./ssl/server.cert")
+    },
+    app.callback()
+  )
+  .listen(5443, () => {
+    console.log("Listening at :5443...");
+  });
 
 function getUserData(token) {
   const userDataKey =
