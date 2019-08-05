@@ -17,37 +17,46 @@ class GroupCreateModal extends Component {
   }
 
   handleOk = () => {
-    const form = this.formRef.current;
+    const { form } = this.formRef.props;
     const { userId } = this.props;
     const { onOk } = this.props;
     const formData = new FormData();
 
-    form.validateFields((err, fields) => {
-      let docs = [];
+    // TODO убрал тут валидацию так как возникала ошибка title: { expired: true, "revalidate..."}
+    const fields = form.getFieldsValue([
+      "title",
+      "shortDescription",
+      "description",
+      "docs",
+      "backgroundId"
+    ]);
 
-      if (fields.docs) {
-        docs = fields.docs.map(f => f.originFileObj);
-        delete fields.docs;
+    let docs = [];
+    if (!fields.title) return false;
+
+    if (fields.docs) {
+      docs = fields.docs.map(f => f.originFileObj);
+      delete fields.docs;
+    }
+
+    const keys = Object.keys(fields);
+    keys.forEach(key => {
+      if (fields[key]) {
+        formData.append(key, fields[key]);
       }
-
-      const keys = Object.keys(fields);
-      keys.forEach(key => {
-        if (fields[key]) {
-          formData.append(key, fields[key]);
-        }
-      });
-
-      formData.append("userId", userId);
-
-      docs.forEach(d => {
-        formData.append("doc", d);
-      });
-
-      this.props.groupsStore.createGroup(formData);
     });
-    this.onFormSubmit();
-    onOk();
-    this.handleCancel();
+
+    formData.append("userId", userId);
+
+    docs.forEach(d => {
+      formData.append("doc", d);
+    });
+
+    this.props.groupsStore.createGroup(formData).then(() => {
+      this.onFormSubmit();
+      onOk();
+      this.handleCancel();
+    });
   };
 
   handleSubmit = onFormSubmit => {
@@ -61,7 +70,7 @@ class GroupCreateModal extends Component {
   };
 
   handleNext = () => {
-    const form = this.formRef.current;
+    const { form } = this.formRef.props;
     form.validateFields(err => {
       if (!err) {
         this.setState({
@@ -72,7 +81,7 @@ class GroupCreateModal extends Component {
   };
 
   handleCancel = () => {
-    const form = this.formRef.current;
+    const { form } = this.formRef.props;
     form.resetFields();
     this.setState({
       docs: [],
@@ -128,7 +137,7 @@ class GroupCreateModal extends Component {
           backgrounds={backgrounds}
           step={currentStep}
           defaultGroupName={this.props.defaultGroupName}
-          ref={this.formRef}
+          wrappedComponentRef={inst => (this.formRef = inst)}
           onSubmit={this.handleSubmit}
           docs={this.state.docs}
           onDocsChanged={this.handleDocsChanged}
