@@ -83,9 +83,7 @@ class App extends Component {
 
     return (
       <HashRouter>
-        <div>
-          <Layout onLogout={this.handleLogout} />
-        </div>
+        <Layout onLogout={this.handleLogout} />
       </HashRouter>
     );
   }
