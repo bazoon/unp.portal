@@ -30,7 +30,6 @@ class App extends Component {
     this.props.eventsStore.loadUpcoming();
     this.props.notificationsStore.load();
 
-    console.log("App did mount");
     this.removeMiddlware = addMiddleware(
       // Если произошел релогин то перезагружаем данные пользователя
       this.props.currentUserStore,
@@ -72,15 +71,20 @@ class App extends Component {
   };
 
   render() {
+    const isLoggedIn = !!this.props.currentUserStore.token;
+    if (!isLoggedIn) {
+      return (
+        <LoginForm
+          isLoggedIn={!!this.props.currentUserStore.token}
+          onLogin={this.handleLogin}
+        />
+      );
+    }
+
     return (
       <HashRouter>
         <div>
           <Layout onLogout={this.handleLogout} />
-
-          <LoginForm
-            isLoggedIn={!!this.props.currentUserStore.token}
-            onLogin={this.handleLogin}
-          />
         </div>
       </HashRouter>
     );

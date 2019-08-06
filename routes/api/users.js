@@ -117,7 +117,7 @@ router.get("/current", async (ctx, next) => {
     userId: user.id,
     name: user.name,
     login: user.login,
-    avatar: user.avatar,
+    avatar: getUploadFilePath(user.avatar),
     isAdmin: user.isAdmin
   };
 });
