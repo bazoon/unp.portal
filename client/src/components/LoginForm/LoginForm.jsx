@@ -238,7 +238,7 @@ class LoginForm extends Component {
               Бюджетное планирование
             </a>
             &nbsp;или&nbsp;
-            <a className="signup-link" onClick={this.handleToggle} href="http://localhost:5000/#portal_auth">
+            <a className="signup-link" href="http://localhost:5000/#portal_auth">
               Управление национальными проектами
             </a>
           </Form.Item>
