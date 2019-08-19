@@ -66,7 +66,9 @@ app.use(async (ctx, next) => {
         ctx.redirect(`/groups/new/${q}`);
       }
     } else {
-      ctx.redirect("/");
+      const userData = getUserData(token);
+      const user = createUserIfNotExist(userData);
+      ctx.redirect(`/admin/users/view/${user.id}`);
     }
   } else {
     return await next();
@@ -132,7 +134,6 @@ function getUserData(token) {
     "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata";
   const decoded = jwt.verify(token, process.env.API_TOKEN);
   const userData = decoded[userDataKey];
-  // console.log("DECODED", decoded, typeof userData);
   return typeof userData === "string" ? JSON.parse(userData) : userData;
 }
 
