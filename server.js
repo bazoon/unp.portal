@@ -67,7 +67,7 @@ app.use(async (ctx, next) => {
       }
     } else {
       const userData = getUserData(token);
-      const user = createUserIfNotExist(userData);
+      const user = await createUserIfNotExist(userData);
       ctx.redirect(`/admin/users/view/${user.id}`);
     }
   } else {
