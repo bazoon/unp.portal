@@ -233,11 +233,16 @@ class LoginForm extends Component {
             Войти
           </Button>
           <Form.Item>
-            или{" "}
+            Войти через: {" "}
             <a className="signup-link" onClick={this.handleToggle} href="#">
-              Зарегистрируйтесь сейчас!
+              Бюджетное планирование
+            </a>
+            &nbsp;или&nbsp;
+            <a className="signup-link" onClick={this.handleToggle} href="http://localhost:5000/#portal_auth">
+              Управление национальными проектами
             </a>
           </Form.Item>
+          
         </Form.Item>
         {loginFailed && (
           <div className="login-form__failed">Неверный логин или пароль</div>
