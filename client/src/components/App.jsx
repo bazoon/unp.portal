@@ -48,7 +48,7 @@ class App extends Component {
           // страниц. Хорошо бы сделать чтобы эти данные подгружались
           // каким-то единообразным способом. ComponentDidMount при релогине
           // не срабатывает поэтому нужно искать иной способ.
-          window.location = "/";
+          // window.location = "/";
         } else if (call.name === "logout") {
           this.props.chatStore.disconnectSocket();
         }
