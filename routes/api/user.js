@@ -29,6 +29,7 @@ async function login(login, password, ctx) {
   });
 
   ctx.cookies.set("token", token, { httpOnly: false });
+  
   const hashedPassword = bcrypt.hashSync(password, 8);
   const isCorrect = bcrypt.compare(password, user.password);
 
