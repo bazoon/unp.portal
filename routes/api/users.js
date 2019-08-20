@@ -107,8 +107,6 @@ router.get("/", async (ctx, next) => {
 
 router.get("/current", async (ctx, next) => {
   const { id } = ctx.user;
-  console.log("current", ctx.user);
-  console.log('Searching for id', id);
   const user = await models.User.findOne({
     where: {
       id
