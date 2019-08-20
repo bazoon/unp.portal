@@ -108,7 +108,7 @@ class L extends Component {
                       <TopNotifications />
 
                       <Link
-                        to={`/admin/users/edit/${
+                        to={`/admin/users/view/${
                           this.props.currentUserStore.userId
                         }`}
                         style={{
