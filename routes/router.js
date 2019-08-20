@@ -2,7 +2,6 @@ const Router = require("koa-router");
 const router = new Router();
 
 const projectGroups = require("./api/projectGroups");
-const news = require("./api/news");
 const feed = require("./api/feed");
 const chat = require("./api/chat");
 const conversations = require("./api/conversations");
@@ -19,7 +18,6 @@ const adminGroups = require("./api/admin/projectGroups");
 
 router.use("/api/projectGroups", projectGroups.routes());
 router.use("/api/users", users.routes());
-router.use("/api/news", news.routes());
 router.use("/api/feed", feed.routes());
 router.use("/api/chat", chat.routes());
 router.use("/api/conversations", conversations.routes());

@@ -24,7 +24,7 @@ const io = require("socket.io")(http);
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");
 const testRouter = require("./routes/api/test");
-const eventsRouter = require("./routes/api/events");
+const settingsRouter = require("./routes/api/settings");
 
 const port = process.env.PORT || 5000;
 const chatFactory = require("./chat/index");
@@ -37,6 +37,7 @@ app.use(serve("client/dist"));
 app.use(mount("/uploads", serve("uploads")));
 
 app.use(testRouter.routes()).use(testRouter.allowedMethods());
+app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
 
 app.use(async (ctx, next) => {
   const requestPath = ctx.request.path;
@@ -99,23 +100,9 @@ app.use(async (ctx, next) => {
 
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
-// const decoded = jwt.decode(
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjE3IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImFkbWluIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy91c2VyZGF0YSI6IntcIk5hbWVcIjpcImFkbWluXCIsXCJFbWFpbFwiOlwiYmZvLWViLXNlbmRwYXNzQGJhcnMuZ3JvdXBcIixcIkxvZ2luXCI6XCJhZG1pblwiLFwiX2JhcnNUcmFja2luZ1wiOlwiOGMxN2Q4NDllNzJkNDZlZDg3MmE1Y2E1YjY0YmM3MzlcIixcIlVzZXJOYW1lXCI6XCJhZG1pblwiLFwiQXVkaXRVc2VyTmFtZVwiOlwi0KHQuNGB0YLQtdC80L3Ri9C5INCQ0LTQvNC40L3QuNGB0YLRgNCw0YLQvtGAIFwiLFwiQXVkaXRVc2VyTG9naW5cIjpcImFkbWluXCIsXCJBdWRpdFVzZXJPcmdhbml6YXRpb25cIjpudWxsLFwiRXh0ZXJuYWxJZFwiOjEyNCxcIlBlcnNvbmFzRnVsbE5hbWVcIjpcItCh0LjRgdGC0LXQvNC90YvQuSDQkNC00LzQuNC90LjRgdGC0YDQsNGC0L7RgCBcIixcIlVzZXJJZFwiOjE3fSIsIl9iYXJzVHJhY2tpbmciOiI4YzE3ZDg0OWU3MmQ0NmVkODcyYTVjYTViNjRiYzczOSIsImV4cCI6MTU2NDU2MDU4NywiaXNzIjoiYnVkZ2V0cGxhbiIsImF1ZCI6ImJ1ZGdldHBsYW4ifQ.bFddtNYhRCA6NoKM6IoUNU27ZhEvRHU-9wSexRk_N6U"
-// );
 
-// console.log(
-//   decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata"]
-// );
-
-// const d = jwt.verify(
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjE3IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImFkbWluIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy91c2VyZGF0YSI6IntcIk5hbWVcIjpcImFkbWluXCIsXCJFbWFpbFwiOlwiYmZvLWViLXNlbmRwYXNzQGJhcnMuZ3JvdXBcIixcIkxvZ2luXCI6XCJhZG1pblwiLFwiX2JhcnNUcmFja2luZ1wiOlwiOGMxN2Q4NDllNzJkNDZlZDg3MmE1Y2E1YjY0YmM3MzlcIixcIlVzZXJOYW1lXCI6XCJhZG1pblwiLFwiQXVkaXRVc2VyTmFtZVwiOlwi0KHQuNGB0YLQtdC80L3Ri9C5INCQ0LTQvNC40L3QuNGB0YLRgNCw0YLQvtGAIFwiLFwiQXVkaXRVc2VyTG9naW5cIjpcImFkbWluXCIsXCJBdWRpdFVzZXJPcmdhbml6YXRpb25cIjpudWxsLFwiRXh0ZXJuYWxJZFwiOjEyNCxcIlBlcnNvbmFzRnVsbE5hbWVcIjpcItCh0LjRgdGC0LXQvNC90YvQuSDQkNC00LzQuNC90LjRgdGC0YDQsNGC0L7RgCBcIixcIlVzZXJJZFwiOjE3fSIsIl9iYXJzVHJhY2tpbmciOiI4YzE3ZDg0OWU3MmQ0NmVkODcyYTVjYTViNjRiYzczOSIsImV4cCI6MTU2NDU2MDU4NywiaXNzIjoiYnVkZ2V0cGxhbiIsImF1ZCI6ImJ1ZGdldHBsYW4ifQ.bFddtNYhRCA6NoKM6IoUNU27ZhEvRHU-9wSexRk_N6U",
-//   "5A0AB091-3F84-4EC4-B227-0834FCD8B1B4"
-// );
-
-// console.log(d);
-// models.sequelize.sync().then(function() {
 http.listen(port, () => console.log(`Server is running on ${port}`));
-// });
+
 
 https
   .createServer(

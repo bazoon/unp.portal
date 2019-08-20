@@ -11,10 +11,21 @@ class LoginForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLoggingIn: true
+      isLoggingIn: true,
+      unpUrl: "",
+      bpUrl: ""
     };
   }
 
+  componentDidMount() {
+    api.get("settings", {}, true).then(({ data }) => {
+      this.setState({
+        unpUrl: data.unpUrl,
+        bpUrl: data.bpUrl
+      });
+    });
+  }
+  
   handleSubmit = e => {
     e.preventDefault();
     const { form } = this.props;
@@ -180,6 +191,9 @@ class LoginForm extends Component {
 
   renderLogin(loginFailed) {
     const { getFieldDecorator } = this.props.form;
+    const { unpUrl, bpUrl } = this.state;
+    console.log(unpUrl)
+
     return (
       <Form layout="vertical" onSubmit={this.handleSubmit}>
         <Form.Item key="username" className="login-form__input">
@@ -234,11 +248,11 @@ class LoginForm extends Component {
           </Button>
           <Form.Item>
             Войти через: {" "}
-            <a className="signup-link" onClick={this.handleToggle} href="#">
+            <a className="signup-link" href={bpUrl}>
               Бюджетное планирование
             </a>
             &nbsp;или&nbsp;
-            <a className="signup-link" href="http://localhost:5000/#portal_auth">
+            <a className="signup-link" href={unpUrl}>
               Управление национальными проектами
             </a>
           </Form.Item>
