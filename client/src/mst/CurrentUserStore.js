@@ -17,6 +17,7 @@ const CurrentUserStore = types
   .actions(self => {
     const login = flow(function* login(payload) {
       const data = yield api.login(payload);
+      console.log(data);
       self.setData(data);
     });
 

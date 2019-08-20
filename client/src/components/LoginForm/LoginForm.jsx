@@ -192,7 +192,6 @@ class LoginForm extends Component {
   renderLogin(loginFailed) {
     const { getFieldDecorator } = this.props.form;
     const { unpUrl, bpUrl } = this.state;
-    console.log(unpUrl)
 
     return (
       <Form layout="vertical" onSubmit={this.handleSubmit}>
