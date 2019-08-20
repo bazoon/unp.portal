@@ -93,6 +93,7 @@ app.use(async (ctx, next) => {
   const tokenOnly = token.split(" ")[1];
   if (tokenOnly) {
     const userData = getUserData(tokenOnly);
+    console.log('User Data', userData);
     ctx.user = await createUserIfNotExist(userData);
     await next();
   }
