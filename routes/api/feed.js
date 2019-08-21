@@ -29,7 +29,6 @@ router.get("/", async (ctx, next) => {
     }
   });
 
-  console.log(conversations);
   ctx.body = conversations.map(c => ({
     id: c.id,
     title: c.ctitle,

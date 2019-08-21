@@ -110,7 +110,7 @@ module.exports = {
       text,
       recipientsIds
     } = config;
-    console.log(recipientsIds);
+    // console.log(recipientsIds);
     const description = `#${userName}:user:${userId}# написал «${text}» в обсуждении #${conversationTitle}:conversation:${groupId}-${conversationId}# в группе #${groupTitle}:group:${groupId}#`;
     return createForRecipients(userId, description, recipientsIds);
   },

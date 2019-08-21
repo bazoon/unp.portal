@@ -73,6 +73,7 @@ const ChatStore = types
       });
 
       socket.on("private-chat-created", chat => {
+        console.log("private-chat-created");
         const { userId } = self.currentUserStore;
         const { id, firstUser, secondUser } = chat;
         if (firstUser.id == userId || secondUser.id == userId) {

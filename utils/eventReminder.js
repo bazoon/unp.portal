@@ -27,7 +27,7 @@ class EventReminder {
     if (this.queue) {
       this.queue.process(async (job, done) => {
         try {
-          console.log("Sending", job.data);
+          // console.log("Sending", job.data);
           await this.chat.sendMessage(
             "notify",
             { title: job.data.title, description: job.data.description },
@@ -35,7 +35,7 @@ class EventReminder {
           );
           done();
         } catch (e) {
-          console.log(`Failed for ${job.data.userId}`);
+          // console.log(`Failed for ${job.data.userId}`);
           done("failed");
         }
       });

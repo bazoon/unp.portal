@@ -38,6 +38,7 @@
   "devDependencies": {
     "babel-eslint": "^10.0.2",
     "bull-arena": "^2.6.3",
+    "chalk": "^2.4.2",
     "cypress": "^3.4.1",
     "dotenv": "^8.1.0",
     "koa": "^2.8.1",

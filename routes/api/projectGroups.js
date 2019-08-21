@@ -104,8 +104,7 @@ router.get("/existingGroup", async ctx => {
     }
   });
 
-  console.log(existingProjectGroup);
-
+  
   if (existingProjectGroup) {
     ctx.status = 409;
     ctx.body = "Группа с таким заголовком уже существует";

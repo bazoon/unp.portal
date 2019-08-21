@@ -1,6 +1,8 @@
 const util = require("./util");
 const jwt = require("jsonwebtoken");
 const models = require("../models");
+const { error, log, warn } = require("../utils/log");
+
 
 class Chat {
   constructor(io) {
@@ -33,13 +35,13 @@ class Chat {
 
     const token = socket.handshake.query && socket.handshake.query.token;
     const tokenOnly = token && token.split(" ")[1];
-
+    log("OnConnection")
     try {
       decoded = jwt.verify(tokenOnly, process.env.API_TOKEN);
-      console.log(userId, "Ok");
+      log(`${userId} connected`);
       this.clients[userId] = socket;
     } catch (e) {
-      console.log(userId, "failed");
+      log(userId, "failed", e);
       socket.disconnect(true);
       return;
     }
@@ -47,7 +49,7 @@ class Chat {
     socket.on("disconnect", this.onDisconnect.bind(this, socket));
 
     socket.on("join", rooms => {
-      // console.log("Joining", rooms);
+      // log("Joining", rooms);
       socket.join(rooms);
     });
 
@@ -58,17 +60,18 @@ class Chat {
     socket.on("channel-created", this.onChannelCreated.bind(this));
   }
 
-  onDisconnect(socket) {
+  onDisconnect(socket) {  log()
     const userId = socket.handshake.query && socket.handshake.query.userId;
     this.clients[userId] = socket;
     delete this.clients[userId];
-    console.log(`Sockets: ${Object.keys(this.clients)}`);
-    console.log(`after disconnected ${Object.keys(this.clients).length}`);
+    error("Disconnected");
+    log(`Sockets: ${Object.keys(this.clients)}`);
+    log(`after disconnected ${Object.keys(this.clients).length}`);
   }
 
   onChannelMessage(userName, m, fn) {
     const { channelId, message, type, userId, files } = m;
-    console.log(channelId, message, type, userId, files);
+    log(`Message ${message} sent: to channel ${channelId}, of type ${type} by user ${userId}, files: ${files}`);
     util.writeMessage(channelId, message, type, userId, files).then(message => {
       this.io.to(channelId).emit("channel-message", message);
       fn();
@@ -108,12 +111,14 @@ class Chat {
     const { firstUser, secondUser } = chat;
     const firstUserSocket = this.clients[firstUser.id];
     const secondUserSocket = this.clients[secondUser.id];
-
+    log("onPrivateChatCreated");
     if (firstUserSocket) {
       firstUserSocket.emit("private-chat-created", chat);
+      log("sending to ", firstUser)
     }
     if (secondUserSocket) {
       secondUserSocket.emit("private-chat-created", chat);
+      log("sending to ", secondUser)
     }
   }
 

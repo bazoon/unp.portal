@@ -45,8 +45,7 @@ app.use(async (ctx, next) => {
   if (requestPath.indexOf("login/oauth") > 0) {
     ctx.cookies.set("token", token, { httpOnly: false });
 
-    console.log(token, groupName);
-    console.log(process.env.API_TOKEN);
+    
     try {
       jwt.verify(token, process.env.API_TOKEN);
       console.log("token verified");
@@ -93,7 +92,6 @@ app.use(async (ctx, next) => {
   const tokenOnly = token.split(" ")[1];
   if (tokenOnly) {
     const userData = getUserData(tokenOnly);
-    console.log('User Data', userData);
     ctx.user = await createUserIfNotExist(userData);
     await next();
   }
@@ -128,7 +126,7 @@ function getUserData(token) {
 async function createUserIfNotExist(userData) {
   const userResult = await models.User.findOrCreate({
     where: {
-      email: userData.Email
+      login: userData.Login
     },
     defaults: {
       name: userData.PersonasFullName,
