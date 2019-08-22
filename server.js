@@ -20,7 +20,22 @@ app.use(cors());
 const http = require("http").Server(app.callback());
 const https = require("https");
 
-const io = require("socket.io")(https);
+const ioServer = require("socket.io");
+const io = new ioServer();
+const h = https
+  .createServer(
+    {
+      key: fs.readFileSync("./ssl/server.key"),
+      cert: fs.readFileSync("./ssl/server.cert")
+    },
+    app.callback()
+  )
+  .listen(5443, () => {
+    console.log("Listening at :5443...");
+  });
+
+io.attach(h);
+
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");
 const testRouter = require("./routes/api/test");
@@ -99,18 +114,6 @@ app.use(async (ctx, next) => {
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 http.listen(port, () => console.log(`Server is running on ${port}`));
-
-https
-  .createServer(
-    {
-      key: fs.readFileSync("./ssl/server.key"),
-      cert: fs.readFileSync("./ssl/server.cert")
-    },
-    app.callback()
-  )
-  .listen(5443, () => {
-    console.log("Listening at :5443...");
-  });
 
 function getUserData(token) {
   const userDataKey =
