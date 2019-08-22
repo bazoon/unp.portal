@@ -45,7 +45,6 @@ app.use(async (ctx, next) => {
   if (requestPath.indexOf("login/oauth") > 0) {
     ctx.cookies.set("token", token, { httpOnly: false });
 
-    
     try {
       jwt.verify(token, process.env.API_TOKEN);
       console.log("token verified");
@@ -77,7 +76,7 @@ app.use(async (ctx, next) => {
 
 app.use(async (ctx, next) => {
   const requestPath = ctx.request.path;
-  if (requestPath.indexOf("api") > 0) {
+  if (requestPath.indexOf("api") > 0 || requestPath.indexOf("socket.io") > 0) {
     return await next();
   }
   await send(ctx, path.resolve("/client/dist", "index.html"));
@@ -99,9 +98,7 @@ app.use(async (ctx, next) => {
 
 app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
-
 http.listen(port, () => console.log(`Server is running on ${port}`));
-
 
 https
   .createServer(
