@@ -4,6 +4,7 @@ const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const models = require("../../models");
+const { log } = require("../../utils/log");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const expiresIn = 60 * 60 * 24;
 
@@ -28,12 +29,11 @@ async function login(login, password, ctx) {
     expiresIn: expiresIn
   });
 
-  ctx.cookies.set("token", token, { httpOnly: false });
-  
   const hashedPassword = bcrypt.hashSync(password, 8);
-  const isCorrect = bcrypt.compare(password, user.password);
+  const isCorrect = await bcrypt.compare(password, user.password);
 
   if (isCorrect) {
+    ctx.cookies.set("token", token, { httpOnly: false });
     return {
       userId: user.id,
       token,
@@ -43,7 +43,7 @@ async function login(login, password, ctx) {
     };
   } else {
     return {
-      auth: false,
+      loginFailed: true,
       message: "Неправильный логин или пароль"
     };
   }

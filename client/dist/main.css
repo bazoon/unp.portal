@@ -23075,6 +23075,10 @@ body {
   width: 100%;
   margin-bottom: 16px;
 }
+.login-form__failed {
+  font-size: 10px;
+  color: red;
+}
 @keyframes shake {
   10%,
   90% {

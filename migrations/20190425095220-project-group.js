@@ -27,6 +27,7 @@ module.exports = {
         type: Sequelize.BOOLEAN
       },
       user_id: {
+        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: "users",

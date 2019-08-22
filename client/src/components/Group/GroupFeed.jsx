@@ -507,7 +507,7 @@ class GroupFeed extends Component {
           </Col>
           <Col span={8}>
             <div className="group__add-info">
-              {canPost && (
+              {isAdmin && (
                 <Participants projectGroupId={id} participants={participants} />
               )}
               <GroupButton
