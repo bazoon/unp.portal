@@ -12,6 +12,12 @@ async function login(login, password, ctx) {
   const userDataKey =
     "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata";
   const user = await models.User.findOne({ where: { login } });
+
+  if (!user) {
+    ctx.status = 404;
+    return;
+  }
+
   const payload = {
     [userDataKey]: {
       PersonasFullName: user.name,
@@ -19,11 +25,6 @@ async function login(login, password, ctx) {
       Email: user.email
     }
   };
-
-  if (!user) {
-    ctx.status = 404;
-    return;
-  }
 
   const token = jwt.sign(payload, process.env.API_TOKEN, {
     expiresIn: expiresIn
