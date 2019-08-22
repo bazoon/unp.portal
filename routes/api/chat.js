@@ -11,22 +11,10 @@ const koaBody = require("koa-body");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 const { fileOwners } = require("../../utils/constants");
-
-router.get("/channels/all", async (ctx, next) => {
-  const response = await models.Channel.findAll({
-    where: { private: { [Op.not]: true } }
-  }).then(channels => {
-    return channels.map(channel => {
-      return {
-        id: channel.id,
-        name: channel.name,
-        avatar: getUploadFilePath(channel.avatar)
-      };
-    });
-  });
-
-  ctx.body = response;
-});
+const {
+  NotFoundRecordError,
+  NotAuthorizedError
+} = require("../../utils/errors");
 
 router.get("/channels/search/:query", async (ctx, next) => {
   const userId = ctx.user.id;
@@ -93,6 +81,7 @@ function getFullChannels(channels, userId) {
         userId
       }
     });
+
     const unreads = unreadsResult[0][0] && +unreadsResult[0][0].count;
 
     const participantsCountResult = await models.sequelize.query(
@@ -108,33 +97,41 @@ function getFullChannels(channels, userId) {
 
     if (channel.first_user_id && channel.second_user_id) {
       if (channel.first_user_id == userId) {
-        return models.User.findOne({
+        const user = await models.User.findOne({
           where: { id: channel.second_user_id }
-        }).then(user => {
-          return {
-            id: channel.id,
-            private: channel.private,
-            avatar: getUploadFilePath(user.avatar),
-            name: user.name,
-            lastMessage,
-            private: true,
-            unreads
-          };
         });
+
+        if (!user) {
+          throw new NotFoundRecordError("User not found");
+        }
+
+        return {
+          id: channel.id,
+          private: channel.private,
+          avatar: getUploadFilePath(user.avatar),
+          name: user.name,
+          lastMessage,
+          private: true,
+          unreads
+        };
       } else {
-        return models.User.findOne({
+        const user = models.User.findOne({
           where: { id: channel.first_user_id }
-        }).then(user => {
-          return {
-            id: channel.id,
-            name: user.name,
-            private: channel.private,
-            avatar: getUploadFilePath(user.avatar),
-            lastMessage,
-            private: true,
-            unreads
-          };
         });
+
+        if (!user) {
+          throw new NotFoundRecordError("User not found");
+        }
+
+        return {
+          id: channel.id,
+          name: user.name,
+          private: channel.private,
+          avatar: getUploadFilePath(user.avatar),
+          lastMessage,
+          private: true,
+          unreads
+        };
       }
     }
 
@@ -166,35 +163,6 @@ router.post("/seen", async ctx => {
   });
 
   ctx.body = "ok";
-});
-
-router.post("/channels/create", koaBody({ multipart: true }), async ctx => {
-  const { channelTitle, userId } = ctx.request.body;
-  const { file } = ctx.request.files;
-  const files = file ? (Array.isArray(file) ? file : [file]) : [];
-  const avatar = files[0] && files[0].name;
-  await uploadFiles(files);
-  ctx.body = await models.Channel.create({
-    name: channelTitle,
-    avatar: avatar
-  }).then(channel => {
-    return models.UserChannel.findOrCreate({
-      where: {
-        ChannelId: channel.id,
-        UserId: userId
-      },
-      defaults: {
-        ChannelId: channel.id,
-        UserId: userId
-      }
-    }).then(() => {
-      return {
-        id: channel.id,
-        avatar: getUploadFilePath(channel.avatar),
-        name: channel.name
-      };
-    });
-  });
 });
 
 router.post("/channels", koaBody({ multipart: true }), async ctx => {

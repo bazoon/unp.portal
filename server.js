@@ -35,6 +35,7 @@ const h = https
   });
 
 io.attach(h);
+io.attach(http);
 
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");

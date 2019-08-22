@@ -353,7 +353,7 @@ router.delete("/participants", async ctx => {
       groupTitle: group.title,
       participantUserId: user.id,
       participantName: user.name,
-      recipientsIds: await getGroupUsersIds(group.id),
+      recipientsIds: await getGroupUsersIds(group.id, transaction),
       transaction
     });
 
@@ -419,7 +419,7 @@ router.delete("/admins", async ctx => {
       adminId: user.id,
       groupTitle: group.title,
       groupId: group.id,
-      recipientsIds: await getGroupUsersIds(group.id),
+      recipientsIds: await getGroupUsersIds(group.id, transaction),
       transaction
     });
 
@@ -501,7 +501,7 @@ router.delete("/:id/subscriptions", async ctx => {
         groupId: group.id,
         applicantId: userId,
         applicantName: user.name,
-        recipientsIds: await getGroupUsersIds(groupId),
+        recipientsIds: await getGroupUsersIds(groupId, transaction),
         transaction
       });
 
@@ -919,7 +919,7 @@ router.post("/:id/subscriptions", async ctx => {
         groupId: group.id,
         applicantId: userId,
         applicantName: user.name,
-        recipientsIds: await getGroupUsersIds(groupId),
+        recipientsIds: await getGroupUsersIds(groupId, transaction),
         transaction
       });
     } else {
@@ -1068,7 +1068,7 @@ router.post("/conversations", koaBody({ multipart: true }), async ctx => {
       groupTitle: group.title,
       conversationTitle: conversation.title,
       conversationId: conversation.id,
-      recipientsIds: await getGroupUsersIds(projectGroupId),
+      recipientsIds: await getGroupUsersIds(projectGroupId, transaction),
       transaction
     });
 
@@ -1320,7 +1320,7 @@ router.post("/admins", async ctx => {
       adminId: user.id,
       groupTitle: group.title,
       groupId: group.id,
-      recipientsIds: await getGroupUsersIds(group.id),
+      recipientsIds: await getGroupUsersIds(group.id, transaction),
       transaction
     });
 

@@ -2,11 +2,12 @@ const models = require("../../../models");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
-function getGroupUsersIds(projectGroupId) {
+function getGroupUsersIds(projectGroupId, transaction) {
   return models.Participant.findAll({
     where: {
       projectGroupId
-    }
+    },
+    transaction
   }).map(a => a.userId);
 }
 

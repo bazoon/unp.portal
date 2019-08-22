@@ -5,6 +5,10 @@ const uploadFiles = require("../../../utils/uploadFiles");
 const { fileOwners } = require("../../../utils/constants");
 const notificationService = require("../../../utils/notifications");
 const { getGroupUsersIds, getGroupAdminsIds } = require("./groups");
+const {
+  NotFoundRecordError,
+  NotAuthorizedError
+} = require("../../../utils/errors");
 
 const createPost = async function createPost({
   text,
@@ -19,84 +23,110 @@ const createPost = async function createPost({
                     left join positions on users.position_id = positions.id
                     where users.id=:userId
                     `;
+  let transaction;
 
-  await uploadFiles(files);
+  try {
+    transaction = await models.sequelize.transaction();
+    await uploadFiles(files);
 
-  const post = await models.Post.create({
-    text,
-    groupId: groupId,
-    conversationId: conversationId,
-    userId: userId,
-    parentId: postId,
-    userId
-  });
+    const post = await models.Post.create(
+      {
+        text,
+        groupId: groupId,
+        conversationId: conversationId,
+        userId: userId,
+        parentId: postId,
+        userId
+      },
+      { transaction }
+    );
 
-  const users = await models.sequelize.query(userQuery, {
-    replacements: {
-      userId
+    const users = await models.sequelize.query(userQuery, {
+      replacements: {
+        userId
+      },
+      transaction
+    });
+
+    const user = users[0][0];
+
+    // notification
+
+    const conversation = await models.Conversation.findOne({
+      where: {
+        id: conversationId
+      },
+      transaction
+    });
+
+    if (!conversation) {
+      throw new NotFoundRecordError("Conversation not found");
     }
-  });
-  const user = users[0][0];
 
-  // notification
+    const group = await models.ProjectGroup.findOne({
+      where: {
+        id: conversation.projectGroupId
+      },
+      transaction
+    });
 
-  const conversation = await models.Conversation.findOne({
-    where: {
-      id: conversationId
+    if (!group) {
+      throw new NotFoundRecordError("Group not found");
     }
-  });
 
-  const group = await models.ProjectGroup.findOne({
-    where: {
-      id: conversation.projectGroupId
-    }
-  });
+    await notificationService.postCreated({
+      userId,
+      userName: user.name,
+      conversationId,
+      groupId: conversation.projectGroupId,
+      groupTitle: group.title,
+      conversationTitle: conversation.title,
+      recipientsIds: await getGroupUsersIds(conversation.projectGroupId),
+      text,
+      transaction
+    });
 
-  notificationService.postCreated({
-    userId,
-    userName: user.name,
-    conversationId,
-    groupId: conversation.projectGroupId,
-    groupTitle: group.title,
-    conversationTitle: conversation.title,
-    recipientsIds: await getGroupUsersIds(conversation.projectGroupId),
-    text
-  });
+    //
 
-  //
+    const createdFiles = await models.File.bulkCreate(
+      files.map(file => ({
+        file: file.name,
+        size: file.size,
+        entityType: fileOwners.post,
+        entityId: postId
+      })),
+      { returning: true, transaction }
+    );
 
-  const createdFiles = await models.File.bulkCreate(
-    files.map(file => ({
-      file: file.name,
-      size: file.size,
-      entityType: fileOwners.post,
-      entityId: postId
-    })),
-    { returning: true }
-  );
+    await transaction.commit();
 
-  return {
-    id: post.id,
-    parentId: post.parentId && post.parentId,
-    text: post.text,
-    avatar: getUploadFilePath(user.avatar) || "",
-    userName: user.name,
-    position: user.position || "",
-    createdAt: post.createdAt,
-    files: createdFiles.map(f => ({
-      id: f.id,
-      name: getUploadFilePath(f.file),
-      size: f.size
-    })),
-    children: []
-  };
+    return {
+      id: post.id,
+      parentId: post.parentId && post.parentId,
+      text: post.text,
+      avatar: getUploadFilePath(user.avatar) || "",
+      userName: user.name,
+      position: user.position || "",
+      createdAt: post.createdAt,
+      files: createdFiles.map(f => ({
+        id: f.id,
+        name: getUploadFilePath(f.file),
+        size: f.size
+      })),
+      children: []
+    };
+  } catch (e) {
+    await transaction.rollback();
+    throw e;
+  }
 };
 
-const getPosts = async function getPosts(query, id) {
+const getPosts = async function getPosts(query, id, transaction) {
   const posts = (await models.sequelize.query(query, {
     replacements: {
       id
-    }
+    },
+    transaction
   }))[0];
 
   const postFilesPromises = posts.map(async post => {
@@ -107,7 +137,8 @@ const getPosts = async function getPosts(query, id) {
       .query(filesQuery, {
         replacements: {
           postId: post.id
-        }
+        },
+        transaction
       })
       .then(f => f[0]);
 
