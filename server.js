@@ -20,7 +20,7 @@ app.use(cors());
 const http = require("http").Server(app.callback());
 const https = require("https");
 
-const io = require("socket.io")(http);
+const io = require("socket.io")(https);
 const apiRouter = require("./routes/router");
 const authRouter = require("./routes/authRouter");
 const testRouter = require("./routes/api/test");
