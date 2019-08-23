@@ -25,15 +25,19 @@ class LoginForm extends Component {
       });
     });
   }
-  
+
   handleSubmit = e => {
     e.preventDefault();
     const { form } = this.props;
     form.validateFields((errors, fields) => {
       if (!errors) {
-        this.props.currentUserStore.login(fields).then(() => {
-          this.props.onLogin();
-          form.resetFields();
+        this.props.currentUserStore.login(fields).then(error => {
+          if (!error) {
+            this.props.onLogin();
+            form.resetFields();
+          } else {
+            this.props.onLogin();
+          }
         });
       }
     });
@@ -189,7 +193,7 @@ class LoginForm extends Component {
     );
   }
 
-  renderLogin(loginFailed) {
+  renderLogin(loginError) {
     const { getFieldDecorator } = this.props.form;
     const { unpUrl, bpUrl } = this.state;
 
@@ -246,7 +250,7 @@ class LoginForm extends Component {
             Войти
           </Button>
           <Form.Item>
-            Войти через: {" "}
+            Войти через:{" "}
             <a className="signup-link" href={bpUrl}>
               Бюджетное планирование
             </a>
@@ -255,18 +259,15 @@ class LoginForm extends Component {
               Управление национальными проектами
             </a>
           </Form.Item>
-          
         </Form.Item>
-        {loginFailed && (
-          <div className="login-form__failed">Неверный логин или пароль</div>
-        )}
+        {loginError && <div className="login-form__failed">{loginError}</div>}
       </Form>
     );
   }
 
   render() {
     const { getFieldDecorator } = this.props.form;
-    const { loginFailed } = this.props.currentUserStore;
+    const { loginError } = this.props.currentUserStore;
     const { isLoggingIn } = this.state;
 
     return (
@@ -280,7 +281,7 @@ class LoginForm extends Component {
         closable={false}
         width={800}
       >
-        {isLoggingIn ? this.renderLogin(loginFailed) : this.renderSignup()}
+        {isLoggingIn ? this.renderLogin(loginError) : this.renderSignup()}
       </Modal>
     );
   }

@@ -7,15 +7,20 @@ const models = require("../../models");
 const { log } = require("../../utils/log");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const expiresIn = 60 * 60 * 24;
+const {
+  MissingFieldError,
+  LoginFailedError,
+  NotFoundRecordError
+} = require("../../utils/errors");
 
-async function login(login, password, ctx) {
+async function login(login, password, ctx, transaction) {
   const userDataKey =
     "http://schemas.microsoft.com/ws/2008/06/identity/claims/userdata";
+
   const user = await models.User.findOne({ where: { login } });
 
   if (!user) {
-    ctx.status = 404;
-    return;
+    throw new NotFoundRecordError("Пользователь не найден");
   }
 
   const payload = {
@@ -43,22 +48,22 @@ async function login(login, password, ctx) {
       avatar: getUploadFilePath(user.avatar)
     };
   } else {
-    return {
-      loginFailed: true,
-      message: "Неправильный логин или пароль"
-    };
+    throw new LoginFailedError("Неправильный логин или пароль!");
   }
 }
 
 router.post("/login", async ctx => {
   const { userName, password } = ctx.request.body;
+  try {
+    if (!userName || !password) {
+      throw MissingFieldError("Name or password missing!");
+    }
 
-  if (!userName || !password) {
-    ctx.body = "enter password and username!";
-    return;
+    ctx.body = await login(userName, password, ctx);
+  } catch (e) {
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
   }
-
-  ctx.body = await login(userName, password, ctx);
 });
 
 router.post("/logout", async ctx => {
@@ -76,27 +81,36 @@ router.post("/signup", async ctx => {
     password
   } = ctx.request.body;
   const userName = `${surName} ${firstName} ${lastName}`;
-
-  if (!userName || !password) {
-    ctx.status = 500;
-    ctx.body = "enter password and username!";
-  }
+  let transaction;
 
   try {
+    transaction = await models.sequelize.transaction();
+
+    if (!userName || !password) {
+      throw MissingFieldError("Name or password missing!");
+    }
+
     const [user, created] = await models.User.findOrCreate({
-      where: { name: userName }
+      where: { name: userName },
+      transaction
     });
 
-    user.update({
-      email,
-      login
-    });
+    user.update(
+      {
+        email,
+        login
+      },
+      { transaction }
+    );
 
     const hashedPassword = bcrypt.hashSync(password, 8);
 
     const avatar = "";
 
-    user.update({ name: userName, password: hashedPassword, avatar });
+    user.update(
+      { name: userName, password: hashedPassword, avatar },
+      { transaction }
+    );
 
     const token = jwt.sign(
       { userName, id: user.id, isAdmin: user.isAdmin },

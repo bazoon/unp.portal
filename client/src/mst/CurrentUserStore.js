@@ -13,12 +13,18 @@ const CurrentUserStore = types
     userName: types.maybeNull(types.string),
     avatar: types.maybeNull(types.string),
     isAdmin: types.maybeNull(types.boolean),
-    loginFailed: types.maybeNull(types.boolean)
+    loginError: types.maybeNull(types.string)
   })
   .actions(self => {
     const login = flow(function* login(payload) {
-      const data = yield api.login(payload);
-      self.setData(data);
+      try {
+        const data = yield api.login(payload);
+        self.setData(data);
+        return false;
+      } catch (e) {
+        self.loginError = e.response.data;
+        return true;
+      }
     });
 
     const signup = flow(function* signup(payload) {
@@ -27,7 +33,7 @@ const CurrentUserStore = types
     });
 
     const setData = function setData(data) {
-      const { token, userName, userId, avatar, isAdmin, loginFailed } = data;
+      const { token, userName, userId, avatar, isAdmin } = data;
       self.userId = userId;
       self.token = token;
       self.userName = userName;
@@ -35,7 +41,6 @@ const CurrentUserStore = types
       self.avatar = avatar;
       self.isAdmin = isAdmin;
       self.token = token;
-      self.loginFailed = loginFailed;
     };
 
     const clearData = function clearData() {

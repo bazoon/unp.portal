@@ -12,7 +12,23 @@ class NotAuthorizedError extends Error {
   }
 }
 
+class MissingFieldError extends Error {
+  constructor() {
+    super();
+    this.status = 422;
+  }
+}
+
+class LoginFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 401;
+  }
+}
+
 module.exports = {
   NotFoundRecordError,
-  NotAuthorizedError
+  NotAuthorizedError,
+  MissingFieldError,
+  LoginFailedError
 };
