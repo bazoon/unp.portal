@@ -252,7 +252,7 @@ class EditEventForm extends Component {
                 initialValue: this.state.accessType
               })(
                 <Select onChange={this.handleChangeAccessType}>
-                  <Option value={0}>Никто</Option>
+                  <Option value={0}>Все</Option>
                   <Option value={1}>Точечный выбор</Option>
                   <Option value={2}>Группы</Option>
                 </Select>
@@ -284,7 +284,7 @@ class EditEventForm extends Component {
                 style={{ marginRight: "8px" }}
                 onClick={this.handlePublish}
               >
-                Опубликовать
+                Сохранить
               </Button>
               <Link to="/events">
                 <Button onClick={this.handleCancel}>Отмена</Button>

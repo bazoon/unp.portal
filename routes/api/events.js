@@ -11,6 +11,10 @@ const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
 const getUploadFilePath = require("../../utils/getUploadFilePath");
 const eventReminder = require("../../utils/eventReminder");
+const {
+  NotFoundRecordError,
+  NotAuthorizedError
+} = require("../../utils/errors");
 
 router.post("/", koaBody({ multipart: true }), async ctx => {
   const {
@@ -26,83 +30,100 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
   await uploadFiles(files);
+  let transaction;
 
-  const event = await models.Event.create({
-    title,
-    description,
-    userId,
-    startDate: date,
-    remind,
-    accessType
-  });
+  try {
+    transaction = await models.sequelize.transaction();
 
-  const remindAt = moment(date);
-  remindAt.subtract(moment.duration(+remind, "m"));
-  const delay = remindAt.diff(moment());
-  let recipientsIds = [];
-
-  await models.File.bulkCreate(
-    files.map(file => {
-      return {
+    const event = await models.Event.create(
+      {
+        title,
+        description,
         userId,
-        file: file.name,
-        entityType: fileOwners.event,
-        entityId: event.id,
-        size: file.size
-      };
-    })
-  );
+        startDate: date,
+        remind,
+        accessType
+      },
+      { transaction }
+    );
 
-  let accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
+    const remindAt = moment(date);
+    remindAt.subtract(moment.duration(+remind, "m"));
+    const delay = remindAt.diff(moment());
+    let recipientsIds = [];
 
-  if (accessType == 1) {
-    accessIds = Array.from(new Set(accessIds));
-    recipientsIds = accessIds;
-
-    await models.EventAccess.bulkCreate(
-      accessIds.map(id => {
+    await models.File.bulkCreate(
+      files.map(file => {
         return {
-          eventId: event.id,
-          userId: id
+          userId,
+          file: file.name,
+          entityType: fileOwners.event,
+          entityId: event.id,
+          size: file.size
         };
-      })
-    );
-  } else if (accessType == 2) {
-    const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
-    const users = (await models.sequelize.query(usersQuery, {
-      replacements: {
-        accessEntitiesIds: accessIds
-      }
-    }))[0];
-
-    await models.EventAccess.bulkCreate(
-      accessIds.map(id => {
-        return {
-          eventId: event.id,
-          groupId: id
-        };
-      })
+      }),
+      { transaction }
     );
 
-    recipientsIds = Array.from(
-      new Set(recipientsIds.concat(users.map(u => u.user_id)))
-    );
+    let accessIds = accessEntitiesIds ? accessEntitiesIds.split(",") : [];
+
+    if (accessType == 1) {
+      accessIds = Array.from(new Set(accessIds));
+      recipientsIds = accessIds;
+
+      await models.EventAccess.bulkCreate(
+        accessIds.map(id => {
+          return {
+            eventId: event.id,
+            userId: id
+          };
+        }),
+        { transaction }
+      );
+    } else if (accessType == 2) {
+      const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
+      const users = (await models.sequelize.query(usersQuery, {
+        replacements: {
+          accessEntitiesIds: accessIds
+        },
+        transaction
+      }))[0];
+
+      await models.EventAccess.bulkCreate(
+        accessIds.map(id => {
+          return {
+            eventId: event.id,
+            groupId: id
+          };
+        }),
+        { transaction }
+      );
+
+      recipientsIds = Array.from(
+        new Set(recipientsIds.concat(users.map(u => u.user_id)))
+      );
+    }
+
+    // notifications
+    await notificationService.eventCreated({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds,
+      transaction
+    });
+
+    // reminders
+    if (remind) {
+      eventReminder.remind({ title, description, date }, recipientsIds, delay);
+    }
+    await transaction.commit();
+    ctx.body = event;
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
   }
-
-  // notifications
-  await notificationService.eventCreated({
-    userId,
-    title: event.title,
-    eventId: event.id,
-    recipientsIds
-  });
-
-  // reminders
-  if (remind) {
-    eventReminder.remind({ title, description, date }, recipientsIds, delay);
-  }
-
-  ctx.body = event;
 });
 
 router.put("/:id", async ctx => {
@@ -117,78 +138,98 @@ router.put("/:id", async ctx => {
   const { id } = ctx.params;
   const userId = ctx.user.id;
   const event = await models.Event.findOne({ where: { id } });
+  let transaction;
 
-  await event.update({
-    title,
-    description,
-    userId,
-    startDate: date,
-    remind,
-    accessType
-  });
+  try {
+    transaction = await models.sequelize.transaction();
 
-  await models.EventAccess.destroy({
-    where: {
-      eventId: id
-    }
-  });
-
-  if (accessType == 1) {
-    accessEntitiesIds.push(userId);
-    accessEntitiesIds = Array.from(new Set(accessEntitiesIds));
-    recipientsIds = accessEntitiesIds;
-
-    await models.EventAccess.bulkCreate(
-      accessEntitiesIds.map(id => {
-        return {
-          eventId: event.id,
-          userId: id
-        };
-      })
-    );
-
-    await notificationService.eventUpdated({
-      userId,
-      title: event.title,
-      eventId: event.id,
-      recipientsIds: accessEntitiesIds.concat([userId])
-    });
-  } else if (accessType == 2) {
-    const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
-    const users = (await models.sequelize.query(usersQuery, {
-      replacements: {
-        accessEntitiesIds: accessEntitiesIds
-      }
-    }))[0];
-
-    await models.EventAccess.bulkCreate(
-      accessEntitiesIds.map(id => {
-        return {
-          eventId: event.id,
-          groupId: id
-        };
-      })
-    );
-
-    await models.EventAccess.findOrCreate({
-      where: {
-        [Op.and]: [{ eventId: event.id }, { userId }]
+    await event.update(
+      {
+        title,
+        description,
+        userId,
+        startDate: date,
+        remind,
+        accessType
       },
-      defaults: {
+      { transaction }
+    );
+
+    await models.EventAccess.destroy({
+      where: {
+        eventId: id
+      },
+      transaction
+    });
+
+    if (accessType == 1) {
+      accessEntitiesIds.push(userId);
+      accessEntitiesIds = Array.from(new Set(accessEntitiesIds));
+      recipientsIds = accessEntitiesIds;
+
+      await models.EventAccess.bulkCreate(
+        accessEntitiesIds.map(id => {
+          return {
+            eventId: event.id,
+            userId: id
+          };
+        }),
+        { transaction }
+      );
+
+      await notificationService.eventUpdated({
+        userId,
+        title: event.title,
         eventId: event.id,
-        userId
-      }
-    });
+        recipientsIds: accessEntitiesIds.concat([userId]),
+        transaction
+      });
+    } else if (accessType == 2) {
+      const usersQuery = `select distinct user_id from participants where project_group_id in (:accessEntitiesIds)`;
+      const users = (await models.sequelize.query(usersQuery, {
+        replacements: {
+          accessEntitiesIds: accessEntitiesIds
+        },
+        transaction
+      }))[0];
 
-    await notificationService.eventUpdated({
-      userId,
-      title: event.title,
-      eventId: event.id,
-      recipientsIds: users.map(u => u.id).concat([userId])
-    });
+      await models.EventAccess.bulkCreate(
+        accessEntitiesIds.map(id => {
+          return {
+            eventId: event.id,
+            groupId: id
+          };
+        }),
+        { transaction }
+      );
+
+      await models.EventAccess.findOrCreate({
+        where: {
+          [Op.and]: [{ eventId: event.id }, { userId }]
+        },
+        defaults: {
+          eventId: event.id,
+          userId
+        },
+        transaction
+      });
+
+      await notificationService.eventUpdated({
+        userId,
+        title: event.title,
+        eventId: event.id,
+        recipientsIds: users.map(u => u.id).concat([userId]),
+        transaction
+      });
+    }
+
+    await transaction.commit();
+    ctx.body = event;
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
   }
-
-  ctx.body = event;
 });
 
 // router.get("/list", async (ctx, next) => {
@@ -226,15 +267,24 @@ router.get("/search/:query", async (ctx, next) => {
 router.get("/", async (ctx, next) => {
   const { page, pageSize } = ctx.request.query;
   const { id: userId, isAdmin } = ctx.user;
+  let transaction;
 
-  const events = await getEvents({
-    userId,
-    isAdmin,
-    page,
-    pageSize
-  });
-
-  ctx.body = events;
+  try {
+    transaction = await models.sequelize.transaction();
+    const events = await getEvents({
+      userId,
+      isAdmin,
+      page,
+      pageSize,
+      transaction
+    });
+    await transaction.commit();
+    ctx.body = events;
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
+  }
 });
 
 router.get("/upcoming", async (ctx, next) => {
@@ -243,60 +293,70 @@ router.get("/upcoming", async (ctx, next) => {
   const from = (date && moment(date)) || moment(new Date());
   from.tz("Etc/GMT-0");
   from.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+  let transaction;
 
-  const query = `select *from events where (id in (select event_id from event_accesses 
-            where ((group_id in (select project_group_id from participants where user_id = :userId)) or 
-            (event_accesses.user_id = :userId)) or events.user_id = :userId) or (events.access_type=0)) and
-            start_date >= :from::date
-            order by events.start_date asc
-            limit 5`;
+  try {
+    transaction = await models.sequelize.transaction();
 
-  const events = (await models.sequelize.query(query, {
-    replacements: {
-      userId,
-      from: from.toString()
-    }
-  }))[0];
+    const query = `select *from events where (id in (select event_id from event_accesses 
+              where ((group_id in (select project_group_id from participants where user_id = :userId)) or 
+              (event_accesses.user_id = :userId)) or events.user_id = :userId) or (events.access_type=0)) and
+              start_date >= :from::date
+              order by events.start_date asc
+              limit 5`;
 
-  ctx.body = await Promise.all(getFullEvents({ events, userId, isAdmin }));
+    const events = (await models.sequelize.query(query, {
+      replacements: {
+        userId,
+        from: from.toString()
+      },
+      transaction
+    }))[0];
+
+    const fullEvents = await Promise.all(
+      getFullEvents({ events, userId, isAdmin, transaction })
+    );
+
+    await transaction.commit();
+    ctx.body = fullEvents;
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
+  }
 });
 
-async function getEvents({ userId, from, to, page, pageSize, isAdmin }) {
+async function getEvents({
+  userId,
+  from,
+  to,
+  page,
+  pageSize,
+  isAdmin,
+  transaction
+}) {
   let query, countQuery;
   const offset = (page - 1) * pageSize;
   const limit = pageSize;
 
-  if (from && to) {
-    // countQuery = `select count(events.id)
-    //               from events, user_events
-    //               where events.id = user_events.event_id and user_events.user_id=${userId} and
-    //               events.start_date BETWEEN '${from}' AND '${to}
-    //               `;
-    // query = `select events.id, title, description, start_date, remind_at
-    //         from events, user_events
-    //         where events.id = user_events.event_id and user_events.user_id=${userId} and
-    //         events.start_date BETWEEN '${from}' AND '${to}'
-    //         order by events.start_date asc
-    //         limit ${limit} offset ${offset}`;
-  } else {
-    countQuery = `select count(*) from events where id in (select event_id from event_accesses 
-                  where (group_id in (select project_group_id from participants where user_id = :userId)) or 
-                  (event_accesses.user_id = :userId)) or user_id = :userId or access_type=0
-                `;
+  countQuery = `select count(*) from events where id in (select event_id from event_accesses 
+                where (group_id in (select project_group_id from participants where user_id = :userId)) or 
+                (event_accesses.user_id = :userId)) or user_id = :userId or access_type=0
+              `;
 
-    query = `select *from events where id in (select event_id from event_accesses 
+  query = `select *from events where id in (select event_id from event_accesses 
             where (group_id in (select project_group_id from participants where user_id = :userId)) or 
             (event_accesses.user_id = :userId)) or user_id = :userId or access_type=0
             order by events.start_date asc
             limit :limit offset :offset`;
-  }
 
   const [events] = await models.sequelize.query(query, {
     replacements: {
       userId,
       limit,
       offset
-    }
+    },
+    transaction
   });
 
   const total = +(await models.sequelize.query(countQuery, {
@@ -304,18 +364,21 @@ async function getEvents({ userId, from, to, page, pageSize, isAdmin }) {
       userId,
       limit,
       offset
-    }
+    },
+    transaction
   }))[0][0].count;
 
   return {
-    events: await Promise.all(getFullEvents({ events, userId, isAdmin })),
+    events: await Promise.all(
+      getFullEvents({ events, userId, isAdmin, transaction })
+    ),
     pagination: {
       total: total
     }
   };
 }
 
-function getFullEvents({ events, userId, isAdmin }) {
+function getFullEvents({ events, userId, isAdmin, transaction }) {
   return events.map(async event => {
     const query = `select id, title as name from project_groups where id in 
                   (select group_id from event_accesses where event_id = :eventId)
@@ -327,7 +390,8 @@ function getFullEvents({ events, userId, isAdmin }) {
     const [eventParticipants] = await models.sequelize.query(query, {
       replacements: {
         eventId: event.id
-      }
+      },
+      transaction
     });
 
     return {
@@ -347,72 +411,93 @@ function getFullEvents({ events, userId, isAdmin }) {
 router.get("/:id", async (ctx, next) => {
   const userId = ctx.user.id;
   const { id } = ctx.params;
+  let transaction;
 
-  const event = await models.Event.findOne({
-    where: {
-      id
+  try {
+    transaction = await models.sequelize.transaction();
+
+    const event = await models.Event.findOne({
+      where: {
+        id
+      },
+      transaction
+    });
+
+    if (!event) {
+      throw new NotFoundRecordError("Event not found");
     }
-  });
 
-  const user = await models.User.findOne({ where: { id: event.userId } });
-  const files = await models.File.findAll({
-    where: {
-      [Op.or]: [
-        {
-          entityId: event.id
-        },
-        {
-          entityType: fileOwners.event
-        }
-      ]
+    const user = await models.User.findOne({
+      where: { id: event.userId },
+      transaction
+    });
+
+    if (!user) {
+      throw new NotFoundRecordError("User not found");
     }
-  });
 
-  if (!event) {
-    ctx.code = 404;
-    return;
+    const files = await models.File.findAll({
+      where: {
+        [Op.or]: [
+          {
+            entityId: event.id
+          },
+          {
+            entityType: fileOwners.event
+          }
+        ]
+      },
+      transaction
+    });
+
+    let query;
+
+    if (event.accessType == 1) {
+      query = `select id, user_id, group_id from event_accesses 
+                 where user_id is not null and event_id=:eventId`;
+    } else {
+      query = `select id, user_id, group_id from event_accesses 
+                 where group_id is not null and event_id=:eventId`;
+    }
+
+    const [eventAccesses] = await models.sequelize.query(query, {
+      replacements: {
+        eventId: id
+      },
+      transaction
+    });
+
+    await transaction.commit();
+
+    ctx.body = {
+      id: event.id,
+      userId: event.UserId,
+      userName: user.name,
+      canEdit: event.userId == userId,
+      userAvatar: getUploadFilePath(user.avatar),
+      description: event.description,
+      remind: event.remind,
+      startDate: event.startDate,
+      title: event.title,
+      files: files.map(file => {
+        return {
+          id: file.id,
+          name: file.file,
+          url: getUploadFilePath(file.file)
+        };
+      }),
+      accessType: event.accessType,
+      accesses: eventAccesses.map(ea => ({
+        id: ea.id,
+        userId: ea.user_id,
+        groupId: ea.group_id
+      }))
+    };
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
   }
-
-  let query;
-
-  if (event.accessType == 1) {
-    query = `select id, user_id, group_id from event_accesses 
-             where user_id is not null and event_id=:eventId`;
-  } else {
-    query = `select id, user_id, group_id from event_accesses 
-             where group_id is not null and event_id=:eventId`;
-  }
-
-  const [eventAccesses] = await models.sequelize.query(query, {
-    replacements: {
-      eventId: id
-    }
-  });
-
-  ctx.body = {
-    id: event.id,
-    userId: event.UserId,
-    userName: user.name,
-    canEdit: event.userId == userId,
-    userAvatar: getUploadFilePath(user.avatar),
-    description: event.description,
-    remind: event.remind,
-    startDate: event.startDate,
-    title: event.title,
-    files: files.map(file => {
-      return {
-        id: file.id,
-        name: file.file,
-        url: getUploadFilePath(file.file)
-      };
-    }),
-    accessType: event.accessType,
-    accesses: eventAccesses.map(ea => ({
-      id: ea.id,
-      userId: ea.user_id,
-      groupId: ea.group_id
-    }))
-  };
 });
 
 router.delete("/files", async ctx => {
@@ -428,46 +513,64 @@ router.delete("/files", async ctx => {
 router.delete("/:id", async (ctx, next) => {
   const { id } = ctx.params;
   const userId = ctx.user.id;
+  let transaction;
 
-  const canEdit = await canEditEvent(id, ctx);
-  if (!canEdit) return;
+  try {
+    transaction = await models.sequelize.transaction();
 
-  // Notifications
-
-  const event = await models.Event.findOne({
-    where: {
-      id
+    const canEdit = await canEditEvent(id, ctx);
+    if (!canEdit) {
+      throw new NotAuthorizedError();
     }
-  });
 
-  const recipientsIds = await models.UserEvent.findAll({
-    where: {
-      eventId: id
+    // Notifications
+    const event = await models.Event.findOne({
+      where: {
+        id
+      }
+    });
+
+    if (!event) {
+      throw new NotFoundRecordError("Event not found");
     }
-  }).map(e => e.userId);
 
-  await notificationService.eventRemoved({
-    userId,
-    title: event.title,
-    eventId: event.id,
-    recipientsIds: recipientsIds
-  });
+    const recipientsIds = await models.UserEvent.findAll({
+      where: {
+        eventId: id
+      }
+    }).map(e => e.userId);
 
-  // end
+    await notificationService.eventRemoved({
+      userId,
+      title: event.title,
+      eventId: event.id,
+      recipientsIds: recipientsIds,
+      transaction
+    });
 
-  await models.Event.destroy({
-    where: {
-      id
-    }
-  });
+    // end
 
-  await models.UserEvent.destroy({
-    where: {
-      eventId: id
-    }
-  });
+    await models.Event.destroy({
+      where: {
+        id
+      },
+      transaction
+    });
 
-  ctx.body = "ok";
+    await models.UserEvent.destroy({
+      where: {
+        eventId: id
+      },
+      transaction
+    });
+
+    await transaction.commit();
+    ctx.body = "ok";
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
+  }
 });
 
 router.post("/files", koaBody({ multipart: true }), async ctx => {
