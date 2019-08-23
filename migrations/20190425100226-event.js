@@ -21,6 +21,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       user_id: {
+        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: "users",

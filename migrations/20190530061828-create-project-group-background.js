@@ -10,6 +10,7 @@ module.exports = {
       },
       file_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "files",
           key: "id"

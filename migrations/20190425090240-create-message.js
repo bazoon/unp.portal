@@ -10,6 +10,7 @@ module.exports = {
       },
       channel_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "channels",
           key: "id"
@@ -19,6 +20,7 @@ module.exports = {
       },
       user_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "users",
           key: "id"

@@ -16,6 +16,7 @@ module.exports = {
       },
       project_group_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "project_groups",
           key: "id"
@@ -25,6 +26,7 @@ module.exports = {
       },
       user_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "users",
           key: "id"
