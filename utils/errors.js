@@ -26,6 +26,13 @@ class LoginFailedError extends Error {
   }
 }
 
+class DuplicateFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 409;
+  }
+}
+
 module.exports = {
   NotFoundRecordError,
   NotAuthorizedError,

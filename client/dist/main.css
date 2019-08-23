@@ -287,6 +287,10 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.chat__channel-menu {
+  margin-right: 10px;
+  cursor: pointer;
+}
 .chat__channel-count {
   color: #909090;
 }
@@ -21728,6 +21732,13 @@ body {
 }
 .form-row_40 {
   margin-bottom: 40px;
+}
+.operations-menu div {
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+.operations-menu div:hover {
+  color: #1890ff;
 }
 
 .project-groups {

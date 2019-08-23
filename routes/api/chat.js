@@ -13,7 +13,8 @@ const uploadFiles = require("../../utils/uploadFiles");
 const { fileOwners } = require("../../utils/constants");
 const {
   NotFoundRecordError,
-  NotAuthorizedError
+  NotAuthorizedError,
+  DuplicateFoundError
 } = require("../../utils/errors");
 
 router.get("/channels/search/:query", async (ctx, next) => {
@@ -212,48 +213,74 @@ router.post("/channels", koaBody({ multipart: true }), async ctx => {
 router.post("/channels/createPrivate", async ctx => {
   const { selectedUserId } = ctx.request.body;
   const userId = ctx.user.id;
-
   const user = await models.User.findOne({ where: userId });
   const selectedUser = await models.User.findOne({ where: selectedUserId });
+  let channelAlreadyExists;
 
-  const result = await models.User.findOne({
-    where: { id: selectedUserId }
-  }).then(selectedUser => {
-    return models.Channel.create({
+  let channel = await models.Channel.findOne({
+    where: {
+      firstUserId: userId,
+      secondUserId: selectedUserId
+    }
+  });
+
+  if (!channel) {
+    channel = await models.Channel.create({
+      firstUserId: userId,
+      secondUserId: selectedUserId,
       name: `${user.name}:${selectedUser.name}`,
       avatar: "",
       firstUserId: userId,
       secondUserId: selectedUserId,
       private: true
-    }).then(channel => {
-      return models.UserChannel.bulkCreate([
-        {
-          ChannelId: channel.id,
-          UserId: userId
-        },
-        {
-          ChannelId: channel.id,
-          UserId: selectedUserId
-        }
-      ]).then(() => {
-        return {
-          id: channel.id,
-          firstUser: {
-            id: userId,
-            name: user.name,
-            avatar: getUploadFilePath(user.avatar)
-          },
-          secondUser: {
-            id: selectedUserId,
-            name: selectedUser.name,
-            avatar: getUploadFilePath(selectedUser.avatar)
-          }
-        };
-      });
     });
+  }
+
+  let userChannel = await models.UserChannel.findOne({
+    where: {
+      ChannelId: channel.id,
+      UserId: userId
+    },
+    defaults: {
+      ChannelId: channel.id,
+      UserId: userId
+    }
   });
 
-  ctx.body = result;
+  if (!userChannel) {
+    userChannel = await models.UserChannel.create({
+      ChannelId: channel.id,
+      UserId: userId
+    });
+  } else {
+    channelAlreadyExists = true;
+  }
+
+  await models.UserChannel.findOrCreate({
+    where: {
+      ChannelId: channel.id,
+      UserId: selectedUserId
+    },
+    defaults: {
+      ChannelId: channel.id,
+      UserId: selectedUserId
+    }
+  });
+
+  ctx.body = {
+    id: channel.id,
+    channelAlreadyExists,
+    firstUser: {
+      id: userId,
+      name: user.name,
+      avatar: getUploadFilePath(user.avatar)
+    },
+    secondUser: {
+      id: selectedUserId,
+      name: selectedUser.name,
+      avatar: getUploadFilePath(selectedUser.avatar)
+    }
+  };
 });
 
 router.post("/channels/join", async ctx => {
@@ -469,6 +496,20 @@ router.post("/upload", koaBody({ multipart: true }), async ctx => {
     channelId,
     files: createdFiles
   };
+});
+
+router.del("/userChannels/:channelId", async (ctx, next) => {
+  const userId = ctx.user.id;
+  const { channelId } = ctx.params;
+
+  await models.UserChannel.destroy({
+    where: {
+      userId,
+      channelId
+    }
+  });
+
+  ctx.body = "ok";
 });
 
 module.exports = router;

@@ -68,5 +68,8 @@ export default {
     return api
       .get(`api/chat/messages/search/${query}`)
       .then(({ data }) => data);
+  },
+  leaveChannel({ id }) {
+    return api.delete(`api/chat/userChannels/${id}`).then(({ data }) => data);
   }
 };

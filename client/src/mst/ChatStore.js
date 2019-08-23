@@ -74,8 +74,14 @@ const ChatStore = types
 
       socket.on("private-chat-created", chat => {
         console.log("private-chat-created");
+
+        if (chat.channelAlreadyExists) {
+          return;
+        }
+
         const { userId } = self.currentUserStore;
         const { id, firstUser, secondUser } = chat;
+
         if (firstUser.id == userId || secondUser.id == userId) {
           const newChat = {
             id: id,
@@ -83,6 +89,7 @@ const ChatStore = types
               firstUser.id == userId ? secondUser.avatar : firstUser.avatar,
             name: firstUser.id == userId ? secondUser.name : firstUser.name
           };
+
           self.addChannel(newChat);
           joinChannels(self.channels);
         }
@@ -208,6 +215,12 @@ const ChatStore = types
       }
     });
 
+    const leaveChannel = flow(function* leaveChannel(payload) {
+      yield api.leaveChannel(payload);
+      self.activeChannel = null;
+      self.channels = self.channels.filter(channel => channel.id != payload.id);
+    });
+
     return {
       addChannel,
       createChannel,
@@ -224,7 +237,8 @@ const ChatStore = types
       markAsRead,
       disconnectSocket,
       searchChannels,
-      searchMessages
+      searchMessages,
+      leaveChannel
     };
   });
 

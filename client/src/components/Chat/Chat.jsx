@@ -15,6 +15,7 @@ import UploadWindow from "../UploadWindow/UploadWindow";
 import groupBy from "lodash/groupBy";
 import FileIcon from "../../../images/folder";
 import { pluralizeParticipants } from "../../utils/pluralize";
+import MoreIcon from "../../../images/more";
 
 const chatStates = {
   chat: 0,
@@ -119,6 +120,10 @@ class Chat extends Component {
     });
   };
 
+  leaveChannel(channel) {
+    this.props.chatStore.leaveChannel({ id: channel.id });
+  }
+
   //renders
 
   renderMessage = m => {
@@ -213,6 +218,22 @@ class Chat extends Component {
     return this.renderMessageTemplate(m, content);
   };
 
+  renderOperationsMenu(channel) {
+    return (
+      <div className="operations-menu" style={{ width: "150px" }}>
+        <div onClick={() => this.props.onEdit(event.id)}>Удаление диалога</div>
+        <div onClick={() => this.leaveChannel(channel)}>Выйти из чата</div>
+        <div onClick={() => this.props.onDelete(event.id)}>
+          Добавить пользовател
+        </div>
+        <div onClick={() => this.props.onDelete(event.id)}>
+          Загрузить аватар
+        </div>
+        <div onClick={() => this.props.onDelete(event.id)}>Участники</div>
+      </div>
+    );
+  }
+
   renderMessages() {
     const { activeChannel } = this.props.chatStore;
     const { currentMessage } = this.props.chatStore;
@@ -242,6 +263,15 @@ class Chat extends Component {
                 <div className="chat__channel-count">
                   {pluralizeParticipants(participantsCount)}
                 </div>
+              </div>
+              <div className="chat__channel-menu">
+                <Popover
+                  placement="bottom"
+                  content={this.renderOperationsMenu(activeChannel)}
+                  trigger="click"
+                >
+                  <MoreIcon style={{ cursor: "pointer" }} />
+                </Popover>
               </div>
             </div>
           )}
