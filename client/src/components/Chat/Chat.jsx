@@ -194,8 +194,8 @@ class Chat extends Component {
         m.files.map(f => {
           return (
             <div key={f.id}>
-              <a download href={f.file} style={{ display: "block" }}>
-                {f.file}
+              <a download href={f.url} style={{ display: "block" }}>
+                {f.name}
               </a>
               {isImage(f.name) && (
                 <img className="chat__message-image" src={f.url} alt="some" />
@@ -204,7 +204,6 @@ class Chat extends Component {
           );
         })) ||
       "";
-
     return this.renderMessageTemplate(m, content);
   };
 
