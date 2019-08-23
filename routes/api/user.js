@@ -132,6 +132,8 @@ router.post("/signup", async ctx => {
   }
 });
 
+router.use("/api/user", router.routes());
+
 module.exports = router;
 
 function getRandomArbitrary(min, max) {

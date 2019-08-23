@@ -38,7 +38,7 @@ io.attach(h);
 io.attach(http);
 
 const apiRouter = require("./routes/router");
-const authRouter = require("./routes/authRouter");
+const userRouter = require("./routes/api/user");
 const testRouter = require("./routes/api/test");
 const settingsRouter = require("./routes/api/settings");
 
@@ -98,7 +98,7 @@ app.use(async (ctx, next) => {
   await send(ctx, path.resolve("/client/dist", "index.html"));
 });
 
-app.use(authRouter.routes()).use(authRouter.allowedMethods());
+app.use(userRouter.routes()).use(userRouter.allowedMethods());
 
 app.use(koaJwt({ secret: process.env.API_TOKEN }));
 

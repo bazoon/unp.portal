@@ -9,6 +9,10 @@ const getUploadFilePath = require("../../utils/getUploadFilePath");
 const uploadFiles = require("../../utils/uploadFiles");
 const notificationService = require("../../utils/notifications");
 const { fileOwners } = require("../../utils/constants");
+const {
+  NotFoundRecordError,
+  NotAuthorizedError
+} = require("../../utils/errors");
 
 router.get("/", async ctx => {
   const { id: userId, isAdmin } = ctx.user;
@@ -19,7 +23,7 @@ router.get("/", async ctx => {
                 left join events on events.id = entity_id and entity_type = 3
                 left join messages on messages.id = entity_id and entity_type = 4
                 left join users on files.user_id = users.id
-                `;
+              `;
 
   const owners = ["Группа", "Обсуждение", "Пост", "Событие", "Сообщение"];
 
@@ -47,33 +51,43 @@ router.post("/", koaBody({ multipart: true }), async ctx => {
   const { file } = ctx.request.files;
   const userId = ctx.user.id;
   const files = Array.isArray(file) ? file : [file];
-
+  let transaction;
   await uploadFiles(files);
 
-  // notifications
-  await notificationService.documentsAdded({
-    userId,
-    files: files.map(f => {
-      return {
-        name: f.name,
-        url: getUploadFilePath(f.name)
-      };
-    })
-  });
+  try {
+    transaction = await models.sequelize.transaction();
+    // notifications
+    await notificationService.documentsAdded({
+      userId,
+      files: files.map(f => {
+        return {
+          name: f.name,
+          url: getUploadFilePath(f.name)
+        };
+      }),
+      transaction
+    });
 
-  await models.File.bulkCreate(
-    files.map(f => {
-      return {
-        userId,
-        file: f.name,
-        size: f.size,
-        createdAt: f.createdAt,
-        url: getUploadFilePath(f.name)
-      };
-    })
-  );
+    await models.File.bulkCreate(
+      files.map(f => {
+        return {
+          userId,
+          file: f.name,
+          size: f.size,
+          createdAt: f.createdAt,
+          url: getUploadFilePath(f.name)
+        };
+      }),
+      { transaction }
+    );
 
-  ctx.body = "ok";
+    await transaction.commit();
+    ctx.body = "ok";
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
+  }
 });
 
 router.get("/search/:query", async (ctx, next) => {
@@ -117,34 +131,44 @@ router.get("/search/:query", async (ctx, next) => {
 router.delete("/:id", async ctx => {
   const { id } = ctx.params;
   const { id: userId, isAdmin } = ctx.user;
+  let transaction;
 
-  const file = await models.File.findOne({
-    where: {
-      id
+  try {
+    transaction = await models.sequelize.transaction();
+
+    const file = await models.File.findOne({
+      where: {
+        id
+      }
+    });
+
+    if (!(isAdmin || file.userId === userId)) {
+      ctx.status = 403;
+      ctx.body = "Unauthorized!";
+      return false;
     }
-  });
 
-  if (!(isAdmin || file.userId === userId)) {
-    ctx.status = 403;
-    ctx.body = "Unauthorized!";
-    return false;
+    // notifications
+
+    notificationService.documentRemoved({
+      userId,
+      file: file.file
+    });
+
+    // end
+
+    models.File.destroy({
+      where: {
+        id
+      }
+    });
+    await transaction.commit();
+    ctx.body = "ok";
+  } catch (e) {
+    await transaction.rollback();
+    ctx.body = e.message;
+    ctx.status = e.status || 500;
   }
-
-  // notifications
-
-  notificationService.documentRemoved({
-    userId,
-    file: file.file
-  });
-
-  // end
-
-  models.File.destroy({
-    where: {
-      id
-    }
-  });
-  ctx.body = "ok";
 });
 
 module.exports = router;
