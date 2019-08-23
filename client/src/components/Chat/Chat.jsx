@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
 import cn from "classnames";
 import moment from "moment";
+import groupBy from "lodash/groupBy";
 import { Drawer, Input, Button, Popover, Checkbox, Upload, Badge } from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
@@ -12,7 +12,6 @@ import ChatChannelsIcon from "../../../images/chatChannels";
 import AddChatIcon from "../../../images/addChat";
 import ChatUserIcon from "../../../images/chatUser";
 import UploadWindow from "../UploadWindow/UploadWindow";
-import groupBy from "lodash/groupBy";
 import FileIcon from "../../../images/folder";
 import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
@@ -38,18 +37,12 @@ class Chat extends Component {
 
   static defaultProps = {
     chat: [],
-    channels: [],
-    activePages: {}
+    channels: []
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      currentMessage: "",
-      isSocketConnected: false,
-      isNewChannelWindowOpen: false,
-      isNewUserWindowOpen: false,
-      isJoinWindowOpen: false,
       chatState: chatStates.chat,
       isUploadVisible: false,
       files: [],
@@ -65,18 +58,17 @@ class Chat extends Component {
   }
 
   componentDidMount = () => {
-    const userId = this.props.currentUserStore.userId;
     this.props.chatStore.getChannels();
     this.props.usersStore.loadAllUsers();
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate = () => {
     // this.scrollChatTalk();
     // this.inputRef.current && this.inputRef.current.focus();
   };
 
   handleSend = () => {
-    const userId = this.props.currentUserStore.userId;
+    const { userId } = this.props.currentUserStore;
 
     this.props.chatStore.sendChatMessage({
       channelId: this.props.chatStore.activeChannel.id,
@@ -105,7 +97,7 @@ class Chat extends Component {
   };
 
   handleUploadFiles = () => {
-    const userId = this.props.currentUserStore.userId;
+    const { userId } = this.props.currentUserStore;
     const formData = new FormData();
     formData.append("channelId", this.props.chatStore.activeChannel.id);
     formData.append("userId", userId);
@@ -130,11 +122,9 @@ class Chat extends Component {
     switch (m.type) {
       case "text": {
         return this.renderTextMessage(m);
-        break;
       }
       case "file": {
         return this.renderFileMessage(m);
-        break;
       }
       default: {
         return this.renderTextMessage(m);
@@ -236,7 +226,7 @@ class Chat extends Component {
 
   renderMessages() {
     const { activeChannel } = this.props.chatStore;
-    const { currentMessage } = this.props.chatStore;
+
     const options = {
       onChange: this.handleMessageIntersection,
       root: ".chat__talk"

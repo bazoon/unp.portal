@@ -23,6 +23,8 @@
     "quotes": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "react/prefer-stateless-function": "off",
+    "react/prop-types": "off",
+    "react/destructuring-assignment": "off",
     "comma-dangle": "off",
     "class-methods-use-this": "off",
     "object-curly-newline": "off",

@@ -73,8 +73,6 @@ const ChatStore = types
       });
 
       socket.on("private-chat-created", chat => {
-        console.log("private-chat-created");
-
         if (chat.channelAlreadyExists) {
           return;
         }
@@ -84,7 +82,7 @@ const ChatStore = types
 
         if (firstUser.id == userId || secondUser.id == userId) {
           const newChat = {
-            id: id,
+            id,
             avatar:
               firstUser.id == userId ? secondUser.avatar : firstUser.avatar,
             name: firstUser.id == userId ? secondUser.name : firstUser.name
