@@ -512,4 +512,50 @@ router.del("/userChannels/:channelId", async (ctx, next) => {
   ctx.body = "ok";
 });
 
+// TODO
+// вычислить сколько точно пользователей
+// добавлено добавлено и отправить id
+// этих пользователей
+// При увеличении количества пользователей
+// во всех открытых чатах нужно увеличить количество пользователей
+router.post("/userChannels/users", async ctx => {
+  const { channelId, users } = ctx.request.body;
+
+  const promises = users.map(async user => {
+    let userChannel = await models.UserChannel.findOne({
+      where: {
+        ChannelId: channelId,
+        UserId: user
+      }
+    });
+
+    if (!userChannel) {
+      userChannel = await models.UserChannel.create({
+        ChannelId: channelId,
+        UserId: user
+      });
+    }
+    return userChannel;
+  });
+
+  await Promise.all(promises);
+
+  const userChannels = await models.UserChannel.findAll({
+    where: {
+      ChannelId: channelId
+    }
+  });
+
+  console.log(
+    1,
+    userChannels.map(userChannel => userChannel.userId),
+    userChannels.length
+  );
+
+  ctx.body = {
+    count: userChannels.length,
+    newUsers: userChannels.map(userChannel => userChannel.userId)
+  };
+});
+
 module.exports = router;

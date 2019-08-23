@@ -71,5 +71,10 @@ export default {
   },
   leaveChannel({ id }) {
     return api.delete(`api/chat/userChannels/${id}`).then(({ data }) => data);
+  },
+  addUsersToChannel(payload) {
+    return api
+      .post(`api/chat/userChannels/users`, payload)
+      .then(({ data }) => data);
   }
 };

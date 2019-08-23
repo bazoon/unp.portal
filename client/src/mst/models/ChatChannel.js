@@ -124,6 +124,10 @@ const ChatChannel = types
       self.unreads -= 1;
     };
 
+    const setParticipantsCount = function setParticipantsCount(count) {
+      self.participantsCount = count;
+    };
+
     return {
       loadMessages,
       findMessages,
@@ -133,7 +137,8 @@ const ChatChannel = types
       sendChatFiles,
       setLastMessage,
       incUnreads,
-      decUnreads
+      decUnreads,
+      setParticipantsCount
     };
   });
 

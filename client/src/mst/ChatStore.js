@@ -98,8 +98,14 @@ const ChatStore = types
         const { channel } = data;
 
         if (data.userId == userId) {
-          self.addChannel(channel);
-          joinChannels(self.channels);
+          const existingChannel = self.channels.find(ch => ch.id == channel.id);
+
+          if (existingChannel) {
+            existingChannel.setParticipantsCount(channel.participantsCount);
+          } else {
+            self.addChannel(channel);
+            joinChannels(self.channels);
+          }
         }
       });
 
@@ -219,6 +225,20 @@ const ChatStore = types
       self.channels = self.channels.filter(channel => channel.id != payload.id);
     });
 
+    const addUsersToChannel = flow(function* addUsersToChannel(payload) {
+      const { count, newUsers } = yield api.addUsersToChannel({
+        channelId: payload.channel.id,
+        users: payload.users
+      });
+
+      self.activeChannel.setParticipantsCount(count);
+
+      socket.emit("channel-created", {
+        channel: payload.channel,
+        usersIds: newUsers
+      });
+    });
+
     return {
       addChannel,
       createChannel,
@@ -236,7 +256,8 @@ const ChatStore = types
       disconnectSocket,
       searchChannels,
       searchMessages,
-      leaveChannel
+      leaveChannel,
+      addUsersToChannel
     };
   });
 

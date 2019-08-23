@@ -15,6 +15,7 @@ import UploadWindow from "../UploadWindow/UploadWindow";
 import FileIcon from "../../../images/folder";
 import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
+import { UsersWindow } from "../UsersWindow/UsersWindow";
 
 const chatStates = {
   chat: 0,
@@ -49,7 +50,8 @@ class Chat extends Component {
       selectedUserId: undefined,
       selectedGroupUsers: {},
       channelName: "",
-      channelAvatar: ""
+      channelAvatar: "",
+      isUsersWindowVisible: false
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -115,6 +117,30 @@ class Chat extends Component {
   leaveChannel(channel) {
     this.props.chatStore.leaveChannel({ id: channel.id });
   }
+
+  addUserToChat(channel) {
+    this.setState({
+      isUsersWindowVisible: true
+    });
+  }
+
+  hideUsersWindow = () => {
+    this.setState({
+      isUsersWindowVisible: false
+    });
+  };
+
+  handleAddUsersToChannel = users => {
+    const { activeChannel } = this.props.chatStore;
+    this.props.chatStore
+      .addUsersToChannel({
+        channel: activeChannel,
+        users
+      })
+      .then(() => {
+        this.hideUsersWindow();
+      });
+  };
 
   //renders
 
@@ -212,8 +238,8 @@ class Chat extends Component {
       <div className="operations-menu" style={{ width: "150px" }}>
         <div onClick={() => this.props.onEdit(event.id)}>Удаление диалога</div>
         <div onClick={() => this.leaveChannel(channel)}>Выйти из чата</div>
-        <div onClick={() => this.props.onDelete(event.id)}>
-          Добавить пользовател
+        <div onClick={() => this.addUserToChat(channel)}>
+          Добавить пользователя
         </div>
         <div onClick={() => this.props.onDelete(event.id)}>
           Загрузить аватар
@@ -836,6 +862,11 @@ class Chat extends Component {
           onChange={this.handleFileChange}
           onOk={this.handleUploadFiles}
           value={this.state.files}
+        />
+        <UsersWindow
+          onCancel={this.hideUsersWindow}
+          visible={this.state.isUsersWindowVisible}
+          onOk={this.handleAddUsersToChannel}
         />
       </>
     );
