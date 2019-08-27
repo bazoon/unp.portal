@@ -1,10 +1,12 @@
-import React, { Component } from "react";
-import { Modal } from "antd";
-import UsersSelect from "./UsersSelect";
+import React, { Component } from 'react';
 import { observer, inject } from "mobx-react";
+import api from "../../api/chat";
+import UsersSelect from '../UsersWindow/UsersSelect';
+import { Modal } from 'antd';
 
+@inject("chatStore")
 @observer
-class UsersWindow extends Component {
+class RemoveUsersWindow extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -26,16 +28,17 @@ class UsersWindow extends Component {
   };
 
   render() {
+
     return (
       <Modal
         visible={this.props.visible}
         onOk={this.handleOk}
         onCancel={this.props.onCancel}
-        title={this.props.title}
+        title="Удалить пользователей"
       >
         <UsersSelect
-          users={this.props.users}
-          selectedUsers={this.state.selectedUsers}
+          users={participants}
+          selectedUsers={{}}
           handleSelectUser={this.handleSelectUser}
         />
       </Modal>
@@ -43,4 +46,4 @@ class UsersWindow extends Component {
   }
 }
 
-export default UsersWindow;
+export default RemoveUsersWindow;

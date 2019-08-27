@@ -76,5 +76,16 @@ export default {
     return api
       .post(`api/chat/userChannels/users`, payload)
       .then(({ data }) => data);
+  },
+  loadParticipants(id) {
+    return api
+      .get(`api/chat/userChannels/${id}/users`)
+      .then(({ data }) => data);
+  },
+  removeUsersFromChannel(payload) {
+    return api
+      .delete(`api/chat/userChannels/${payload.channelId}/users`, { users: payload.users.join(",") })
+      .then(({ data }) => data);
   }
+
 };

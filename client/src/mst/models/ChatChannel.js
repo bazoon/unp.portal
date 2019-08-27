@@ -1,5 +1,6 @@
 import { types, flow } from "mobx-state-tree";
 import ChatMessage from "./ChatMessage";
+import User from './User';
 import api from "../../api/chat";
 
 const ChatChannel = types
@@ -14,7 +15,8 @@ const ChatChannel = types
     hasMoreMessagesBottom: types.optional(types.maybeNull(types.boolean), true),
     lastMessage: types.maybeNull(ChatMessage),
     unreads: types.optional(types.integer, 0),
-    participantsCount: types.optional(types.integer, 2)
+    participantsCount: types.optional(types.integer, 2),
+    participants: types.maybeNull(types.optional(types.array(User), [])),
   })
   .actions(self => {
     const loadMessages = flow(function* loadMessages() {
@@ -47,15 +49,13 @@ const ChatChannel = types
       if (messages) {
         self.messages = messages;
         self.firstMessageId = messages && messages[0] && messages[0].id;
-        self.lastMessageId =
-          messages &&
-          messages[messages.length - 1] &&
-          messages[messages.length - 1].id;
+        self.lastMessageId = messages
+          && messages[messages.length - 1]
+          && messages[messages.length - 1].id;
       }
     });
 
     const loadMoreMessagesTop = flow(function* loadMoreMessagesTop() {
-      debugger;
       if (self.isLoading) return;
 
       self.isLoading = true;
@@ -91,10 +91,9 @@ const ChatChannel = types
 
       if (messages) {
         self.messages = self.messages.concat(messages);
-        self.lastMessageId =
-          messages &&
-          messages[messages.length - 1] &&
-          messages[messages.length - 1].id;
+        self.lastMessageId = messages
+          && messages[messages.length - 1]
+          && messages[messages.length - 1].id;
 
         if (messages.length > 0) {
           self.hasMoreMessagesBottom = true;
@@ -124,9 +123,20 @@ const ChatChannel = types
       self.unreads -= 1;
     };
 
-    const setParticipantsCount = function setParticipantsCount(count) {
-      self.participantsCount = count;
+    const setParticipants = function setParticipants(participants) {
+      self.participants = participants;
     };
+
+    const loadParticipants = flow(function* loadParticipants() {
+      self.participants = yield api.loadParticipants(self.id);
+    });
+
+    const removeParticipants = flow(function* removeParticipants(usersIds) {
+      self.participants = yield api.removeUsersFromChannel({
+        channelId: self.id,
+        users: usersIds
+      });
+    });
 
     return {
       loadMessages,
@@ -138,7 +148,9 @@ const ChatChannel = types
       setLastMessage,
       incUnreads,
       decUnreads,
-      setParticipantsCount
+      loadParticipants,
+      removeParticipants,
+      setParticipants
     };
   });
 

@@ -16,7 +16,7 @@ class Chat {
     const tokenOnly = token && token.split(" ")[1];
 
     if (tokenOnly) {
-      jwt.verify(tokenOnly, process.env.API_TOKEN, function(err, decoded) {
+      jwt.verify(tokenOnly, process.env.API_TOKEN, function (err, decoded) {
         if (err) return next(err);
         socket.decoded = decoded;
         next();
@@ -58,9 +58,11 @@ class Chat {
     socket.on("channel-message-mark", this.onMarkAsRead.bind(this));
     socket.on("private-chat-created", this.onPrivateChatCreated.bind(this));
     socket.on("channel-created", this.onChannelCreated.bind(this));
+    socket.on("channel-updated", this.onChannelUpdated.bind(this));
   }
 
-  onDisconnect(socket) {  log()
+  onDisconnect(socket) {
+    log()
     const userId = socket.handshake.query && socket.handshake.query.userId;
     this.clients[userId] = socket;
     delete this.clients[userId];
@@ -96,7 +98,7 @@ class Chat {
         UserId: userId,
         MessageId: messageId
       }
-    }).then(function(found) {
+    }).then(function (found) {
       if (!found) {
         models.Read.create({
           UserId: userId,
@@ -122,12 +124,23 @@ class Chat {
     }
   }
 
-  onChannelCreated({ channel, usersIds }) {
-    usersIds.forEach(userId => {
-      const socket = this.clients[userId];
+  onChannelCreated({ channel }) {
+    channel.participants.forEach(participant => {
+      const socket = this.clients[participant.id];
 
       if (socket) {
-        socket.emit("channel-created", { userId, channel });
+        console.log("to: ", participant.id)
+        socket.emit("channel-created", { channel });
+      }
+    });
+  }
+
+  onChannelUpdated({ channelId, participants, toUsers }) {
+    toUsers.forEach(id => {
+      const socket = this.clients[id];
+
+      if (socket) {
+        socket.emit("channel-updated", { channelId, participants });
       }
     });
   }

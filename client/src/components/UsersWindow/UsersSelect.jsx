@@ -1,15 +1,11 @@
 import React, { Component } from "react";
 import { Checkbox } from "antd";
-import { observer, inject } from "mobx-react";
 
-@inject("currentUserStore")
-@inject("usersStore")
-@observer
 class UsersSelect extends Component {
   render() {
     return (
       <div style={{ height: "300px", overflowY: "auto" }}>
-        {this.props.usersStore.users.map(user => {
+        {this.props.users.map(user => {
           const checked = this.props.selectedUsers[user.id];
           return (
             <div key={user.id} className="chat__group-creation-user">

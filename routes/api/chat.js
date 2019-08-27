@@ -317,7 +317,7 @@ function getMessageFiles(message) {
         messageId: message.id
       }
     })
-    .then(function(messageFiles) {
+    .then(function (messageFiles) {
       return messageFiles[0];
     });
 }
@@ -512,12 +512,7 @@ router.del("/userChannels/:channelId", async (ctx, next) => {
   ctx.body = "ok";
 });
 
-// TODO
-// вычислить сколько точно пользователей
-// добавлено добавлено и отправить id
-// этих пользователей
-// При увеличении количества пользователей
-// во всех открытых чатах нужно увеличить количество пользователей
+// Добавление пользователей в чат
 router.post("/userChannels/users", async ctx => {
   const { channelId, users } = ctx.request.body;
 
@@ -546,16 +541,44 @@ router.post("/userChannels/users", async ctx => {
     }
   });
 
-  console.log(
-    1,
-    userChannels.map(userChannel => userChannel.userId),
-    userChannels.length
-  );
-
-  ctx.body = {
-    count: userChannels.length,
-    newUsers: userChannels.map(userChannel => userChannel.userId)
-  };
+  ctx.body = await getChannelUsers(channelId);
 });
+
+router.get("/userChannels/:id/users", async ctx => {
+  const { id } = ctx.params;
+  ctx.body = await getChannelUsers(id);
+});
+
+router.delete("/userChannels/:id/users", async ctx => {
+  const { id } = ctx.params;
+  const { users } = ctx.query;
+
+
+  await models.UserChannel.destroy({
+    where: {
+      channelId: id,
+      userId: users.split(",")
+    }
+  });
+
+  ctx.body = await getChannelUsers(id);
+});
+
+async function getChannelUsers(channelId) {
+  const query = `select users.id, name, avatar from users, user_channels
+                where users.id = user_channels.user_id and user_channels.channel_id=:channelId`;
+
+  const [users] = await models.sequelize.query(query, {
+    replacements: { channelId }
+  });
+
+  return users.map(u => {
+    return {
+      id: u.id,
+      name: u.name,
+      avatar: getUploadFilePath(u.avatar)
+    };
+  });
+}
 
 module.exports = router;

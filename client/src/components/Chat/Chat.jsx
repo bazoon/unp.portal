@@ -15,7 +15,8 @@ import UploadWindow from "../UploadWindow/UploadWindow";
 import FileIcon from "../../../images/folder";
 import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
-import { UsersWindow } from "../UsersWindow/UsersWindow";
+import SendIcon from "../../../images/send";
+import UsersWindow from "../UsersWindow/UsersWindow";
 
 const chatStates = {
   chat: 0,
@@ -51,7 +52,8 @@ class Chat extends Component {
       selectedGroupUsers: {},
       channelName: "",
       channelAvatar: "",
-      isUsersWindowVisible: false
+      isUsersWindowVisible: false,
+      isRemoveUsersWindowVisible: false,
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -118,7 +120,7 @@ class Chat extends Component {
     this.props.chatStore.leaveChannel({ id: channel.id });
   }
 
-  addUserToChat(channel) {
+  addUserToChat() {
     this.setState({
       isUsersWindowVisible: true
     });
@@ -130,11 +132,22 @@ class Chat extends Component {
     });
   };
 
+  removeUsersFromChat() {
+    this.setState({
+      isRemoveUsersWindowVisible: true
+    });
+  }
+
+  hideRemoveUsersWindow = () => {
+    this.setState({
+      isRemoveUsersWindowVisible: false
+    });
+  };
+
   handleAddUsersToChannel = users => {
     const { activeChannel } = this.props.chatStore;
-    this.props.chatStore
+    return this.props.chatStore
       .addUsersToChannel({
-        channel: activeChannel,
         users
       })
       .then(() => {
@@ -142,7 +155,18 @@ class Chat extends Component {
       });
   };
 
-  //renders
+  handleRemoveUsersFromChannel = users => {
+    const { activeChannel } = this.props.chatStore;
+    return this.props.chatStore
+      .removeUsersFromChannel({
+        users
+      })
+      .then(() => {
+        this.hideRemoveUsersWindow();
+      });
+  }
+
+  // renders
 
   renderMessage = m => {
     switch (m.type) {
@@ -182,25 +206,25 @@ class Chat extends Component {
         </div>
       </div>
     ) : (
-      <div
-        id={`message-${m.id}`}
-        className="chat__message"
-        key={m.id}
-        data-id={messageId}
-      >
-        <div className="chat__message-avatar">
-          {m.avatar && <img src={m.avatar} alt={m.userName} />}
-        </div>
-        <div className="chat__message-author">{m.userName}</div>
+        <div
+          id={`message-${m.id}`}
+          className="chat__message"
+          key={m.id}
+          data-id={messageId}
+        >
+          <div className="chat__message-avatar">
+            {m.avatar && <img src={m.avatar} alt={m.userName} />}
+          </div>
+          <div className="chat__message-author">{m.userName}</div>
 
-        <div className="chat__message-wrap">
-          <div className="chat__message-text">{content}</div>
-          <div className="chat__message-date">
-            {moment(m.createdAt).format("HH:mm")}
+          <div className="chat__message-wrap">
+            <div className="chat__message-text">{content}</div>
+            <div className="chat__message-date">
+              {moment(m.createdAt).format("HH:mm")}
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
   };
 
   renderTextMessage = m => {
@@ -215,36 +239,57 @@ class Chat extends Component {
       }, false);
     };
 
-    const content =
-      (m.files &&
-        m.files.map(f => {
-          return (
-            <div key={f.id}>
-              <a download href={f.url} style={{ display: "block" }}>
-                {f.name}
-              </a>
-              {isImage(f.name) && (
-                <img className="chat__message-image" src={f.url} alt="some" />
-              )}
-            </div>
-          );
-        })) ||
-      "";
+    const content = (m.files
+      && m.files.map(f => {
+        return (
+          <div key={f.id}>
+            <a download href={f.url} style={{ display: "block" }}>
+              {f.name}
+            </a>
+            {isImage(f.name) && (
+              <img className="chat__message-image" src={f.url} alt="some" />
+            )}
+          </div>
+        );
+      }))
+      || "";
     return this.renderMessageTemplate(m, content);
   };
 
   renderOperationsMenu(channel) {
+    const { isAdmin } = this.props.currentUserStore;
+    const { activeChannel } = this.props.chatStore;
+
     return (
-      <div className="operations-menu" style={{ width: "150px" }}>
-        <div onClick={() => this.props.onEdit(event.id)}>Удаление диалога</div>
+      <div className="operations-menu__icon" style={{ width: "150px" }}>
+        <div onClick={() => this.props.onEdit()}>Удаление диалога</div>
         <div onClick={() => this.leaveChannel(channel)}>Выйти из чата</div>
-        <div onClick={() => this.addUserToChat(channel)}>
-          Добавить пользователя
-        </div>
-        <div onClick={() => this.props.onDelete(event.id)}>
-          Загрузить аватар
-        </div>
-        <div onClick={() => this.props.onDelete(event.id)}>Участники</div>
+
+        {
+          isAdmin && (
+            <>
+              {
+                !activeChannel.private && (
+                  <>
+                    <div onClick={() => this.addUserToChat(channel)}>
+                      Добавить пользователя
+                    </div>
+
+
+                    <div onClick={() => this.removeUsersFromChat()}>
+                      Участники
+                    </div>
+                  </>
+                )
+              }
+
+              <div onClick={() => { }}>
+                Загрузить аватар
+              </div>
+            </>
+          )
+        }
+
       </div>
     );
   }
@@ -261,7 +306,8 @@ class Chat extends Component {
     const groupedMessages = groupBy(messages, m => {
       return moment(m.createdAt).format("DD MMMM YYYY");
     });
-    const participantsCount = activeChannel && activeChannel.participantsCount;
+    const participants = activeChannel && activeChannel.participants;
+    const participantsCount = participants && participants.length;
 
     const days = Object.keys(groupedMessages);
 
@@ -285,7 +331,9 @@ class Chat extends Component {
                   content={this.renderOperationsMenu(activeChannel)}
                   trigger="click"
                 >
-                  <MoreIcon style={{ cursor: "pointer" }} />
+                  <div className="operations-menu__icon">
+                    <MoreIcon />
+                  </div>
                 </Popover>
               </div>
             </div>
@@ -330,6 +378,7 @@ class Chat extends Component {
             value={this.props.chatStore.currentMessage}
             onChange={this.handleMessageChange}
             onKeyPress={this.handleInputKeyPress}
+            addonAfter={<SendIcon onClick={this.handleSend} />}
           />
         </div>
       </div>
@@ -372,7 +421,7 @@ class Chat extends Component {
   handleMessageIntersection = e => {
     const { target } = e;
     const { dataset } = target;
-    const userId = this.props.currentUserStore.userId;
+    const { userId } = this.props.currentUserStore;
 
     const [messageId, seen] = dataset.id.split("-");
 
@@ -387,26 +436,24 @@ class Chat extends Component {
 
   loadMoreTop() {
     if (
-      this.props.chatStore.activeChannel &&
-      this.props.chatStore.activeChannel.hasMoreMessagesTop
+      this.props.chatStore.activeChannel
+      && this.props.chatStore.activeChannel.hasMoreMessagesTop
     ) {
       this.props.chatStore.activeChannel.loadMoreMessagesTop();
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   loadMoreBottom() {
     if (
-      this.props.chatStore.activeChannel &&
-      this.props.chatStore.activeChannel.hasMoreMessagesBottom
+      this.props.chatStore.activeChannel
+      && this.props.chatStore.activeChannel.hasMoreMessagesBottom
     ) {
       this.props.chatStore.activeChannel.loadMoreMessagesBottom();
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   handleLoadMore = () => this.loadMore();
@@ -506,8 +553,8 @@ class Chat extends Component {
     return avatar.includes("http") ? (
       <img src={avatar} alt="logo" />
     ) : (
-      <img src={avatar} alt="logo" />
-    );
+        <img src={avatar} alt="logo" />
+      );
   }
 
   handleViewMessages = () => {
@@ -561,8 +608,7 @@ class Chat extends Component {
       return selectedGroupUsers[key] ? acc.concat([key]) : acc;
     }, []);
 
-    const file =
-      channelAvatar && channelAvatar[0] && channelAvatar[0].originFileObj;
+    const file = channelAvatar && channelAvatar[0] && channelAvatar[0].originFileObj;
 
     const formData = new FormData();
     formData.append("usersIds", JSON.stringify(usersIds));
@@ -801,6 +847,8 @@ class Chat extends Component {
   render() {
     const { visible, isLoading, socketError } = this.props;
     const { chatState } = this.state;
+    const activeChannel = this.props.chatStore.activeChannel || {};
+    const channelParticipants = activeChannel.participants || [];
 
     // const chatIndicatorCls = cn("chat__indicator", {
     //   chat__indicator_connected: isSocketConnected
@@ -846,9 +894,9 @@ class Chat extends Component {
             </div>
             <div className="chat__right-panel">
               <div className="chat__talk">
-                {(chatState === chatStates.chat ||
-                  chatState === chatStates.search) &&
-                  this.renderMessages()}
+                {(chatState === chatStates.chat
+                  || chatState === chatStates.search)
+                  && this.renderMessages()}
                 {chatState === chatStates.private && <div />}
                 {chatState === chatStates.create && this.renderGroupCreation()}
               </div>
@@ -864,10 +912,20 @@ class Chat extends Component {
           value={this.state.files}
         />
         <UsersWindow
+          title="Выбрать пользователей"
+          users={this.props.usersStore.users}
           onCancel={this.hideUsersWindow}
           visible={this.state.isUsersWindowVisible}
           onOk={this.handleAddUsersToChannel}
         />
+        <UsersWindow
+          title="Удалить пользователей"
+          users={channelParticipants}
+          onCancel={this.hideRemoveUsersWindow}
+          visible={this.state.isRemoveUsersWindowVisible}
+          onOk={this.handleRemoveUsersFromChannel}
+        />
+
       </>
     );
   }

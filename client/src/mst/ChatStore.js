@@ -1,10 +1,10 @@
 import { types, flow } from "mobx-state-tree";
+import moment from "moment";
 import socketIOClient from "socket.io-client";
+import { notification } from "antd";
 import api from "../api/chat";
 import ChatChannel from "./models/ChatChannel";
 import FoundChatMessage from "./models/FoundChatMessage";
-import { notification } from "antd";
-import moment from "moment";
 import utils from "../utils";
 
 const ChatStore = types
@@ -93,18 +93,30 @@ const ChatStore = types
         }
       });
 
-      socket.on("channel-created", data => {
+      socket.on("channel-created", ({ channel }) => {
         const { userId } = self.currentUserStore;
-        const { channel } = data;
+        console.log('CR', channel);
+        const existingChannel = self.channels.find(ch => ch.id == channel.id);
 
-        if (data.userId == userId) {
-          const existingChannel = self.channels.find(ch => ch.id == channel.id);
+        if (existingChannel) {
+          existingChannel.setParticipants(channel.participants);
+        } else {
+          self.addChannel(channel);
+          joinChannels(self.channels);
+        }
+      });
 
-          if (existingChannel) {
-            existingChannel.setParticipantsCount(channel.participantsCount);
+      socket.on("channel-updated", ({ channelId, participants }) => {
+        console.log('Channel Updated');
+        const { userId } = self.currentUserStore
+        const channel = self.channels.find(channel => channel.id == channelId);
+
+        if (channel) {
+          const participant = participants.find(p => p.id == userId);
+          if (participant) {
+            channel.setParticipants(participants);
           } else {
-            self.addChannel(channel);
-            joinChannels(self.channels);
+            self.removeChannel(channelId);
           }
         }
       });
@@ -127,8 +139,12 @@ const ChatStore = types
 
     const setActiveChannel = function setActiveChannel(channelId) {
       self.activeChannel = channelId;
-      return self.activeChannel.loadMessages();
+      return Promise.all([
+        self.activeChannel.loadMessages(),
+        self.activeChannel.loadParticipants()
+      ]);
     };
+
 
     const openChannelAtMessage = function openChannelAtMessage(
       channelId,
@@ -141,6 +157,14 @@ const ChatStore = types
     const addChannel = function addChannel(channel) {
       self.channels.push(channel);
     };
+
+    const removeChannel = function removeChannel(channelId) {
+      if (self.activeChannel && self.activeChannel.id == channelId) {
+        self.activeChannel = null;
+      }
+      self.channels = self.channels.filter(ch => ch.id != channelId);
+    };
+
 
     const setCurrentMessage = function setCurrentMessage(value) {
       self.currentMessage = value;
@@ -226,21 +250,39 @@ const ChatStore = types
     });
 
     const addUsersToChannel = flow(function* addUsersToChannel(payload) {
-      const { count, newUsers } = yield api.addUsersToChannel({
-        channelId: payload.channel.id,
+      const users = yield api.addUsersToChannel({
+        channelId: self.activeChannel.id,
         users: payload.users
       });
 
-      self.activeChannel.setParticipantsCount(count);
+      self.activeChannel.setParticipants(users);
 
       socket.emit("channel-created", {
-        channel: payload.channel,
-        usersIds: newUsers
+        channel: {
+          id: self.activeChannel.id,
+          name: self.activeChannel.name,
+          avatar: self.activeChannel.avatar,
+          participants: self.activeChannel.participants,
+          lastMessage: self.activeChannel.lastMessage,
+          isPrivate: self.activeChannel.private
+        }
+      });
+    });
+
+    const removeUsersFromChannel = flow(function* removeUsersFromChannel({ channelId, users }) {
+      const toUsers = self.activeChannel.participants.map(p => p.id);
+      yield self.activeChannel.removeParticipants(users);
+
+      socket.emit("channel-updated", {
+        channelId: self.activeChannel.id,
+        participants: self.activeChannel.participants,
+        toUsers
       });
     });
 
     return {
       addChannel,
+      removeChannel,
       createChannel,
       afterCreate,
       getChannels,
@@ -257,7 +299,8 @@ const ChatStore = types
       searchChannels,
       searchMessages,
       leaveChannel,
-      addUsersToChannel
+      addUsersToChannel,
+      removeUsersFromChannel
     };
   });
 
