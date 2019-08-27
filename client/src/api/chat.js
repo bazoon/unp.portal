@@ -86,6 +86,11 @@ export default {
     return api
       .delete(`api/chat/userChannels/${payload.channelId}/users`, { users: payload.users.join(",") })
       .then(({ data }) => data);
-  }
+  },
+  updateChannelAvatar({ id, payload }) {
+    return api
+      .put(`api/chat/userChannels/${id}/avatar`, payload)
+      .then(({ data }) => data);
+  },
 
 };

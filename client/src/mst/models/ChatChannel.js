@@ -138,6 +138,11 @@ const ChatChannel = types
       });
     });
 
+    const updateAvatar = function updateAvatar(avatar) {
+      self.avatar = avatar;
+    };
+
+
     return {
       loadMessages,
       findMessages,
@@ -150,7 +155,8 @@ const ChatChannel = types
       decUnreads,
       loadParticipants,
       removeParticipants,
-      setParticipants
+      setParticipants,
+      updateAvatar
     };
   });
 

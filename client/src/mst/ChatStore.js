@@ -95,7 +95,6 @@ const ChatStore = types
 
       socket.on("channel-created", ({ channel }) => {
         const { userId } = self.currentUserStore;
-        console.log('CR', channel);
         const existingChannel = self.channels.find(ch => ch.id == channel.id);
 
         if (existingChannel) {
@@ -106,18 +105,26 @@ const ChatStore = types
         }
       });
 
-      socket.on("channel-updated", ({ channelId, participants }) => {
-        console.log('Channel Updated');
+      socket.on("channel-updated", ({ channelId, participants, avatar }) => {
         const { userId } = self.currentUserStore
         const channel = self.channels.find(channel => channel.id == channelId);
 
         if (channel) {
-          const participant = participants.find(p => p.id == userId);
-          if (participant) {
-            channel.setParticipants(participants);
-          } else {
-            self.removeChannel(channelId);
+
+          if (participants) {
+            const participant = participants.find(p => p.id == userId);
+            if (participant) {
+              channel.setParticipants(participants);
+            } else {
+              self.removeChannel(channelId);
+            }
           }
+
+          if (avatar) {
+            self.updateAvatar({ channelId, avatar });
+          }
+
+
         }
       });
 
@@ -164,6 +171,13 @@ const ChatStore = types
       }
       self.channels = self.channels.filter(ch => ch.id != channelId);
     };
+
+    const updateAvatar = function updateAvatar({ channelId, avatar }) {
+      const channel = self.channels.find(ch => ch.id == channelId);
+      if (channel) {
+        channel.updateAvatar(avatar);
+      }
+    }
 
 
     const setCurrentMessage = function setCurrentMessage(value) {
@@ -269,7 +283,7 @@ const ChatStore = types
       });
     });
 
-    const removeUsersFromChannel = flow(function* removeUsersFromChannel({ channelId, users }) {
+    const removeUsersFromChannel = flow(function* removeUsersFromChannel({ users }) {
       const toUsers = self.activeChannel.participants.map(p => p.id);
       yield self.activeChannel.removeParticipants(users);
 
@@ -277,6 +291,15 @@ const ChatStore = types
         channelId: self.activeChannel.id,
         participants: self.activeChannel.participants,
         toUsers
+      });
+    });
+
+    const updateChannelAvatar = flow(function* updateChannelAvatar({ id, payload }) {
+      const { avatar } = yield api.updateChannelAvatar({ id, payload });
+      socket.emit("channel-updated", {
+        channelId: self.activeChannel.id,
+        avatar,
+        toUsers: self.activeChannel.participants.map(p => p.id)
       });
     });
 
@@ -300,7 +323,9 @@ const ChatStore = types
       searchMessages,
       leaveChannel,
       addUsersToChannel,
-      removeUsersFromChannel
+      removeUsersFromChannel,
+      updateChannelAvatar,
+      updateAvatar
     };
   });
 

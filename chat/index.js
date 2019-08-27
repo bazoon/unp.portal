@@ -135,12 +135,13 @@ class Chat {
     });
   }
 
-  onChannelUpdated({ channelId, participants, toUsers }) {
+  onChannelUpdated(payload) {
+    const { toUsers } = payload;
     toUsers.forEach(id => {
       const socket = this.clients[id];
 
       if (socket) {
-        socket.emit("channel-updated", { channelId, participants });
+        socket.emit("channel-updated", payload);
       }
     });
   }

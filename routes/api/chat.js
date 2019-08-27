@@ -564,6 +564,23 @@ router.delete("/userChannels/:id/users", async ctx => {
   ctx.body = await getChannelUsers(id);
 });
 
+router.put("/userChannels/:id/avatar", koaBody({ multipart: true }), async ctx => {
+  const { id } = ctx.params;
+  const { file } = ctx.request.files;
+  console.log(id, file)
+  await models.Channel.update({
+    avatar: file.name
+  }, {
+      where: {
+        id
+      },
+    });
+  await uploadFiles(file);
+  ctx.body = {
+    avatar: getUploadFilePath(file.name)
+  };
+});
+
 async function getChannelUsers(channelId) {
   const query = `select users.id, name, avatar from users, user_channels
                 where users.id = user_channels.user_id and user_channels.channel_id=:channelId`;

@@ -166,6 +166,14 @@ class Chat extends Component {
       });
   }
 
+  handleUploadChannelAvatar = ({ file }) => {
+    const formData = new FormData();
+    const { id } = this.props.chatStore.activeChannel;
+    formData.append("id", id);
+    formData.append("file", file);
+    this.props.chatStore.updateChannelAvatar({ id, payload: formData });
+  }
+
   // renders
 
   renderMessage = m => {
@@ -261,7 +269,7 @@ class Chat extends Component {
     const { activeChannel } = this.props.chatStore;
 
     return (
-      <div className="operations-menu__icon" style={{ width: "150px" }}>
+      <div className="operations-menu" style={{ width: "150px" }}>
         <div onClick={() => this.props.onEdit()}>Удаление диалога</div>
         <div onClick={() => this.leaveChannel(channel)}>Выйти из чата</div>
 
@@ -279,13 +287,22 @@ class Chat extends Component {
                     <div onClick={() => this.removeUsersFromChat()}>
                       Участники
                     </div>
+
+                    <div onClick={() => { }}>
+                      <Upload
+                        onChange={this.handleUploadChannelAvatar}
+                        beforeUpload={() => false}
+                        multiple
+                        showUploadList={false}
+                      >
+                        Загрузить аватар
+                      </Upload>
+                    </div>
                   </>
                 )
               }
 
-              <div onClick={() => { }}>
-                Загрузить аватар
-              </div>
+
             </>
           )
         }
