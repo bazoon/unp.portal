@@ -33,7 +33,7 @@
     &-users {
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
+      // overflow-y: auto;
       height: calc(100% - 60px - 20px - 20px - 32px);
     }
 
@@ -132,7 +132,7 @@
     }
     height: 100%;
     flex: 1;
-    overflow-y: auto;
+    // overflow-y: auto;
 
     &-day {
       font-family: OpenSansSemiBold;
@@ -348,8 +348,9 @@
 
   &__channels {
     flex: 1;
-    overflow-y: auto;
-
+    width: 100%;
+    overflow: auto;
+    
     &-wrap {
       display: flex;
       justify-content: space-between;
@@ -440,8 +441,8 @@
 
   &__users {
     flex: 1;
-    overflow-y: auto;
-
+    overflow: hidden;
+    
     &-name {
       font-size: 14px;
     }

@@ -28,7 +28,6 @@
 .chat__group-creation-users {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   height: calc(100% - 60px - 20px - 20px - 32px);
 }
 .chat__group-creation-user {
@@ -111,7 +110,6 @@
 .chat__messages {
   height: 100%;
   flex: 1;
-  overflow-y: auto;
 }
 .chat__messages-box {
   display: flex;
@@ -296,7 +294,8 @@
 }
 .chat__channels {
   flex: 1;
-  overflow-y: auto;
+  width: 100%;
+  overflow: auto;
 }
 .chat__channels-wrap {
   display: flex;
@@ -375,7 +374,7 @@
 }
 .chat__users {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .chat__users-name {
   font-size: 14px;

@@ -17,6 +17,7 @@ import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
 import SendIcon from "../../../images/send";
 import UsersWindow from "../UsersWindow/UsersWindow";
+import { Scrollbars } from 'react-custom-scrollbars';
 
 const chatStates = {
   chat: 0,
@@ -361,20 +362,25 @@ class Chat extends Component {
           onScroll={this.handleChatScroll}
           ref={this.chatTalkRef}
         >
-          {days.map(day => {
-            const messages = groupedMessages[day];
+          <Scrollbars
+            autoHide
+            universal
+          >
+            {days.map(day => {
+              const messages = groupedMessages[day];
 
-            return (
-              <React.Fragment key={day}>
-                <div className="chat__messages-day">{day}</div>
-                {messages.map(m => (
-                  <React.Fragment key={m.id}>
-                    <Observer {...options}>{this.renderMessage(m)}</Observer>
-                  </React.Fragment>
-                ))}
-              </React.Fragment>
-            );
-          })}
+              return (
+                <React.Fragment key={day}>
+                  <div className="chat__messages-day">{day}</div>
+                  {messages.map(m => (
+                    <React.Fragment key={m.id}>
+                      <Observer {...options}>{this.renderMessage(m)}</Observer>
+                    </React.Fragment>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+          </Scrollbars>
 
           <div className="chat__talk-down">
             <Button
@@ -808,26 +814,31 @@ class Chat extends Component {
           />
         </div>
         <div className="chat__group-creation-users">
-          {this.props.usersStore.users.map(user => {
-            const checked = this.state.selectedGroupUsers[user.id];
-            return (
-              <div key={user.id} className="chat__group-creation-user">
-                <div className="chat__group-creation-user-wrap">
-                  <img
-                    className="chat__group-creation-user-avatar"
-                    src={user.avatar}
-                  />
-                  <div className="chat__group-creation-user-name">
-                    {user.name}
+          <Scrollbars
+            autoHide
+            universal
+          >
+            {this.props.usersStore.users.map(user => {
+              const checked = this.state.selectedGroupUsers[user.id];
+              return (
+                <div key={user.id} className="chat__group-creation-user">
+                  <div className="chat__group-creation-user-wrap">
+                    <img
+                      className="chat__group-creation-user-avatar"
+                      src={user.avatar}
+                    />
+                    <div className="chat__group-creation-user-name">
+                      {user.name}
+                    </div>
                   </div>
+                  <Checkbox
+                    checked={checked}
+                    onClick={() => this.handleSelectGroupUser(user.id)}
+                  />
                 </div>
-                <Checkbox
-                  checked={checked}
-                  onClick={() => this.handleSelectGroupUser(user.id)}
-                />
-              </div>
-            );
-          })}
+              );
+            })}
+          </Scrollbars>
         </div>
       </div>
     );
@@ -892,7 +903,15 @@ class Chat extends Component {
               </div>
 
               {chatState === chatStates.chat && (
-                <div className="chat__channels">{this.renderChatChanels()}</div>
+                <div className="chat__channels">
+
+                  <Scrollbars
+                    autoHide
+                    universal
+                  >
+                    {this.renderChatChanels()}
+                  </Scrollbars>
+                </div>
               )}
 
               {chatState === chatStates.create && (
@@ -900,11 +919,25 @@ class Chat extends Component {
               )}
 
               {chatState === chatStates.private && (
-                <div className="chat__users">{this.renderUsers()}</div>
+                <Scrollbars
+                  autoHide
+                  universal
+                >
+                  <div className="chat__users">
+                    {this.renderUsers()}
+                  </div>
+                </Scrollbars>
               )}
 
               {chatState === chatStates.search && (
-                <div className="chat__users">{this.renderSearchResults()}</div>
+                <div className="chat__users">
+                  <Scrollbars
+                    autoHide
+                    universal
+                  >
+                    {this.renderSearchResults()}
+                  </Scrollbars>
+                </div>
               )}
 
               {this.renderFooter(chatState)}
