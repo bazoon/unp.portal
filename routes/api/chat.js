@@ -190,7 +190,8 @@ router.post("/channels", koaBody({ multipart: true }), async ctx => {
   const channel = await models.Channel.create({
     name: channelName,
     avatar: avatar,
-    userId
+    userId,
+    canManage: true
   });
 
   await models.UserChannel.bulkCreate(
