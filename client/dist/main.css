@@ -230,6 +230,7 @@
   width: 300px;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   border-right: solid 1px #ebebeb;
 }
 .chat__right-panel {
@@ -259,8 +260,10 @@
   padding-left: 16px;
 }
 .chat__channel__top-wrap {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 .chat__channel__top-avatar img {
   border-radius: 50%;
@@ -279,7 +282,7 @@
 .chat__channel-name {
   height: 40px;
   margin-bottom: 4px;
-  width: 370px;
+  font-family: OpenSansSemiBold;
   overflow: hidden;
   display: inline-block;
   white-space: nowrap;
@@ -426,14 +429,44 @@
 }
 .chat__controls {
   display: flex;
-  padding: 10px;
+  margin: 10px;
   align-items: center;
-  height: 52px;
+  height: 40px;
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+.chat__controls-wrap {
+  background-color: #EFECE7;
+}
+.chat__controls input {
+  border: none;
+}
+.chat__controls input:focus {
+  border: 0;
+  box-shadow: none;
 }
 .chat__controls-file-icon {
-  margin-right: 12px;
+  margin-right: 4px;
+  margin-left: 12px;
   text-align: center;
   cursor: pointer;
+}
+.chat__admin-panel {
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
+}
+.chat__admin-panel-participants {
+  margin-left: 16px;
+  border-top: solid 1px #EFECE7;
+  font-size: 12px;
+  color: #909090;
+}
+.chat__admin-panel-participant {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px;
 }
 
 .upload-form__inputs {
@@ -446,6 +479,13 @@
 }
 .upload-form__input-remove {
   cursor: pointer;
+}
+
+.users-window .ant-modal-footer {
+  padding: 16px 0;
+}
+.users-window__search {
+  margin-bottom: 16px;
 }
 
 /* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
@@ -22106,6 +22146,15 @@ body {
   float: none;
   margin-left: 20px;
 }
+.avatar {
+  margin-right: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar_medium {
+  width: 32px;
+  height: 32px;
+}
 .svg-icon {
   width: 16px;
   height: 16px;
@@ -22192,6 +22241,20 @@ body {
 }
 .operations-menu div:hover {
   color: #1890ff;
+}
+.operations-menu__item {
+  font-family: OpenSansSemiBold;
+  font-size: 14px;
+  color: #5C7BA3;
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+}
+.operations-menu__item svg {
+  margin-right: 16px;
+}
+.operations-menu__item_with-margin {
+  margin-bottom: 12px;
 }
 
 .project-groups {

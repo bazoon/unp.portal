@@ -62,5 +62,8 @@ export default {
   },
   getCurrent() {
     return api.get(`api/users/current`).then(({ data }) => data);
-  }
+  },
+  searchName(query) {
+    return api.get(`api/users/searchName/${query}`).then(({ data }) => data);
+  },
 };

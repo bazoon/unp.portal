@@ -5,11 +5,12 @@ import { SVGUniqueID } from "react-svg-unique-id";
 export default props => (
   <SVGUniqueID>
     <svg
-      width="14px"
-      height="16px"
-      viewBox="0 0 14 16"
+      width="20"
+      height="22"
+      viewBox="0 0 18 16"
       version="1.1"
       xmlnsXlink="http://www.w3.org/1999/xlink"
+      {...props}
     >
       <defs>
         <path

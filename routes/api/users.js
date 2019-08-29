@@ -42,18 +42,18 @@ router.get("/search/:query", async (ctx, next) => {
   ctx.body = users[0].map(u => {
     const position = u["position.id"]
       ? {
-          id: u["position.id"],
-          name: u["position.name"]
-        }
+        id: u["position.id"],
+        name: u["position.name"]
+      }
       : null;
 
     const organization = u["organization.id"]
       ? {
-          id: u["organization.id"],
-          name: u["organization.name"],
-          fullName: u["organization.fullName"],
-          address: u["organization.address"]
-        }
+        id: u["organization.id"],
+        name: u["organization.name"],
+        fullName: u["organization.fullName"],
+        address: u["organization.address"]
+      }
       : null;
 
     return {
@@ -64,6 +64,36 @@ router.get("/search/:query", async (ctx, next) => {
       login: u.login,
       position,
       organization
+    };
+  });
+});
+
+router.get("/searchName/:query", async (ctx, next) => {
+  const { query } = ctx.params;
+  let sqlQuery;
+
+  if (query !== "all") {
+    sqlQuery = `
+      select id, name, avatar from users
+      where _search @@ to_tsquery(:query)
+      order by name asc
+    `;
+  } else {
+    sqlQuery = `
+      select id, name, avatar from users
+      order by name asc
+    `;
+  }
+
+  const users = await models.sequelize.query(sqlQuery, {
+    replacements: { query: `${query} | ${query}:*` }
+  });
+
+  ctx.body = users[0].map(u => {
+    return {
+      id: u.id,
+      name: u.name,
+      avatar: getUploadFilePath(u.avatar),
     };
   });
 });

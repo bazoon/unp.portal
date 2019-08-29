@@ -15,7 +15,7 @@ const ChatStore = types
       types.array(types.reference(ChatChannel)),
       []
     ),
-    currentMessage: types.maybeNull(types.string),
+    currentMessage: types.maybeNull(types.optional(types.string, '')),
     foundMessages: types.optional(types.array(FoundChatMessage), [])
   })
   .views(self => {
@@ -60,6 +60,17 @@ const ChatStore = types
       });
 
       socket.on("channel-message", message => {
+
+        if (self.currentUserStore.userId != message.userId) {
+          notification.open({
+            description: message.message,
+            message: message.userName,
+            duration: 2,
+            onClick: () => self.setActiveChannel(message.channelId)
+          });
+        }
+
+
         const channel = self.channels.find(ch => ch.id === message.channelId);
         if (channel) {
           if (channel.messages.length === 0) {
@@ -302,6 +313,7 @@ const ChatStore = types
         toUsers: self.activeChannel.participants.map(p => p.id)
       });
     });
+
 
     return {
       addChannel,

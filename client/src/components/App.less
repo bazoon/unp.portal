@@ -298,6 +298,19 @@ body {
 
 // Common styles
 
+.avatar {
+  margin-right: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  &_medium {
+    width: 32px;
+    height: 32px;  
+  }
+
+  
+}
+
 .svg-icon {
   width: 16px;
   height: 16px;
@@ -403,4 +416,24 @@ body {
   & div:hover {
     color: #1890ff;
   }
+
+  &__item {
+    font-family: OpenSansSemiBold;
+    font-size: 14px;
+    color: #5C7BA3;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-right: 16px;
+    }
+
+    &_with-margin {
+      margin-bottom: 12px;
+    }
+  }
+
+  
+
 }

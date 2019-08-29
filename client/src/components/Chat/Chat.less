@@ -270,10 +270,13 @@
     width: 300px;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     border-right: solid 1px #ebebeb;
+
   }
 
   &__right-panel {
+    // flex-basis: 420px;
     flex: 1;
     background-color: #efece7;
   }
@@ -304,10 +307,12 @@
       display: flex;
       align-items: center;
       padding-left: 16px;
-
+      
       &-wrap {
+        width: 100%;
         display: flex;
         align-items: center;
+        justify-content: space-between;
       }
       &-avatar img {
         border-radius: 50%;
@@ -329,7 +334,7 @@
     &-name {
       height: 40px;
       margin-bottom: 4px;
-      width: 370px;
+      font-family: OpenSansSemiBold;
       overflow: hidden;
       display: inline-block;
       white-space: nowrap;
@@ -501,14 +506,52 @@
 
   &__controls {
     display: flex;
-    padding: 10px;
+    margin: 10px;
     align-items: center;
-    height: 52px;
+    height: 40px;
+    background-color: #ffffff;
+    border-radius: 4px;
+
+    &-wrap {
+      background-color: #EFECE7;
+    }
+
+    input {
+      border: none;
+
+      &:focus {
+        border: 0;
+        box-shadow: none;
+      }
+    }
 
     &-file-icon {
-      margin-right: 12px;
+      margin-right: 4px;
+      margin-left: 12px;
       text-align: center;
       cursor: pointer;
     }
   }
+
+  &__admin-panel {
+    background-color: #fff;
+    height: 100%;
+    width: 100%;
+    
+
+    &-participants {
+      margin-left: 16px;
+      border-top: solid 1px #EFECE7;
+      font-size: 12px;
+      color: #909090;
+    }
+
+    &-participant {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 8px;
+    }
+  }
+
 }

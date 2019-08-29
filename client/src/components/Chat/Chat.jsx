@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import cn from "classnames";
 import moment from "moment";
+import { Scrollbars } from 'react-custom-scrollbars';
 import groupBy from "lodash/groupBy";
 import { Drawer, Input, Button, Popover, Checkbox, Upload, Badge } from "antd";
 import PropTypes from "prop-types";
@@ -15,15 +16,23 @@ import UploadWindow from "../UploadWindow/UploadWindow";
 import FileIcon from "../../../images/folder";
 import { pluralizeParticipants } from "../../utils/pluralize";
 import MoreIcon from "../../../images/more";
-import SendIcon from "../../../images/send";
+import SendIcon from "../../../images/telesend";
+import EmojiIcon from "../../../images/emoji";
 import UsersWindow from "../UsersWindow/UsersWindow";
-import { Scrollbars } from 'react-custom-scrollbars';
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker } from 'emoji-mart';
+import ChatLeaveIcon from "../../../images/chatLeave";
+import AddAvatarIcon from "../../../images/addAvatar";
+import AddUserIcon from "../../../images/addUser";
+import UserIcon from "../../../images/user";
+import MinusIcon from "../../../images/minus";
 
 const chatStates = {
   chat: 0,
   create: 1,
   private: 2,
-  search: 3
+  search: 3,
+  admin: 4
 };
 
 @inject("currentUserStore")
@@ -75,12 +84,14 @@ class Chat extends Component {
   handleSend = () => {
     const { userId } = this.props.currentUserStore;
 
-    this.props.chatStore.sendChatMessage({
-      channelId: this.props.chatStore.activeChannel.id,
-      message: this.props.chatStore.currentMessage,
-      type: "text",
-      userId
-    });
+    if (this.props.chatStore.currentMessage) {
+      this.props.chatStore.sendChatMessage({
+        channelId: this.props.chatStore.activeChannel.id,
+        message: this.props.chatStore.currentMessage,
+        type: "text",
+        userId
+      });
+    }
   };
 
   scrollChatTalk = () => {
@@ -135,7 +146,7 @@ class Chat extends Component {
 
   removeUsersFromChat() {
     this.setState({
-      isRemoveUsersWindowVisible: true
+      chatState: chatStates.admin
     });
   }
 
@@ -161,9 +172,6 @@ class Chat extends Component {
     return this.props.chatStore
       .removeUsersFromChannel({
         users
-      })
-      .then(() => {
-        this.hideRemoveUsersWindow();
       });
   }
 
@@ -173,6 +181,10 @@ class Chat extends Component {
     formData.append("id", id);
     formData.append("file", file);
     this.props.chatStore.updateChannelAvatar({ id, payload: formData });
+  }
+
+  handleAddEmoji = ({ native }) => {
+    this.props.chatStore.setCurrentMessage(this.props.chatStore.currentMessage + native);
   }
 
   // renders
@@ -270,44 +282,73 @@ class Chat extends Component {
     const { activeChannel } = this.props.chatStore;
 
     return (
-      <div className="operations-menu" style={{ width: "150px" }}>
-        <div onClick={() => this.props.onEdit()}>Удаление диалога</div>
-        <div onClick={() => this.leaveChannel(channel)}>Выйти из чата</div>
-
-        {
-          isAdmin && (
-            <>
-              {
-                !activeChannel.private && (
-                  <>
-                    <div onClick={() => this.addUserToChat(channel)}>
-                      Добавить пользователя
-                    </div>
-
-
-                    <div onClick={() => this.removeUsersFromChat()}>
-                      Участники
-                    </div>
-
-                    <div onClick={() => { }}>
-                      <Upload
-                        onChange={this.handleUploadChannelAvatar}
-                        beforeUpload={() => false}
-                        multiple
-                        showUploadList={false}
-                      >
-                        Загрузить аватар
-                      </Upload>
-                    </div>
-                  </>
-                )
-              }
+      <div className="operations-menu" style={{ width: "250px" }}>
+        {/* <div onClick={() => this.props.onEdit()}>Удаление диалога</div> */}
+        <div className="operations-menu__item operations-menu__item_with-margin" onClick={() => this.leaveChannel(channel)}>
+          <ChatLeaveIcon width="17px" />
+          Выйти из чата
+        </div>
+        <div className="operations-menu__item operations-menu__item_with-margin" onClick={() => this.addUserToChat(channel)}>
+          <AddUserIcon width="19px" />
+          Добавить пользователя
+        </div>
+        <div className="operations-menu__item operations-menu__item_with-margin" onClick={() => this.removeUsersFromChat()}>
+          <UserIcon width={20} />
+          Участники
+        </div>
+        <div className="operations-menu__item operations-menu__item_with-margin" onClick={() => { }}>
+          <AddAvatarIcon />
+          <Upload
+            onChange={this.handleUploadChannelAvatar}
+            beforeUpload={() => false}
+            multiple
+            showUploadList={false}
+          >
+            <div className="operations-menu__item">
+              Загрузить аватар
+            </div>
+          </Upload>
+        </div>
 
 
-            </>
-          )
-        }
+      </div>
+    );
+  }
 
+  renderChannelHeader() {
+    const { activeChannel } = this.props.chatStore;
+    const participants = activeChannel && activeChannel.participants;
+    const participantsCount = participants && participants.length;
+    const avatar = activeChannel && activeChannel.avatar;
+
+    return (
+      <div className="chat__channel__top">
+        {activeChannel && (
+          <div className="chat__channel__top-wrap">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="chat__channel__top-avatar">
+                {this.renderChannelAvatar(avatar)}
+              </div>
+              <div className="chat__channel-name">
+                {this.props.chatStore.getActiveChannelName()}
+                <div className="chat__channel-count">
+                  {pluralizeParticipants(participantsCount)}
+                </div>
+              </div>
+            </div>
+            <div className="chat__channel-menu">
+              <Popover
+                placement="bottomRight"
+                content={this.renderOperationsMenu(activeChannel)}
+                trigger="click"
+              >
+                <div className="operations-menu__icon">
+                  <MoreIcon />
+                </div>
+              </Popover>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -319,44 +360,16 @@ class Chat extends Component {
       onChange: this.handleMessageIntersection,
       root: ".chat__talk"
     };
-    const avatar = activeChannel && activeChannel.avatar;
     const messages = activeChannel && activeChannel.messages;
     const groupedMessages = groupBy(messages, m => {
       return moment(m.createdAt).format("DD MMMM YYYY");
     });
-    const participants = activeChannel && activeChannel.participants;
-    const participantsCount = participants && participants.length;
 
     const days = Object.keys(groupedMessages);
 
     return (
       <div className="chat__messages-box">
-        <div className="chat__channel__top">
-          {activeChannel && (
-            <div className="chat__channel__top-wrap">
-              <div className="chat__channel__top-avatar">
-                {this.renderChannelAvatar(avatar)}
-              </div>
-              <div className="chat__channel-name">
-                {this.props.chatStore.getActiveChannelName()}
-                <div className="chat__channel-count">
-                  {pluralizeParticipants(participantsCount)}
-                </div>
-              </div>
-              <div className="chat__channel-menu">
-                <Popover
-                  placement="bottom"
-                  content={this.renderOperationsMenu(activeChannel)}
-                  trigger="click"
-                >
-                  <div className="operations-menu__icon">
-                    <MoreIcon />
-                  </div>
-                </Popover>
-              </div>
-            </div>
-          )}
-        </div>
+        {this.renderChannelHeader()}
         <div
           className="chat__messages"
           onScroll={this.handleChatScroll}
@@ -382,28 +395,35 @@ class Chat extends Component {
             })}
           </Scrollbars>
 
-          <div className="chat__talk-down">
-            <Button
-              size="large"
-              icon="down-circle"
-              onClick={this.handleScrollDown}
-            />
-          </div>
         </div>
-        <div className="chat__controls">
-          <div className="chat__controls-file-icon">
-            <FileIcon onClick={this.handleShowUpload} />
+        {activeChannel && (
+          <div className="chat__controls-wrap">
+            <div className="chat__controls">
+              <div className="chat__controls-file-icon">
+                <FileIcon onClick={this.handleShowUpload} />
+              </div>
+              <Input
+                ref={this.inputRef}
+                disabled={!activeChannel}
+                autoFocus
+                placeholder="Введите сообщение"
+                value={this.props.chatStore.currentMessage}
+                onChange={this.handleMessageChange}
+                onKeyPress={this.handleInputKeyPress}
+              />
+              <Popover
+                placement="bottomRight"
+                content={<Picker onClick={this.handleAddEmoji} />}
+                trigger="click"
+              >
+                <EmojiIcon style={{ marginRight: '16px', cursor: 'pointer' }} />
+
+              </Popover>
+              <SendIcon style={{ marginRight: '10px', cursor: 'pointer' }} onClick={this.handleSend} />
+            </div>
           </div>
-          <Input
-            ref={this.inputRef}
-            disabled={!activeChannel}
-            autoFocus
-            value={this.props.chatStore.currentMessage}
-            onChange={this.handleMessageChange}
-            onKeyPress={this.handleInputKeyPress}
-            addonAfter={<SendIcon onClick={this.handleSend} />}
-          />
-        </div>
+        )}
+
       </div>
     );
   }
@@ -432,6 +452,9 @@ class Chat extends Component {
 
   handleChangeChanel = (channelId, messageId) => {
     this.props.chatStore.setActiveChannel(channelId);
+    this.setState({
+      chatState: chatStates.chat
+    });
   };
 
   handleOpenChannelAtMessage = (channelId, messageId) => {
@@ -627,6 +650,14 @@ class Chat extends Component {
 
   handleCreateChannel = () => {
     const { selectedGroupUsers, channelName, channelAvatar } = this.state;
+
+    if (!channelName) {
+      notification.warn({
+        message: "Укажите имя канала"
+      });
+      return;
+    }
+
     const usersIds = Object.keys(selectedGroupUsers).reduce((acc, key) => {
       return selectedGroupUsers[key] ? acc.concat([key]) : acc;
     }, []);
@@ -670,6 +701,10 @@ class Chat extends Component {
       });
     }
   };
+
+  handleRemoveUserFromChannel = () => {
+
+  }
 
   // renders
 
@@ -811,6 +846,7 @@ class Chat extends Component {
             value={this.state.channelName}
             placeholder="Введите название канала"
             onChange={this.handleChangeChannelName}
+            required
           />
         </div>
         <div className="chat__group-creation-users">
@@ -844,6 +880,33 @@ class Chat extends Component {
     );
   };
 
+  renderAdminPanel = () => {
+    const activeChannel = this.props.chatStore.activeChannel || {};
+    const channelParticipants = activeChannel.participants || [];
+
+    return (
+      <div className="chat__admin-panel">
+        {this.renderChannelHeader()}
+        <div className="chat__admin-panel-participants">
+          {
+            channelParticipants.map(p => {
+              return (
+                <div key={p.id} className="chat__admin-panel-participant">
+                  <MinusIcon style={{ marginRight: '16px', cursor: 'pointer' }} onClick={() => this.handleRemoveUsersFromChannel([p.id])} />
+                  <img className="avatar avatar_medium" src={p.avatar} />
+                  <div>
+                    {p.name}
+                  </div>
+                </div>
+              );
+            })
+          }
+        </div>
+
+      </div>
+    );
+  }
+
   renderFooter(chatState) {
     return (
       <div className="chat__footer-controls">
@@ -876,7 +939,6 @@ class Chat extends Component {
     const { visible, isLoading, socketError } = this.props;
     const { chatState } = this.state;
     const activeChannel = this.props.chatStore.activeChannel || {};
-    const channelParticipants = activeChannel.participants || [];
 
     // const chatIndicatorCls = cn("chat__indicator", {
     //   chat__indicator_connected: isSocketConnected
@@ -902,7 +964,7 @@ class Chat extends Component {
                 />
               </div>
 
-              {chatState === chatStates.chat && (
+              {(chatState === chatStates.chat || chatState === chatStates.admin) && (
                 <div className="chat__channels">
 
                   <Scrollbars
@@ -949,6 +1011,7 @@ class Chat extends Component {
                   && this.renderMessages()}
                 {chatState === chatStates.private && <div />}
                 {chatState === chatStates.create && this.renderGroupCreation()}
+                {chatState === chatStates.admin && this.renderAdminPanel()}
               </div>
             </div>
           </div>
@@ -961,20 +1024,16 @@ class Chat extends Component {
           onOk={this.handleUploadFiles}
           value={this.state.files}
         />
-        <UsersWindow
-          title="Выбрать пользователей"
-          users={this.props.usersStore.users}
-          onCancel={this.hideUsersWindow}
-          visible={this.state.isUsersWindowVisible}
-          onOk={this.handleAddUsersToChannel}
-        />
-        <UsersWindow
-          title="Удалить пользователей"
-          users={channelParticipants}
-          onCancel={this.hideRemoveUsersWindow}
-          visible={this.state.isRemoveUsersWindowVisible}
-          onOk={this.handleRemoveUsersFromChannel}
-        />
+        {
+          this.state.isUsersWindowVisible && (
+            <UsersWindow
+              onCancel={this.hideUsersWindow}
+              visible={this.state.isUsersWindowVisible}
+              onOk={this.handleAddUsersToChannel}
+            />
+          )
+        }
+
 
       </>
     );
