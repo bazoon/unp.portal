@@ -20,6 +20,32 @@
       }
     }
 
+    &-upload {
+      font-family: OpenSansBold;
+      font-size: 14px;
+      color: #F38282;
+      cursor: pointer;
+    }
+
+    &-select {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 8px;
+      padding-top: 16px;
+      padding-bottom: 16px;
+      padding-right: 12px;
+    }
+
+    &-select-all {
+      font-family: OpenSansBold;
+      font-size: 14px;
+      color: #F38282;
+      display: flex;
+      align-items: center;
+    }
+
     &-input {
       padding: 0px 8px;
       width: 90%;
@@ -537,9 +563,11 @@
     background-color: #fff;
     height: 100%;
     width: 100%;
-    
+    display: flex;
+    flex-direction: column;
 
     &-participants {
+      flex:1;
       margin-left: 16px;
       border-top: solid 1px #EFECE7;
       font-size: 12px;

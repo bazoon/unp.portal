@@ -64,6 +64,7 @@ class Chat extends Component {
       channelAvatar: "",
       isUsersWindowVisible: false,
       isRemoveUsersWindowVisible: false,
+      isAllGroupUsersSelected: false
     };
     this.formRef = React.createRef();
     this.chatTalkRef = React.createRef();
@@ -702,7 +703,22 @@ class Chat extends Component {
     }
   };
 
-  handleRemoveUserFromChannel = () => {
+  handleSelectAllGroupUsers = () => {
+    this.setState({
+      isAllGroupUsersSelected: true
+    });
+
+    const { isAllGroupUsersSelected } = this.state;
+    const { selectedGroupUsers } = this.state;
+
+    this.props.usersStore.users.forEach((u) => {
+      selectedGroupUsers[u.id] = !isAllGroupUsersSelected;
+    });
+
+    this.setState({
+      selectedGroupUsers: { ...selectedGroupUsers },
+      isAllGroupUsersSelected: !isAllGroupUsersSelected
+    });
 
   }
 
@@ -838,18 +854,29 @@ class Chat extends Component {
             fileList={this.state.channelAvatar}
             beforeUpload={() => false}
           >
-            <FileIcon />
+            <div className="chat__group-creation-upload">
+              Загрузить аватарку
+            </div>
           </Upload>
         </div>
         <div className="chat__group-creation-input">
           <Input
             value={this.state.channelName}
-            placeholder="Введите название канала"
+            placeholder="Введите название группы"
             onChange={this.handleChangeChannelName}
             required
           />
         </div>
         <div className="chat__group-creation-users">
+          <div className="chat__group-creation-select">
+            <div className="chat__group-creation-select-all">
+              Выделить всех
+            </div>
+            <Checkbox
+              checked={this.state.isAllGroupUsersSelected}
+              onClick={() => this.handleSelectAllGroupUsers()}
+            />
+          </div>
           <Scrollbars
             autoHide
             universal
@@ -883,24 +910,34 @@ class Chat extends Component {
   renderAdminPanel = () => {
     const activeChannel = this.props.chatStore.activeChannel || {};
     const channelParticipants = activeChannel.participants || [];
+    const { isAdmin } = this.props.currentUserStore;
 
     return (
       <div className="chat__admin-panel">
         {this.renderChannelHeader()}
         <div className="chat__admin-panel-participants">
-          {
-            channelParticipants.map(p => {
-              return (
-                <div key={p.id} className="chat__admin-panel-participant">
-                  <MinusIcon style={{ marginRight: '16px', cursor: 'pointer' }} onClick={() => this.handleRemoveUsersFromChannel([p.id])} />
-                  <img className="avatar avatar_medium" src={p.avatar} />
-                  <div>
-                    {p.name}
+          <Scrollbars
+            autoHide
+            universal
+          >
+            {
+              channelParticipants.map(p => {
+                return (
+                  <div key={p.id} className="chat__admin-panel-participant">
+                    {
+                      activeChannel.canManage && (
+                        <MinusIcon style={{ marginRight: '16px', cursor: 'pointer' }} onClick={() => this.handleRemoveUsersFromChannel([p.id])} />
+                      )
+                    }
+                    <img className="avatar avatar_medium" src={p.avatar} />
+                    <div>
+                      {p.name}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          }
+                );
+              })
+            }
+          </Scrollbars>
         </div>
 
       </div>

@@ -36,7 +36,7 @@ router.get("/channels", async (ctx, next) => {
   const userId = ctx.user.id;
 
   const query = `select distinct channels.name, channels.avatar, channels.id,
-                channels.first_user_id, channels.second_user_id
+                channels.first_user_id, channels.second_user_id, channels.user_id
                 from channels, user_channels
                 where (user_channels.channel_id = channels.id and user_channels.user_id = :userId) or 
  	              (channels.first_user_id = :userId) or (channels.second_user_id = :userId)`;
@@ -46,6 +46,7 @@ router.get("/channels", async (ctx, next) => {
       userId
     }
   });
+
 
   ctx.body = await Promise.all(getFullChannels(channels, userId));
 });
@@ -136,8 +137,10 @@ function getFullChannels(channels, userId) {
       }
     }
 
+
     return Promise.resolve({
       id: channel.id,
+      canManage: channel.user_id == userId,
       name: channel.name,
       avatar: getUploadFilePath(channel.avatar),
       lastMessage,
@@ -181,7 +184,7 @@ router.post("/channels", koaBody({ multipart: true }), async ctx => {
   await uploadFiles(files);
 
   const usersIdsWithUser = Array.from(
-    new Set(JSON.parse(usersIds).concat([userId]))
+    new Set(JSON.parse(usersIds).concat([userId + '']))
   );
 
   const channel = await models.Channel.create({
@@ -199,12 +202,14 @@ router.post("/channels", koaBody({ multipart: true }), async ctx => {
     { returning: true }
   );
 
+  const participants = await getChannelUsers(channel.id);
+
   ctx.body = {
     channel: {
       id: channel.id,
       name: channel.name,
       avatar: getUploadFilePath(channel.avatar),
-      participantsCount: usersIdsWithUser.length
+      participants,
     },
     usersIds: usersIdsWithUser
   };
@@ -468,6 +473,7 @@ router.post("/upload", koaBody({ multipart: true }), async ctx => {
   const userId = ctx.user.id;
   const { file } = ctx.request.files;
   const files = file ? (Array.isArray(file) ? file : [file]) : [];
+
   await uploadFiles(files);
 
   const message = await models.Message.create({
@@ -552,6 +558,19 @@ router.get("/userChannels/:id/users", async ctx => {
 router.delete("/userChannels/:id/users", async ctx => {
   const { id } = ctx.params;
   const { users } = ctx.query;
+  const userId = ctx.user.id;
+
+  const channel = await models.Channel.findOne({
+    where: {
+      id
+    }
+  });
+
+  if (channel.userId != userId) {
+    ctx.status = 403;
+    ctx.body = "Unauthorized!";
+    return false;
+  }
 
 
   await models.UserChannel.destroy({
