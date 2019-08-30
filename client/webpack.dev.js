@@ -8,7 +8,7 @@ var HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 
 module.exports = merge(common, {
   mode: "development",
-  devtool: "eval",
+  devtool: "eval-source-map",
   devServer: {
     contentBase: "./dist"
   },

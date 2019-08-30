@@ -10,7 +10,9 @@
     }
   },
   "extends": [
-    "airbnb"
+    "airbnb",
+    "prettier",
+    "prettier/react"
   ],
   "plugins": [
     "import"

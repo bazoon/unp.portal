@@ -18,6 +18,10 @@ class UsersWindow extends Component {
   componentDidMount() {
     this.search("all");
   }
+  componentWillUnmount() {
+    this.isUnmounted = true;
+  }
+
 
   search(query) {
     api.searchName(query).then(users => {
@@ -36,7 +40,9 @@ class UsersWindow extends Component {
 
   handleOk = () => {
     this.props.onOk(Object.keys(this.state.selectedUsers)).then(() => {
-      this.setState({ selectedUsers: [] });
+      if (!this.isUnmounted) {
+        this.setState({ selectedUsers: [] });
+      }
     });
   };
 

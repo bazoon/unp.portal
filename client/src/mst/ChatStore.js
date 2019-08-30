@@ -6,6 +6,8 @@ import api from "../api/chat";
 import ChatChannel from "./models/ChatChannel";
 import FoundChatMessage from "./models/FoundChatMessage";
 import utils from "../utils";
+import chatStates from '../components/Chat/states';
+
 
 const ChatStore = types
   .model("ChatStore", {
@@ -16,7 +18,9 @@ const ChatStore = types
       []
     ),
     currentMessage: types.maybeNull(types.optional(types.string, '')),
-    foundMessages: types.optional(types.array(FoundChatMessage), [])
+    foundMessages: types.optional(types.array(FoundChatMessage), []),
+    isAddUsersWindowVisible: types.optional(types.boolean, false),
+    chatState: types.optional(types.number, chatStates.chat)
   })
   .views(self => {
     const getActiveChannelName = function getActiveChannelName() {
@@ -190,7 +194,6 @@ const ChatStore = types
       }
     }
 
-
     const setCurrentMessage = function setCurrentMessage(value) {
       self.currentMessage = value;
     };
@@ -292,6 +295,7 @@ const ChatStore = types
           isPrivate: self.activeChannel.private
         }
       });
+
     });
 
     const removeUsersFromChannel = flow(function* removeUsersFromChannel({ users }) {
@@ -313,6 +317,34 @@ const ChatStore = types
         toUsers: self.activeChannel.participants.map(p => p.id)
       });
     });
+
+    const showAddUsersWindow = function showAddUsersWindow() {
+      self.isAddUsersWindowVisible = true;
+    };
+
+    const hideAddUsersWindow = function hideAddUsersWindow() {
+      self.isAddUsersWindowVisible = false;
+    };
+
+    const switchToChat = function switchToChat() {
+      self.chatState = chatStates.chat;
+    };
+
+    const switchToCreate = function switchToCreate() {
+      self.chatState = chatStates.create;
+    };
+
+    const switchToPrivate = function switchToPrivate() {
+      self.chatState = chatStates.private;
+    };
+
+    const switchToSearch = function switchToSearch() {
+      self.chatState = chatStates.search;
+    };
+
+    const switchToAdmin = function switchToAdmin() {
+      self.chatState = chatStates.admin;
+    };
 
 
     return {
@@ -337,7 +369,14 @@ const ChatStore = types
       addUsersToChannel,
       removeUsersFromChannel,
       updateChannelAvatar,
-      updateAvatar
+      updateAvatar,
+      showAddUsersWindow,
+      hideAddUsersWindow,
+      switchToChat,
+      switchToCreate,
+      switchToPrivate,
+      switchToSearch,
+      switchToAdmin
     };
   });
 

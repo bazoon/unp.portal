@@ -239,7 +239,8 @@ router.post("/channels/createPrivate", async ctx => {
       avatar: "",
       firstUserId: userId,
       secondUserId: selectedUserId,
-      private: true
+      private: true,
+      userId
     });
   }
 
