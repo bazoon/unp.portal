@@ -3,7 +3,7 @@ import cn from "classnames";
 import moment from "moment";
 import { Scrollbars } from 'react-custom-scrollbars';
 import groupBy from "lodash/groupBy";
-import { Drawer, Input, Button, Popover, Checkbox, Upload, Badge } from "antd";
+import { Drawer, Input, Button, Popover, Checkbox, Upload, Badge, notification } from "antd";
 import PropTypes from "prop-types";
 import "intersection-observer";
 import { observer, inject } from "mobx-react";
@@ -654,7 +654,7 @@ class Chat extends Component {
 
     if (!channelName) {
       notification.warn({
-        message: "Укажите имя канала"
+        message: "Укажите имя группы"
       });
       return;
     }
