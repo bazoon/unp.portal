@@ -12,11 +12,57 @@ import 'emoji-mart/css/emoji-mart.css';
 import SendIcon from "../../../images/telesend";
 import Message from './Message';
 import ChannelHeader from './ChannelHeader';
+import UploadWindow from "../UploadWindow/UploadWindow";
+
 
 @inject("chatStore")
 @inject("currentUserStore")
 @observer
 class Messages extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      isUploadVisible: false,
+    };
+  }
+
+  handleShowUpload = () => {
+    this.setState({
+      isUploadVisible: true
+    });
+  };
+
+  handleHideUpload = () => {
+    this.setState({
+      isUploadVisible: false
+    });
+  };
+
+  handleFileChange = files => {
+    this.setState({
+      files
+    });
+  };
+
+  handleUploadFiles = () => {
+    const { userId } = this.props.currentUserStore;
+    const formData = new FormData();
+    formData.append("channelId", this.props.chatStore.activeChannel.id);
+    formData.append("userId", userId);
+    this.state.files.forEach(f => {
+      formData.append("file", f.originFileObj);
+    });
+
+    this.props.chatStore.sendChatFiles(userId, formData);
+    this.handleHideUpload();
+    this.setState({
+      files: []
+    });
+  };
+
+
+
   handleMessageChange = e => {
     this.props.chatStore.setCurrentMessage(e.target.value);
   };
@@ -126,6 +172,13 @@ class Messages extends Component {
           </div>
         )}
 
+        <UploadWindow
+          visible={this.state.isUploadVisible}
+          onCancel={this.handleHideUpload}
+          onChange={this.handleFileChange}
+          onOk={this.handleUploadFiles}
+          value={this.state.files}
+        />
       </div>
     );
   }

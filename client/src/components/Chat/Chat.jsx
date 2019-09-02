@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import cn from "classnames";
-import moment from "moment";
 import { Scrollbars } from 'react-custom-scrollbars';
 import { Drawer, Input } from "antd";
 import PropTypes from "prop-types";
@@ -10,10 +8,8 @@ import "./Chat.less";
 import ChatChannelsIcon from "../../../images/chatChannels";
 import AddChatIcon from "../../../images/addChat";
 import ChatUserIcon from "../../../images/chatUser";
-import UploadWindow from "../UploadWindow/UploadWindow";
 import UsersWindow from "../UsersWindow/UsersWindow";
 import Channel from './Channel';
-import ChannelAvatar from './ChannelAvatar';
 import ChannelCreation from './ChannelCreation';
 import Messages from './Messages';
 import AdminPanel from './AdminPanel';
@@ -68,35 +64,6 @@ class Chat extends Component {
     chatTalk.scrollBy(0, chatTalk.scrollHeight);
   };
 
-  handleShowUpload = () => {
-    this.setState({
-      isUploadVisible: true
-    });
-  };
-
-  handleHideUpload = () => {
-    this.setState({
-      isUploadVisible: false
-    });
-  };
-
-
-
-  handleUploadFiles = () => {
-    const { userId } = this.props.currentUserStore;
-    const formData = new FormData();
-    formData.append("channelId", this.props.chatStore.activeChannel.id);
-    formData.append("userId", userId);
-    this.state.files.forEach(f => {
-      formData.append("file", f.originFileObj);
-    });
-
-    this.props.chatStore.sendChatFiles(userId, formData);
-    this.handleHideUpload();
-    this.setState({
-      files: []
-    });
-  };
 
   leaveChannel(channel) {
     this.props.chatStore.leaveChannel({ id: channel.id });
@@ -108,29 +75,11 @@ class Chat extends Component {
     });
   }
 
-
   handleAddEmoji = ({ native }) => {
     this.props.chatStore.setCurrentMessage(this.props.chatStore.currentMessage + native);
   }
 
   // renders
-
-
-
-
-
-  handleFileUpload = () => {
-    const form = this.formRef.current;
-    const input = form.querySelector("input[type=file]");
-    input.click();
-  };
-
-  handleFileChange = files => {
-    this.setState({
-      files
-    });
-  };
-
   handleChangeChanel = (channelId) => {
     this.props.chatStore.setActiveChannel(channelId).then(() => {
       this.props.chatStore.switchToChat();
@@ -143,8 +92,6 @@ class Chat extends Component {
       messageElement && messageElement.scrollIntoView();
     });
   };
-
-
 
   loadMoreTop() {
     if (
@@ -250,7 +197,7 @@ class Chat extends Component {
   renderChatChanels() {
     const { channels, activeChannel } = this.props.chatStore;
     return channels.map(channel => {
-      const isActive = channel.id === activeChannel && activeChannel.id;
+      const isActive = channel.id === (activeChannel && activeChannel.id);
       return (
         <Channel
           key={channel.id}
@@ -280,7 +227,6 @@ class Chat extends Component {
       </div>
     );
   }
-
 
   render() {
     const { visible, isLoading, socketError } = this.props;
@@ -343,7 +289,7 @@ class Chat extends Component {
               <div className="chat__talk">
                 {(chatState === chatStates.chat
                   || chatState === chatStates.search)
-                  && <Messages />}
+                  && <Messages onUpload={this.handleUploadFiles} />}
                 {chatState === chatStates.private && <div />}
                 {chatState === chatStates.create && <ChannelCreation users={this.props.usersStore.users} onCreate={this.handleOnCreateGroup} />}
                 {chatState === chatStates.admin &&
@@ -353,14 +299,6 @@ class Chat extends Component {
             </div>
           </div>
         </Drawer>
-
-        <UploadWindow
-          visible={this.state.isUploadVisible}
-          onCancel={this.handleHideUpload}
-          onChange={this.handleFileChange}
-          onOk={this.handleUploadFiles}
-          value={this.state.files}
-        />
 
         {
           isAddUsersWindowVisible && (

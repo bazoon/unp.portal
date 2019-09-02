@@ -44,6 +44,7 @@ module.exports = {
           type: "file",
           message: null,
           userName: user.name,
+          userId,
           avatar: getUploadFilePath(user.avatar),
           files: files.map(f => ({
             id: f.id,

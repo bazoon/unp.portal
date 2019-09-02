@@ -495,6 +495,13 @@
   padding: 8px;
 }
 
+.users-window .ant-modal-footer {
+  padding: 16px 0;
+}
+.users-window__search {
+  margin-bottom: 16px;
+}
+
 .upload-form__inputs {
   display: flex;
   justify-content: space-between;
@@ -505,13 +512,6 @@
 }
 .upload-form__input-remove {
   cursor: pointer;
-}
-
-.users-window .ant-modal-footer {
-  padding: 16px 0;
-}
-.users-window__search {
-  margin-bottom: 16px;
 }
 
 /* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */

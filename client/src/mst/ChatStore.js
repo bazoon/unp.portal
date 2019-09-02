@@ -64,7 +64,6 @@ const ChatStore = types
       });
 
       socket.on("channel-message", message => {
-
         if (self.currentUserStore.userId != message.userId) {
           notification.open({
             description: message.message,
