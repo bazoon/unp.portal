@@ -1,8 +1,21 @@
 const Bull = require("bull");
+const { RedisConfigMissingError } = require("../utils/errors");
 
 class EventReminder {
   constructor() {
-    this.queue = new Bull("Foo");
+    const host = process.env.REDIS_HOST;
+    const port = process.env.REDIS_PORT;
+
+    if (!host || !port) {
+      throw new RedisConfigMissingError();
+    }
+
+    this.queue = new Bull("Foo", {
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+      }
+    });
   }
 
   setChat(chat) {

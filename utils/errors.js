@@ -33,9 +33,17 @@ class DuplicateFoundError extends Error {
   }
 }
 
+class RedisConfigMissingError extends Error {
+  constructor() {
+    super("Отсутствуют параметры для Redis. Добавтьте REDIS_HOST, REDIS_PORT в переменные окружения");
+  }
+}
+
+
 module.exports = {
   NotFoundRecordError,
   NotAuthorizedError,
   MissingFieldError,
-  LoginFailedError
+  LoginFailedError,
+  RedisConfigMissingError
 };
