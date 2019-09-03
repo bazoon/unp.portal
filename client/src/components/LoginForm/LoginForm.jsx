@@ -251,9 +251,6 @@ class LoginForm extends Component {
           </Button>
           <Form.Item>
             Войти через:{" "}
-            <a className="signup-link" href={bpUrl}>
-              Бюджетное планирование
-            </a>
             &nbsp;или&nbsp;
             <a className="signup-link" href={unpUrl}>
               Управление национальными проектами
