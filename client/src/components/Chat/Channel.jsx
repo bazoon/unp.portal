@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
+import { observer, inject } from "mobx-react";
 import { Badge } from 'antd';
 import cn from "classnames";
 import moment from "moment";
 import ChannelAvatar from './ChannelAvatar';
 
+@inject("chatStore")
+@observer
 class Channel extends Component {
   render() {
     const { channel, isActive, onChange } = this.props;

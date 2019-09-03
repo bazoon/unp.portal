@@ -138,6 +138,7 @@ const ChatStore = types
             self.updateAvatar({ channelId, avatar });
           }
 
+          console.log("Updating", channel)
 
         }
       });
@@ -189,6 +190,7 @@ const ChatStore = types
     const updateAvatar = function updateAvatar({ channelId, avatar }) {
       const channel = self.channels.find(ch => ch.id == channelId);
       if (channel) {
+        console.log("Updating", channel)
         channel.updateAvatar(avatar);
       }
     }

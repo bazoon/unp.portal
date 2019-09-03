@@ -47,7 +47,7 @@ class ChannelHeader extends Component {
             showUploadList={false}
           >
             <div className="operations-menu__item">
-              Загрузить аватар
+              Загрузить аватарку
             </div>
           </Upload>
         </div>
